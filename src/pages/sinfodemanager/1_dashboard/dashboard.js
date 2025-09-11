@@ -45,36 +45,41 @@ export default function Dashboard() {
   const userBranchId = userData.branch_id;
   const userBranchName = userData.branch_name || "Your Branch";
 
-  // ✅ Revenue API fetch (GET method with query parameters)
-  const fetchRevenueData = async () => {
-    if (!userBranchId) return;
+// Replace the fetchRevenueData function with this updated version
+const fetchRevenueData = async () => {
+  if (!userBranchId) return;
+  
+  setLoading(true);
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get("/monthly-revenue", {
+      headers: { Authorization: `Bearer ${token}` },
+      params: {
+        year: selectedYear,
+        branch_id: userBranchId
+      }
+    });
     
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("/monthly-revenue", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {
-          year: selectedYear,
-          branch_id: userBranchId
-        }
-      });
-      
-      setRevenueData(res.data);
-      
-      // Calculate total revenue
-      const total = res.data.monthly_revenue.reduce((sum, month) => {
-        return sum + parseFloat(month.student_fee || 0);
-      }, 0);
-      
-      setTotalRevenue(total);
-    } catch (error) {
-      console.error("Error fetching revenue data:", error);
-      alert("Failed to load revenue data");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Find the data for the current user's branch
+    const userBranchData = res.data.branches.find(
+      branch => branch.branch_id === userBranchId
+    );
+    
+    setRevenueData(userBranchData);
+    
+    // Calculate total revenue
+    const total = userBranchData?.monthly_revenue?.reduce((sum, month) => {
+      return sum + parseFloat(month.student_fee || 0);
+    }, 0) || 0;
+    
+    setTotalRevenue(total);
+  } catch (error) {
+    console.error("Error fetching revenue data:", error);
+    alert("Failed to load revenue data");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ✅ Fetch leads data (filtered by branch)
   const fetchLeadsData = async () => {
@@ -116,11 +121,11 @@ export default function Dashboard() {
 
   // Prepare chart data with attractive colors
   const chartData = {
-    labels: revenueData?.monthly_revenue?.map(item => item.month.substring(0, 3)) || [],
+      labels: revenueData?.monthly_revenue?.map(item => item.month.substring(0, 3)) || [],
     datasets: [
       {
         label: 'Monthly Revenue (₹)',
-        data: revenueData?.monthly_revenue?.map(item => item.student_fee) || [],
+      data: revenueData?.monthly_revenue?.map(item => item.student_fee) || [],
         backgroundColor: [
           'rgba(255, 99, 132, 0.8)',
           'rgba(54, 162, 235, 0.8)',

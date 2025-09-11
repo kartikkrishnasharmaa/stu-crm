@@ -17,8 +17,6 @@ function AddStudent() {
   const [guardianContact, setGuardianContact] = useState("");
   // const [admissionNumber, setAdmissionNumber] = useState("");
   const [courseId, setCourseId] = useState("");
-  const [batchStart, setBatchStart] = useState("");
-  const [batchEnd, setBatchEnd] = useState("");
   const [admissionDate, setAdmissionDate] = useState("");
   const [batchId, setBatchId] = useState("");
 
@@ -89,8 +87,7 @@ function AddStudent() {
       formData.append("batch_id", batchId);
       formData.append("admission_date", admissionDate);
       formData.append("branch_id", branch_id); // Using the branch_id from user data
-      formData.append("batch_start_time", batchStart);
-      formData.append("batch_end_time", batchEnd);
+
       formData.append("course_fee", courseFee);
       formData.append("final_fee", finalFee);
 
@@ -245,30 +242,8 @@ function AddStudent() {
               
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Batch Start Time *
-            </label>
-            <input
-              type="time"
-              value={batchStart}
-              onChange={(e) => setBatchStart(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
-              
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Batch End Time *
-            </label>
-            <input
-              type="time"
-              value={batchEnd}
-              onChange={(e) => setBatchEnd(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
-              
-            />
-          </div>
+         
+          
           <div>
             <label>Course *</label>
             <select
@@ -280,8 +255,7 @@ function AddStudent() {
               <option value="">Select</option>
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
-                  {course.course_name} (₹
-                  {course.discounted_price || course.actual_price})
+                  {course.course_name} 
                 </option>
               ))}
             </select>
@@ -299,7 +273,7 @@ function AddStudent() {
               <option value="">Select</option>
               {batches.map((batch) => (
                 <option key={batch.id} value={batch.id}>
-                  {batch.batch_name} ({batch.course?.course_name})
+                  {batch.batch_name}
                 </option>
               ))}
             </select>

@@ -239,9 +239,9 @@ export default function Accountant() {
                 <th className="p-3 border">Joining Date</th>
                 <th className="p-3 border">Contact</th>
                 <th className="p-3 border">Email</th>
-                <th className="p-3 border">Monthly Salary</th>
-                <th className="p-3 border">Branch</th>
-                <th className="p-3 border">Attendance</th>
+                {/* <th className="p-3 border">Monthly Salary</th> */}
+                {/* <th className="p-3 border">Branch</th> */}
+                {/* <th className="p-3 border">Attendance</th> */}
                 <th className="p-3 border text-center">Actions</th>
               </tr>
             </thead>
@@ -256,9 +256,9 @@ export default function Accountant() {
                     <td className="p-3 border">{accountant.joining_date}</td>
                     <td className="p-3 border">{accountant.contact_number}</td>
                     <td className="p-3 border">{accountant.email}</td>
-                    <td className="p-3 border">₹{formatCurrency(accountant.monthly_salary)}</td>
-                    <td className="p-3 border">{accountant.branch?.branch_name || accountant.branch_id}</td>
-                    <td className="p-3 border">
+                    {/* <td className="p-3 border">₹{formatCurrency(accountant.monthly_salary)}</td> */}
+                    {/* <td className="p-3 border">{accountant.branch?.branch_name || accountant.branch_id}</td> */}
+                    {/* <td className="p-3 border">
                       <span
                         className={`px-2 py-1 text-sm rounded ${
                           accountant.attendance_status === "Present"
@@ -268,9 +268,9 @@ export default function Accountant() {
                       >
                         {accountant.attendance_status}
                       </span>
-                    </td>
+                    </td> */}
                     <td className="p-3 border text-center flex justify-center gap-3">
-                      <button
+                      {/* <button
                         onClick={() =>
                           toggleAttendance(accountant.id, accountant.attendance_status)
                         }
@@ -286,8 +286,8 @@ export default function Accountant() {
                         ) : (
                           <FaToggleOff size={20} />
                         )}
-                      </button>
-                      <button
+                      </button> */}
+                      {/* <button
                         onClick={() =>
                           navigate(`/sinfodemanager/accountant/${accountant.id}`)
                         }
@@ -295,7 +295,7 @@ export default function Accountant() {
                         title="View Accountant"
                       >
                         <FaEye size={18} />
-                      </button>
+                      </button> */}
                       <button
                         onClick={() => handleEditClick(accountant)}
                         className="p-2 text-blue-600 hover:bg-blue-100 rounded"

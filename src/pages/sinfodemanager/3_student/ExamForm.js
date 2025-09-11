@@ -408,28 +408,6 @@ const ExamForm = ({ formData, setFormData, setShowModal, refreshData }) => {
               <h4 className="text-lg font-medium text-gray-800 border-b pb-2">
                 Student Information
               </h4>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Branch
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 sf-input rounded-lg focus:outline-none bg-gray-100"
-                  style={{
-                    border: "1px solid #dddbda",
-                    transition: "all 0.2s ease",
-                  }}
-                  value={branches.find(b => b.id.toString() === userBranchId?.toString())?.branch_name || "Your Branch"}
-                  readOnly
-                />
-                <input
-                  type="hidden"
-                  id="branch"
-                  value={userBranchId || ""}
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Course
@@ -476,7 +454,7 @@ const ExamForm = ({ formData, setFormData, setShowModal, refreshData }) => {
                   <option value="">Select Batch</option>
                   {filteredBatches.map((batch) => (
                     <option key={batch.id} value={batch.id}>
-                      {batch.batch_name || `Batch ${batch.id}`}
+                      {batch.batch_name}
                     </option>
                   ))}
                 </select>
@@ -508,27 +486,6 @@ const ExamForm = ({ formData, setFormData, setShowModal, refreshData }) => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Student ID
-                </label>
-                <input
-                  type="text"
-                  id="studentId"
-                  required
-                  value={formData.studentId}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 sf-input rounded-lg focus:outline-none"
-                  style={{
-                    border: "1px solid #dddbda",
-                    transition: "all 0.2s ease",
-                  }}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                  placeholder="Enter student ID"
-                  readOnly
-                />
-              </div>
             </div>
 
             {/* Exam Information */}

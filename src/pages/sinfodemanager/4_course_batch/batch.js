@@ -5,9 +5,11 @@ function Batch() {
   const [formData, setFormData] = useState({
     batch_name: "",
     course_id: "",
-    branch_id: "", // This will be set automatically from user data
+    branch_id: "",
     start_date: "",
     end_date: "",
+    batch_start_time: "", // Add time fields
+    batch_end_time: "",   // Add time fields
     student_limit: "",
   });
   const [loading, setLoading] = useState(false);
@@ -54,10 +56,10 @@ function Batch() {
     try {
       const token = localStorage.getItem("token");
       
-      // Prepare payload with user's branch_id
+      // Prepare payload with user's branch_id and time fields
       const payload = {
         ...formData,
-        branch_id: userBranchId, // Use the user's branch ID
+        branch_id: userBranchId,
       };
       
       await axios.post("/batches/create", payload, {
@@ -65,12 +67,15 @@ function Batch() {
       });
       
       alert("Batch created successfully!");
+      // Reset form with time fields
       setFormData({
         batch_name: "",
         course_id: "",
         branch_id: "",
         start_date: "",
         end_date: "",
+        batch_start_time: "",
+        batch_end_time: "",
         student_limit: "",
       });
     } catch (error) {
@@ -104,7 +109,7 @@ function Batch() {
             />
           </div>
   
-          {/* Course Dropdown - Only shows courses from user's branch */}
+          {/* Course Dropdown */}
           <div>
             <label className="block text-sm font-medium text-gray-600">
               Course
@@ -146,6 +151,21 @@ function Batch() {
             />
           </div>
 
+          {/* Start Time */}
+          <div>
+            <label className="block text-sm font-medium text-gray-600">
+              Start Time
+            </label>
+            <input
+              type="time"
+              name="batch_start_time"
+              value={formData.batch_start_time}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 p-2"
+            />
+          </div>
+
           {/* End Date */}
           <div>
             <label className="block text-sm font-medium text-gray-600">
@@ -155,6 +175,21 @@ function Batch() {
               type="date"
               name="end_date"
               value={formData.end_date}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 p-2"
+            />
+          </div>
+
+          {/* End Time */}
+          <div>
+            <label className="block text-sm font-medium text-gray-600">
+              End Time
+            </label>
+            <input
+              type="time"
+              name="batch_end_time"
+              value={formData.batch_end_time}
               onChange={handleChange}
               required
               className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 p-2"

@@ -28,13 +28,12 @@ export default function Staff() {
   // Form data
   const [formData, setFormData] = useState({
     employee_name: "",
-    employee_code: "",
     designation: "",
     joining_date: "",
     contact_number: "",
     email: "",
     department: "",
-    status: "active", // Changed from attendance_status to status
+    status: "Active", // Changed to match likely backend expectations
     branch_id: userBranchId || "", // Set default to user's branch
     staffcreate_name: "",
     staffcreate_email: "",
@@ -65,11 +64,13 @@ export default function Staff() {
     fetchStaff();
   }, []);
 
-  // Toggle status (active/inactive)
+  // Toggle status (Active/Inactive)
   const toggleStatus = async (id, currentStatus) => {
     try {
       const token = localStorage.getItem("token");
-      const newStatus = currentStatus === "active" ? "inactive" : "active";
+      // Normalize status values to match backend expectations
+      const normalizedStatus = currentStatus.toLowerCase() === "active" ? "Active" : "Inactive";
+      const newStatus = normalizedStatus === "Active" ? "Inactive" : "Active";
 
       await axios.put(
         `/staff/update/${id}`,
@@ -112,8 +113,7 @@ export default function Staff() {
       (staff.employee_name || "")
         .toLowerCase()
         .includes(search.toLowerCase()) ||
-      (staff.designation || "").toLowerCase().includes(search.toLowerCase()) ||
-      (staff.employee_code || "").toLowerCase().includes(search.toLowerCase())
+      (staff.designation || "").toLowerCase().includes(search.toLowerCase())
   );
 
   // Handle form input
@@ -126,17 +126,16 @@ export default function Staff() {
     setEditingStaffId(staff.id);
     setFormData({
       employee_name: staff.employee_name,
-      employee_code: staff.employee_code,
       designation: staff.designation,
       joining_date: staff.joining_date,
       contact_number: staff.contact_number,
       email: staff.email,
       department: staff.department,
-      status: staff.status, // Changed from attendance_status to status
+      status: staff.status, // Use the exact value from the backend
       branch_id: staff.branch_id,
       staffcreate_name: staff.staffcreate_name,
       staffcreate_email: staff.staffcreate_email,
-      staffcreate_password: "",
+      staffcreate_password: "", // Don't prefill password for security
       monthly_salary: staff.monthly_salary
     });
     setIsModalOpen(true);
@@ -149,10 +148,11 @@ export default function Staff() {
     try {
       const token = localStorage.getItem("token");
       
-      // Prepare data with user's branch_id
+      // Prepare data with user's branch_id and properly formatted status
       const submitData = {
         ...formData,
-        branch_id: userBranchId // Always use the logged-in user's branch
+        branch_id: userBranchId, // Always use the logged-in user's branch
+        status: formData.status // Use the exact value from the form
       };
 
       if (editingStaffId) {
@@ -175,7 +175,17 @@ export default function Staff() {
       resetForm();
     } catch (error) {
       console.error(error);
-      alert(editingStaffId ? "Error updating staff" : "Error creating staff");
+      if (error.response && error.response.data && error.response.data.errors) {
+        // Display validation errors from backend
+        const errors = error.response.data.errors;
+        let errorMessage = "Please fix the following errors:\n";
+        for (const field in errors) {
+          errorMessage += `${field}: ${errors[field].join(", ")}\n`;
+        }
+        alert(errorMessage);
+      } else {
+        alert(editingStaffId ? "Error updating staff" : "Error creating staff");
+      }
     } finally {
       setLoading(false);
     }
@@ -191,8 +201,8 @@ export default function Staff() {
       contact_number: "",
       email: "",
       department: "",
-      status: "active",
-      branch_id: userBranchId || "", // Reset to user's branch
+      status: "Active", // Reset to default value
+      branch_id: userBranchId || "",
       staffcreate_name: "",
       staffcreate_email: "",
       staffcreate_password: "",
@@ -255,7 +265,7 @@ export default function Staff() {
                     <td className="p-3 border">
                       <span
                         className={`px-2 py-1 text-sm rounded ${
-                          staff.status === "active"
+                          staff.status === "Active"
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
                         }`}
@@ -269,13 +279,13 @@ export default function Staff() {
                           toggleStatus(staff.id, staff.status)
                         }
                         className={`p-2 rounded ${
-                          staff.status === "active"
+                          staff.status === "Active"
                             ? "text-green-600 hover:bg-green-100"
                             : "text-red-600 hover:bg-red-100"
                         }`}
                         title="Toggle Status"
                       >
-                        {staff.status === "active" ? (
+                        {staff.status === "Active" ? (
                           <FaToggleOn size={20} />
                         ) : (
                           <FaToggleOff size={20} />
@@ -323,7 +333,11 @@ export default function Staff() {
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative">
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setEditingStaffId(null);
+                  resetForm();
+                }}
                 className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
               >
                 <FaTimes />
@@ -341,14 +355,7 @@ export default function Staff() {
                   className="border p-2 rounded"
                   required
                 />
-                <input
-                  name="employee_code"
-                  value={formData.employee_code}
-                  onChange={handleChange}
-                  placeholder="Employee Code"
-                  className="border p-2 rounded"
-                  required
-                />
+          
                 <input
                   name="designation"
                   value={formData.designation}
@@ -403,9 +410,10 @@ export default function Staff() {
                   value={formData.status}
                   onChange={handleChange}
                   className="border p-2 rounded"
+                  required
                 >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
                 </select>
                 <input
                   name="staffcreate_name"

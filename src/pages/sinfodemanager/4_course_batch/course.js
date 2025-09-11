@@ -393,21 +393,19 @@ function AllCourse() {
                   🎓 {course.course_category} | 🕒 {course.duration} months
                 </p>
 
-                {/* Branch information - show if available */}
+                {/* Branch information - show if available
                 {course.branch && (
                   <p className="text-sm text-gray-600 mb-3">
                     🏢 {course.branch.branch_name} ({course.branch.city})
                   </p>
-                )}
+                )} */}
 
                 {/* Price Section */}
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-gray-500 line-through text-lg">
+                  <span className="text-green-600 font-bold text-xl">
                     ₹{course.actual_price}
                   </span>
-                  <span className="text-green-600 font-bold text-xl">
-                    ₹{course.discounted_price}
-                  </span>
+             
                 </div>
               </div>
 
@@ -461,10 +459,8 @@ function AllCourse() {
               <strong>Duration:</strong> {selectedCourse.duration} months
             </p>
             <p>
-              <strong>Price:</strong> ₹{selectedCourse.discounted_price}
-              <span className="line-through text-gray-500 ml-2">
-                ₹{selectedCourse.actual_price}
-              </span>
+              <strong>Price:</strong> ₹{selectedCourse.actual_price}
+
             </p>
             <p>
               <strong>Branch:</strong> {selectedCourse.branch?.branch_name}

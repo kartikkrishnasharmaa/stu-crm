@@ -10,6 +10,7 @@ function AllCategory() {
   const [branches, setBranches] = useState([]);
   const [showDropdown, setShowDropdown] = useState(null);
   const [editModal, setEditModal] = useState({ isOpen: false, category: null });
+  const [editForm, setEditForm] = useState({ name: "", branch_id: "" });
 
   // ✅ Fetch all categories
   useEffect(() => {
@@ -84,6 +85,7 @@ function AllCategory() {
   // Handle update category
   const handleUpdate = (category) => {
     setEditModal({ isOpen: true, category });
+    setEditForm({ name: category.name, branch_id: category.branch_id });
     setShowDropdown(null);
   };
 
@@ -92,15 +94,15 @@ function AllCategory() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const { id, name, branch_id } = editModal.category;
+      const { id } = editModal.category;
       
       const res = await axios.put(`/categories/${id}`, 
-        { name, branch_id },
+        { name: editForm.name },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
       setCategories(categories.map(cat => 
-        cat.id === id ? res.data : cat
+        cat.id === id ? { ...cat, name: editForm.name } : cat
       ));
       
       setEditModal({ isOpen: false, category: null });
@@ -180,16 +182,17 @@ function AllCategory() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                      
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredCategories.map((cat) => (
                       <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{cat.id}</td>
+                      
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold">{cat.name}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                           <div className="flex items-center">
@@ -206,7 +209,37 @@ function AllCategory() {
                             day: 'numeric' 
                           })}
                         </td>
-                       
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative">
+                          <button 
+                            onClick={() => toggleDropdown(cat.id)}
+                            className="inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          >
+                            <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+                            </svg>
+                          </button>
+                          
+                          {showDropdown === cat.id && (
+                            <div className="origin-top-right absolute right-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                              <div className="py-1" role="menu" aria-orientation="vertical">
+                                <button
+                                  onClick={() => handleUpdate(cat)}
+                                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                  role="menuitem"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(cat.id)}
+                                  className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                                  role="menuitem"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -216,6 +249,47 @@ function AllCategory() {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editModal.isOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Category</h3>
+              <form onSubmit={handleSaveUpdate}>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
+                    Category Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setEditModal({ isOpen: false, category: null })}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

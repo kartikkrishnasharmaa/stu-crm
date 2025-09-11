@@ -1,46 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from "../../../api/axiosConfig";
 
-const ExamTable = () => {
+const ExamTable = ({ refreshFlag }) => {
   const [records, setRecords] = useState([]);
   const [filteredRecords, setFilteredRecords] = useState([]);
   const [branches, setBranches] = useState([]);
   const [selectedBranch, setSelectedBranch] = useState('all');
   const [loading, setLoading] = useState(true);
-
-  // // Fetch branches data
-  // const fetchBranches = async () => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     if (!token) {
-  //       alert("No token found! Please login again.");
-  //       return;
-  //     }
-  //     const res = await axios.get("branches", {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-
-  //     const branchData = res.data.map((branch) => ({
-  //       id: branch.id,
-  //       branchName: branch.branch_name,
-  //       branch_code: branch.branch_code || "BR-" + branch.id,
-  //       city: branch.city,
-  //       state: branch.state,
-  //       contact: branch.contact_number,
-  //       email: branch.email,
-  //       status: branch.status,
-  //       opening_date: branch.opening_date,
-  //       pin_code: branch.pin_code || "",
-  //       address: branch.address || "",
-  //       branch_type: branch.branch_type || "Main",
-  //     }));
-
-  //     setBranches(branchData);
-  //   } catch (error) {
-  //     console.error("Error fetching branches:", error);
-  //     alert("Failed to load branches");
-  //   }
-  // };
 
   // Fetch exam records
   const fetchExamRecords = async () => {
@@ -144,7 +110,7 @@ const ExamTable = () => {
     };
     
     fetchData();
-  }, []);
+  }, [refreshFlag]);
 
   useEffect(() => {
     filterByBranch(selectedBranch);
@@ -161,25 +127,7 @@ const ExamTable = () => {
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        
-        {/* <div className="flex items-center space-x-4">
-          <label htmlFor="branchFilter" className="text-sm  ml-2 font-medium text-gray-700">
-            Filter by Branch:
-          </label>
-          <select
-            id="branchFilter"
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-            className="rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-          >
-            <option value="all">All Branches</option>
-            {branches.map(branch => (
-              <option key={branch.id} value={branch.id}>
-                {branch.branchName}
-              </option>
-            ))}
-          </select>
-        </div> */}
+      
       </div>
 
       <div className="sf-card rounded-lg overflow-hidden" style={{ background: '#ffffff', border: '1px solid #dddbda', boxShadow: '0 2px 4px rgba(0,0,0,0.07)' }}>

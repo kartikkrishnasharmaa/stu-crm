@@ -81,70 +81,105 @@ export default function Dashboard() {
     }
   };
 
-  // ✅ Revenue API fetch - Modified to handle "all" branches and calculate total
-  const fetchRevenueData = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      let params = { year: selectedYear };
-     
-      // Only add branch_id if a specific branch is selected
-      if (selectedBranch !== "all") {
-        params.branch_id = selectedBranch;
-      }
-     
-      const res = await axios.get("/monthly-revenue", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: params
-      });
-     
-      // If "all" is selected, we need to filter the response to only include active branches
-      let filteredRevenueData = res.data;
+// ✅ Revenue API fetch - Modified to handle both response structures
+const fetchRevenueData = async () => {
+  setLoading(true);
+  try {
+    const token = localStorage.getItem("token");
+    let params = { year: selectedYear };
+   
+    // Only add branch_id if a specific branch is selected
+    if (selectedBranch !== "all") {
+      params.branch_id = selectedBranch;
+    }
+   
+    const res = await axios.get("/monthly-revenue", {
+      headers: { Authorization: `Bearer ${token}` },
+      params: params
+    });
+   
+    let filteredRevenueData = res.data;
+    
+    if (selectedBranch === "all") {
+      // For "all" option, extract the branches array from the response
+      const branchesData = res.data.branches || [];
       
-      if (selectedBranch === "all") {
-        // For "all" option, filter to only include active branches
-        const activeBranchIds = activeBranches.map(branch => branch.id);
-        
-        // Check if the response is an array (multiple branches) or an object (single branch)
-        if (Array.isArray(res.data)) {
-          filteredRevenueData = res.data.filter(branch => 
-            activeBranchIds.includes(branch.branch_id)
-          );
-        } else if (res.data.branch_id) {
-          // If it's a single branch object, check if it's active
-          if (!activeBranchIds.includes(res.data.branch_id)) {
-            filteredRevenueData = null;
-          }
+      // Filter to only include active branches
+      const activeBranchIds = activeBranches.map(branch => branch.id);
+      filteredRevenueData = branchesData.filter(branch => 
+        activeBranchIds.includes(branch.branch_id)
+      );
+    } else {
+      // For single branch, check if it's active
+      const activeBranchIds = activeBranches.map(branch => branch.id);
+      if (!activeBranchIds.includes(parseInt(selectedBranch))) {
+        filteredRevenueData = null;
+      } else {
+        // Ensure we have the proper structure for single branch
+        // If the API returns a single branch object directly
+        if (res.data.branch_id) {
+          filteredRevenueData = res.data;
+        } else if (res.data.branches && res.data.branches.length > 0) {
+          // If the API returns a structure with branches array even for single branch
+          filteredRevenueData = res.data.branches[0];
+        } else {
+          // If no data found for the branch, create empty structure
+          filteredRevenueData = {
+            branch_id: parseInt(selectedBranch),
+            monthly_revenue: Array(12).fill(0).map((_, i) => ({
+              month: new Date(selectedYear, i, 1).toLocaleString('default', { month: 'long' }),
+              student_fee: 0
+            }))
+          };
         }
       }
-     
-      setRevenueData(filteredRevenueData);
-     
-      // Calculate total revenue
-      let total = 0;
-      
-      if (Array.isArray(filteredRevenueData)) {
-        // If we have an array of branches (for "all" selection)
-        total = filteredRevenueData.reduce((sum, branch) => {
-          return sum + branch.monthly_revenue.reduce((branchSum, month) => {
-            return branchSum + parseFloat(month.student_fee || 0);
-          }, 0);
-        }, 0);
-      } else if (filteredRevenueData && filteredRevenueData.monthly_revenue) {
-        // If we have a single branch
-        total = filteredRevenueData.monthly_revenue.reduce((sum, month) => {
-          return sum + parseFloat(month.student_fee || 0);
-        }, 0);
-      }
-     
-      setTotalRevenue(total);
-    } catch (error) {
-      console.error("Error fetching revenue data:", error);
-      alert("Failed to load revenue data");
-    } finally {
-      setLoading(false);
     }
-  };
+   
+    setRevenueData(filteredRevenueData);
+   
+    // Calculate total revenue
+    let total = 0;
+    
+    if (Array.isArray(filteredRevenueData)) {
+      // If we have an array of branches (for "all" selection)
+      total = filteredRevenueData.reduce((sum, branch) => {
+        return sum + (branch.monthly_revenue || []).reduce((branchSum, month) => {
+          return branchSum + parseFloat(month.student_fee || 0);
+        }, 0);
+      }, 0);
+    } else if (filteredRevenueData && filteredRevenueData.monthly_revenue) {
+      // If we have a single branch
+      total = filteredRevenueData.monthly_revenue.reduce((sum, month) => {
+        return sum + parseFloat(month.student_fee || 0);
+      }, 0);
+    }
+   
+    setTotalRevenue(total);
+  } catch (error) {
+    console.error("Error fetching revenue data:", error);
+    // If it's a 404 error (no data found), create empty data structure
+    if (error.response && error.response.status === 404) {
+      if (selectedBranch === "all") {
+        setRevenueData([]);
+      } else {
+        // Create empty monthly revenue data for the selected branch
+        const emptyData = {
+          branch_id: parseInt(selectedBranch),
+          monthly_revenue: Array(12).fill(0).map((_, i) => ({
+            month: new Date(selectedYear, i, 1).toLocaleString('default', { month: 'long' }),
+            student_fee: 0
+          }))
+        };
+        setRevenueData(emptyData);
+      }
+      setTotalRevenue(0);
+    } else {
+      alert("Failed to load revenue data");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ✅ Fetch leads data - Modified to handle "all" branches and filter by active status
   const fetchLeadsData = async () => {
@@ -207,40 +242,56 @@ export default function Dashboard() {
     yearOptions.push(i);
   }
 
-  // Prepare chart data - modified to handle "all" branches case
-  let chartLabels = [];
-  let chartDataValues = [];
+ // Prepare chart data - modified to handle "all" branches case and empty data
+let chartLabels = [];
+let chartDataValues = [];
 
-  if (revenueData) {
-    if (Array.isArray(revenueData)) {
-      // For "all" branches - aggregate data by month
-      const monthlyTotals = {};
-      
-      // Initialize all months with 0
-      const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                     'July', 'August', 'September', 'October', 'November', 'December'];
-      months.forEach(month => {
-        monthlyTotals[month] = 0;
-      });
-      
-      // Sum up revenue for each month across all branches
-      revenueData.forEach(branch => {
+if (revenueData) {
+  if (Array.isArray(revenueData)) {
+    // For "all" branches - aggregate data by month
+    const monthlyTotals = {};
+    
+    // Initialize all months with 0
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                   'July', 'August', 'September', 'October', 'November', 'December'];
+    months.forEach(month => {
+      monthlyTotals[month] = 0;
+    });
+    
+    // Sum up revenue for each month across all branches
+    revenueData.forEach(branch => {
+      if (branch.monthly_revenue) {
         branch.monthly_revenue.forEach(monthData => {
           if (monthlyTotals[monthData.month] !== undefined) {
             monthlyTotals[monthData.month] += parseFloat(monthData.student_fee || 0);
           }
         });
-      });
-      
-      // Prepare data for chart
-      chartLabels = months.map(month => month.substring(0, 3));
-      chartDataValues = Object.values(monthlyTotals);
-    } else {
-      // For single branch
+      }
+    });
+    
+    // Prepare data for chart
+    chartLabels = months.map(month => month.substring(0, 3));
+    chartDataValues = Object.values(monthlyTotals);
+  } else {
+    // For single branch
+    if (revenueData.monthly_revenue) {
       chartLabels = revenueData.monthly_revenue.map(item => item.month.substring(0, 3));
       chartDataValues = revenueData.monthly_revenue.map(item => item.student_fee);
+    } else {
+      // If no monthly_revenue data, create empty arrays
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      chartLabels = months;
+      chartDataValues = Array(12).fill(0);
     }
   }
+} else {
+  // If no revenueData, create empty arrays
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  chartLabels = months;
+  chartDataValues = Array(12).fill(0);
+}
 
   const chartData = {
     labels: chartLabels,
@@ -395,7 +446,7 @@ export default function Dashboard() {
                   <option value="all">All Active Branches</option>
                   {activeBranches.map(branch => (
                     <option key={branch.id} value={branch.id}>
-                      {branch.branchName} - {branch.city}
+                      {branch.branchName}
                     </option>
                   ))}
                 </select>
