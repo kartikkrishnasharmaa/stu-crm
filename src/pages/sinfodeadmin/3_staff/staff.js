@@ -504,14 +504,7 @@ export default function Staff() {
                 className="border p-2 rounded"
                 required
               />
-              <input
-                name="employee_code"
-                value={formData.employee_code}
-                onChange={handleChange}
-                placeholder="Employee Code"
-                className="border p-2 rounded"
-                required
-              />
+            
               <input
                 name="designation"
                 value={formData.designation}

@@ -2,7 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import Sinfodedashboard from "../pages/staff/1_dashboard/dashboard";
 import Course from "../pages/staff/2_course_batch/course";
-import Student from "../pages/staff/3_student/student";
+import Student from "../pages/staff/3_sstudent/student";
 import Attendence from "../pages/staff/4_attendence/attendence";
 import Leads from "../pages/staff/5_lead_mgmt/Leads";
 import Expense from "../pages/staff/6_expenses/Expense";

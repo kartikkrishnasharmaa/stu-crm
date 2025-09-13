@@ -323,13 +323,13 @@ export default function Branch() {
                   <div className="mt-4 md:mt-0 flex items-center space-x-2 self-start">
                     <button
                       onClick={() => handleDiscountClick(branch)}
-                      className="text-yellow-600 hover:text-yellow-800 text-sm font-medium flex items-center"
+                      className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2"
                     >
                       <FaPercent className="mr-1" /> Discount
                     </button>
                     <button
                       onClick={() => toggleBranchExpand(branch.id)}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2"
                     >
                       {expandedBranchId === branch.id ? "Show Less" : "View Details"}
                     </button>

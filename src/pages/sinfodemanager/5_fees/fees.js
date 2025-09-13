@@ -34,7 +34,7 @@ export default function Fees() {
           >
             💰 Fees Structure
           </button>
-          <button
+          {/* <button
             onClick={() => setActiveTab("generate")}
             className={`block w-full text-left px-4 py-5 rounded-lg ${
               activeTab === "generate"
@@ -43,7 +43,7 @@ export default function Fees() {
             }`}
           >
             🛠️ Generate Fees
-          </button>
+          </button> */}
           <button
             onClick={() => setActiveTab("collection")}
             className={`block w-full text-left px-4 py-5 rounded-lg ${
@@ -70,7 +70,7 @@ export default function Fees() {
         <div className="flex-1 rounded-lg p-6 overflow-y-auto">
           {/* {activeTab === "dashboard" && <Dashboard />} */}
           {activeTab === "fees" && <FeesStructure />}
-          {activeTab === "generate" && <GenerateFees />}
+          {/* {activeTab === "generate" && <GenerateFees />} */}
           {activeTab === "collection" && <Collection />}
           {activeTab === "reminder" && <Reminder />}
         </div>

@@ -227,14 +227,21 @@ export default function Branch() {
   );
 
   const handleChange = (e) => {
-     const { name, value } = e.target;
-    
+    const { name, value } = e.target;
+
     // Validate phone number
     if (name === "contact_number") {
       // Only allow numbers and limit to 10 digits
       if (!/^\d{0,10}$/.test(value)) return;
     }
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+    // Validate pin code
+    if (name === "pin_code") {
+      // Only allow numbers and limit to 6 digits
+      if (!/^\d{0,6}$/.test(value)) return;
+    }
+
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -543,6 +550,8 @@ export default function Branch() {
                   placeholder="Pin Code"
                   className="border p-2 rounded"
                   type="number"
+                  maxLength={6}
+                  pattern="[0-9]{6}"
                   required
                 />
                 <input
@@ -591,7 +600,7 @@ export default function Branch() {
                   onChange={handleChange}
                   className="border p-2 rounded"
                 >
-                  <option>Main</option>
+                  <option>Company on Company Operator</option>
                   <option>Franchise</option>
                 </select>
                 <select

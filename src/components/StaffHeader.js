@@ -35,7 +35,7 @@ const Staffheader = ({ toggleSidebar }) => {
       <nav className="hidden mr-10 mt-2 rounded-2xl text-black md:flex items-center space-x-6 text-lg font-semibold mx-auto">
         {/* Bell Icon Instead of Dashboard */}
         <Link
-          to={getBranchLink("/sinfodeadmin/dashboard")}
+          to={getBranchLink("/staff/dashboard")}
           className="hover:text-blue-500 bg-white p-3 rounded-lg"
         >
           <HiBell size={24} />
@@ -61,11 +61,7 @@ const Staffheader = ({ toggleSidebar }) => {
           {/* Dropdown Menu */}
           {isOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg overflow-hidden animate-fadeIn">
-              <Link to="/sinfodeadmin/profile">
-                <button className="w-full text-left px-4 py-2 hover:bg-gray-100">
-                  Profile
-                </button>
-              </Link>
+        
               <button
                 className="w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
                 onClick={() => {
@@ -87,12 +83,7 @@ const Staffheader = ({ toggleSidebar }) => {
           <Link to={"/staff/dashboard"} className="hover:text-blue-600">
             Dashboard
           </Link>
-          <Link
-            to={"/staff/create-booking"}
-            className="hover:text-blue-600"
-          >
-            Bookings
-          </Link>
+      
         </nav>
       )}
     </header>

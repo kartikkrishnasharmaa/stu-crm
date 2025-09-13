@@ -18,6 +18,8 @@ function Allbatch() {
     student_limit: "",
     start_date: "",
     end_date: "",
+    batch_start_time: "",
+    batch_end_time: "",
     course_id: "",
     branch_id: ""
   });
@@ -25,6 +27,24 @@ function Allbatch() {
   // Get user data from localStorage
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userBranchId = userData.branch_id;
+
+  // Format time function
+  const formatTime = (timeString) => {
+    if (!timeString) return "";
+    
+    // Extract hours and minutes
+    const timeParts = timeString.split(':');
+    if (timeParts.length < 2) return timeString;
+    
+    let hours = parseInt(timeParts[0]);
+    const minutes = timeParts[1];
+    const period = hours >= 12 ? 'PM' : 'AM';
+    
+    // Convert to 12-hour format
+    hours = hours % 12 || 12;
+    
+    return `${hours}:${minutes} ${period}`;
+  };
 
   const fetchBatches = async () => {
     try {
@@ -89,7 +109,10 @@ function Allbatch() {
         student_limit: batchData.student_limit || "",
         start_date: batchData.start_date || "",
         end_date: batchData.end_date || "",
+        batch_start_time: batchData.batch_start_time || "",
+        batch_end_time: batchData.batch_end_time || "",
         course_id: batchData.course_id || "",
+        branch_id: batchData.branch_id || "",
         // Store both ID and name for display/update
         course_name: batchData.course?.course_name || ""
       });
@@ -103,8 +126,9 @@ function Allbatch() {
   const handleUpdate = async (id) => {
     try {
       // Check for empty values
-      if (!editForm.batch_name || !editForm.course_name || !editForm.start_date || 
-          !editForm.end_date || !editForm.student_limit) {
+      if (!editForm.batch_name || !editForm.course_id || !editForm.start_date || 
+          !editForm.end_date || !editForm.student_limit || !editForm.batch_start_time ||
+          !editForm.batch_end_time) {
         alert("Please fill in all fields");
         return;
       }
@@ -112,11 +136,14 @@ function Allbatch() {
       const token = localStorage.getItem("token");
       
       const updateData = {
-        name: editForm.batch_name.trim(),
-        course: editForm.course_name.trim(),
+        batch_name: editForm.batch_name.trim(),
+        course_id: editForm.course_id,
         start_date: editForm.start_date,
         end_date: editForm.end_date,
-        student_limit: parseInt(editForm.student_limit)
+        batch_start_time: editForm.batch_start_time,
+        batch_end_time: editForm.batch_end_time,
+        student_limit: parseInt(editForm.student_limit),
+        branch_id: editForm.branch_id
       };
       
       console.log("Sending update data:", updateData);
@@ -190,8 +217,14 @@ function Allbatch() {
                 <p className="text-sm text-gray-600 mb-2">
                   📅 Start Date: {batch.start_date}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mb-2">
                   📅 End Date: {batch.end_date}
+                </p>
+                <p className="text-sm text-gray-600 mb-2">
+                  ⏰ Start Time: {formatTime(batch.batch_start_time)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  ⏰ End Time: {formatTime(batch.batch_end_time)}
                 </p>
               </div>
 
@@ -202,18 +235,13 @@ function Allbatch() {
                 >
                   <FaEye size={18} />
                 </button>
-                {/* <button
+                <button
                   className="text-yellow-600 hover:text-yellow-800"
                   onClick={() => handleEdit(batch.id)}
                 >
                   <FaEdit size={18} />
-                </button> */}
-                <button
-                  className="text-red-600 hover:text-red-800"
-                  onClick={() => handleDelete(batch.id)}
-                >
-                  <FaTrash size={18} />
                 </button>
+            
               </div>
             </div>
           ))}
@@ -234,10 +262,11 @@ function Allbatch() {
               {selectedBatch.batch_name}
             </h2>
             <p>🎓 Course: {selectedBatch.course?.course_name}</p>
-            {/* <p>🏢 Branchhh: {selectedBatch.branch?.branch_name}</p> */}
             <p>👥 Limit: {selectedBatch.student_limit}</p>
             <p>📅 Start: {selectedBatch.start_date}</p>
             <p>📅 End: {selectedBatch.end_date}</p>
+            <p>⏰ Start Time: {formatTime(selectedBatch.batch_start_time)}</p>
+            <p>⏰ End Time: {formatTime(selectedBatch.batch_end_time)}</p>
           </div>
         </div>
       )}
@@ -283,6 +312,7 @@ function Allbatch() {
                 required
                 min="1"
               />
+              
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm mb-1">Start Date</label>
@@ -303,6 +333,33 @@ function Allbatch() {
                     value={editForm.end_date}
                     onChange={(e) =>
                       setEditForm({ ...editForm, end_date: e.target.value })
+                    }
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm mb-1">Start Time</label>
+                  <input
+                    type="time"
+                    value={editForm.batch_start_time}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, batch_start_time: e.target.value })
+                    }
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">End Time</label>
+                  <input
+                    type="time"
+                    value={editForm.batch_end_time}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, batch_end_time: e.target.value })
                     }
                     className="w-full border p-2 rounded"
                     required

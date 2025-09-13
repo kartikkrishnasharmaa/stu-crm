@@ -457,7 +457,7 @@ const StudentFees = () => {
               <p>Manage student fees and payments</p>
             </div>
           </div>
-          <button onClick={openModal} className="sf-add-btn">
+          <button onClick={openModal} className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2">
             <i className="fas fa-plus"></i>
             Generate Fee
           </button>

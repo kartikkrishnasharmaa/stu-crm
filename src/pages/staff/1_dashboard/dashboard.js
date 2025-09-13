@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "../../../api/axiosConfig";
 import SAAdminLayout from "../../../layouts/StaffLayout";
-import { FaArrowDown, FaArrowUp, FaFilter, FaRupeeSign } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaFilter, FaRupeeSign, FaPlus, FaUserPlus, FaUserTie, FaMoneyBill } from "react-icons/fa";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,118 +35,83 @@ export default function Dashboard() {
   const [revenueData, setRevenueData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [totalRevenue, setTotalRevenue] = useState(0);
+  const [leadsData, setLeadsData] = useState({
+    totalLeads: 0,
+    convertedLeads: 0,
+  });
 
   // Get user data from localStorage
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userBranchId = userData.branch_id;
   const userBranchName = userData.branch_name || "Your Branch";
 
-  // ✅ Courses API fetch
-  const fetchCourses = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("/courses/index", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = res.data || [];
-      setCourses(data);
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-    }
-  };
-
-  // ✅ Revenue API fetch (GET method with query parameters)
-  const fetchRevenueData = async () => {
-    if (!userBranchId) return;
+// Replace the fetchRevenueData function with this updated version
+const fetchRevenueData = async () => {
+  if (!userBranchId) return;
+  
+  setLoading(true);
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get("/monthly-revenue", {
+      headers: { Authorization: `Bearer ${token}` },
+      params: {
+        year: selectedYear,
+        branch_id: userBranchId
+      }
+    });
     
-    setLoading(true);
+    // Find the data for the current user's branch
+    const userBranchData = res.data.branches.find(
+      branch => branch.branch_id === userBranchId
+    );
+    
+    setRevenueData(userBranchData);
+    
+    // Calculate total revenue
+    const total = userBranchData?.monthly_revenue?.reduce((sum, month) => {
+      return sum + parseFloat(month.student_fee || 0);
+    }, 0) || 0;
+    
+    setTotalRevenue(total);
+  } catch (error) {
+    console.error("Error fetching revenue data:", error);
+    alert("Failed to load revenue data");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // ✅ Fetch leads data (filtered by branch)
+  const fetchLeadsData = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("/monthly-revenue", {
+      const response = await axios.get("/leads/index", {
         headers: { Authorization: `Bearer ${token}` },
         params: {
-          year: selectedYear,
-          branch_id: userBranchId
+          branch_id: userBranchId // Filter leads by branch
         }
       });
       
-      setRevenueData(res.data);
+      const leads = response.data || [];
+      const convertedLeads = leads.filter(lead => lead.lead_status === "Converted").length;
       
-      // Calculate total revenue
-      const total = res.data.monthly_revenue.reduce((sum, month) => {
-        return sum + parseFloat(month.student_fee || 0);
-      }, 0);
-      
-      setTotalRevenue(total);
+      setLeadsData({
+        totalLeads: leads.length,
+        convertedLeads,
+      });
     } catch (error) {
-      console.error("Error fetching revenue data:", error);
-      alert("Failed to load revenue data");
-    } finally {
-      setLoading(false);
+      console.error("Error fetching leads data:", error);
     }
   };
-
-  useEffect(() => {
-    fetchCourses();
-  }, []);
 
   useEffect(() => {
     if (userBranchId) {
       fetchRevenueData();
+      fetchLeadsData();
     }
   }, [userBranchId, selectedYear]);
 
-  const workload = [
-    {
-      name: "Shawn Stone",
-      role: "UI/UX Designer",
-      img: "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png",
-    },
-    {
-      name: "Randy Delgado",
-      role: "UI/UX Designer",
-      img: "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png",
-    },
-    {
-      name: "Emily Tyler",
-      role: "Copywriter",
-      img: "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png",
-    },
-    {
-      name: "Louis Castro",
-      role: "Copywriter",
-      img: "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png",
-    },
-  ];
-
-  const events = [
-    {
-      title: "Presentation of the new department",
-      time: "Today | 5:00 PM",
-      up: true,
-    },
-    { title: "Anna's Birthday", time: "Today | 6:00 PM", down: true },
-    { title: "Ray's Birthday", time: "Tomorrow | 2:00 PM", down: true },
-  ];
-
-  const activity = [
-    {
-      name: "Oscar Holloway",
-      role: "UI/UX Designer",
-      action: "Updated the status of Mind Map task to In Progress",
-    },
-    {
-      name: "Oscar Holloway",
-      role: "UI/UX Designer",
-      action: "Attached files to the task",
-    },
-    {
-      name: "Emily Tyler",
-      role: "Copywriter",
-      action: "Updated the status of Mind Map task to In Progress",
-    },
-  ];
-
+ 
   // Generate year options (last 10 years and next 2 years)
   const currentYear = new Date().getFullYear();
   const yearOptions = [];
@@ -156,11 +121,11 @@ export default function Dashboard() {
 
   // Prepare chart data with attractive colors
   const chartData = {
-    labels: revenueData?.monthly_revenue?.map(item => item.month.substring(0, 3)) || [],
+      labels: revenueData?.monthly_revenue?.map(item => item.month.substring(0, 3)) || [],
     datasets: [
       {
         label: 'Monthly Revenue (₹)',
-        data: revenueData?.monthly_revenue?.map(item => item.student_fee) || [],
+      data: revenueData?.monthly_revenue?.map(item => item.student_fee) || [],
         backgroundColor: [
           'rgba(255, 99, 132, 0.8)',
           'rgba(54, 162, 235, 0.8)',
@@ -290,7 +255,38 @@ export default function Dashboard() {
         <p className="text-gray-500">Welcome Back,</p>
         <h1 className="text-[30px] mb-2 font-nunito">Dashboard</h1>
         
-       <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 mb-6 text-white">
+        {/* Quick Action Shortcuts */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <a 
+            href="/staff/students" 
+            className="bg-white rounded-xl shadow p-4 flex items-center hover:shadow-md transition-shadow duration-200"
+          >
+            <div className="bg-blue-100 p-3 rounded-lg mr-4">
+              <FaUserPlus className="text-blue-600 text-xl" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Add Student</h3>
+              <p className="text-sm text-gray-500">Register a new student</p>
+            </div>
+          </a>
+          
+          <a 
+            href="/staff/leads" 
+            className="bg-white rounded-xl shadow p-4 flex items-center hover:shadow-md transition-shadow duration-200"
+          >
+            <div className="bg-green-100 p-3 rounded-lg mr-4">
+              <FaUserTie className="text-green-600 text-xl" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Add Lead</h3>
+              <p className="text-sm text-gray-500">Create a new lead</p>
+            </div>
+          </a>
+          
+        </div>
+        
+        {/* Revenue Summary Card */}
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 mb-6 text-white">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-semibold font-nunito">Revenue Summary</h2>
@@ -300,12 +296,64 @@ export default function Dashboard() {
               <p className="text-3xl font-bold flex items-center justify-end">
                 <FaRupeeSign className="mr-1" /> {totalRevenue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
               </p>
-              <p className="text-sm opacity-90">{revenueData?.branch_name || userBranchName}</p>
+              <p className="text-sm opacity-90">{userBranchName}</p>
             </div>
           </div>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Leads Summary Section */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-semibold text-xl font-nunito">Leads Overview</h2>
+            <a href="/sinfodemanager/leads" className="text-blue-500 text-sm flex items-center">
+              View all leads <FaArrowUp className="ml-1 rotate-45" />
+            </a>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center">
+                <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                  <FaUserTie className="text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Total Leads</p>
+                  <p className="text-2xl font-bold">{leadsData.totalLeads}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="flex items-center">
+                <div className="bg-green-100 p-2 rounded-lg mr-3">
+                  <FaUserPlus className="text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Converted Leads</p>
+                  <p className="text-2xl font-bold">{leadsData.convertedLeads}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <div className="flex items-center">
+                <div className="bg-purple-100 p-2 rounded-lg mr-3">
+                  <FaFilter className="text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Conversion Rate</p>
+                  <p className="text-2xl font-bold">
+                    {leadsData.totalLeads > 0 
+                      ? `${((leadsData.convertedLeads / leadsData.totalLeads) * 100).toFixed(1)}%` 
+                      : '0%'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 gap-6">
           {/* Left column - Full width for revenue chart */}
           <div className="lg:col-span-2 space-y-6">
             {/* Revenue Chart Section */}
@@ -356,118 +404,6 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Workload */}
-            <div className="bg-white rounded-xl shadow p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-semibold text-lg font-nunito">Workload</h2>
-                <button className="text-blue-500 text-sm">View all</button>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {workload.map((person, i) => (
-                  <div
-                    key={i}
-                    className="border rounded-lg p-3 flex flex-col items-center text-center hover:shadow transition-shadow duration-200"
-                  >
-                    <img
-                      src={person.img}
-                      alt={person.name}
-                      className="w-12 h-12 rounded-full mb-2 object-cover"
-                    />
-                    <p className="font-medium text-sm">{person.name}</p>
-                    <p className="text-xs text-gray-500">{person.role}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Courses (from API) */}
-            <div className="bg-white rounded-xl shadow p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-semibold text-lg font-nunito">Courses</h2>
-                <button className="text-blue-500 text-sm">
-                  <a href="/sinfodeadmin/courses">View all</a>
-                </button>
-              </div>
-              <div className="space-y-4">
-                {courses.length > 0 ? (
-                  courses.map((c, i) => (
-                    <div key={i} className="border rounded-lg p-4 hover:shadow transition-shadow duration-200">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="font-medium">{c.course_name}</h3>
-                          Trainer: {c.trainer?.employee_name || "N/A"}
-                        </div>
-                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-600">
-                          {c.course_level || "General"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center mt-3 text-sm">
-                        <p>Duration: {c.duration || "N/A"}</p>
-                        <p>
-                          Students Enrolled:{" "}
-                          <span className="font-semibold">
-                            {c.students?.length || 0}
-                          </span>
-                        </p>
-                        <p>Fee: ₹{c.actual_price || "0"}</p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-sm">No courses available.</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right column */}
-          <div className="space-y-6">
-            {/* Nearest Events */}
-            <div className="bg-white rounded-xl shadow p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-semibold text-lg font-nunito">
-                  Nearest Events
-                </h2>
-                <button className="text-blue-500 text-sm">View all</button>
-              </div>
-              <ul className="space-y-6">
-                {events.map((e, i) => (
-                  <li
-                    key={i}
-                    className="flex justify-between items-center border-b pb-2 last:border-none"
-                  >
-                    <div className="space-y-6">
-                      <p className="font-medium text-sm">{e.title}</p>
-                      <p className="text-xs text-gray-500">{e.time}</p>
-                    </div>
-                    {e.up && <FaArrowUp className="text-green-500" />}
-                    {e.down && <FaArrowDown className="text-red-500" />}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Activity Stream */}
-            <div className="bg-white rounded-xl shadow p-4">
-              <h2 className="font-semibold text-lg font-nunito">
-                Activity Stream
-              </h2>
-              <div className="space-y-14">
-                {activity.map((a, i) => (
-                  <div
-                    key={i}
-                    className="border space-y-4 rounded-lg p-3 hover:shadow transition-shadow duration-200"
-                  >
-                    <p className="text-sm font-nunito font-medium">
-                      {a.name}{" "}
-                      <span className="text-gray-500 text-xs">({a.role})</span>
-                    </p>
-                    <p className="text-xs text-gray-500">{a.action}</p>
-                  </div>
-                ))}
-              </div>
-              <button className="mt-3 text-blue-500 text-sm">View more</button>
-            </div>
           </div>
         </div>
       </div>

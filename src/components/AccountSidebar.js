@@ -44,6 +44,13 @@ const AccSidebar = ({ isSidebarOpen, toggleSidebar }) => {
         ? `/account/dashboard?branchId=${selectedBranch}`
         : "/account/dashboard",
     },
+    {
+      name: "Fees",
+      icon: <FaWallet />,
+      link: selectedBranch
+        ? `/account/fees?branchId=${selectedBranch}`
+        : "/account/fees",
+    }
     
   ];
 

@@ -218,7 +218,7 @@ export default function Staff() {
           <h1 className="text-2xl font-bold">All Staff</h1>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center gap-2"
+            className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2"
           >
             <FaPlus /> Create Staff
           </button>
