@@ -92,7 +92,7 @@ function AddAssets() {
 
   return (
     <div className="items-center">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg">
+      <div className="bg-white shadow-lg rounded-2xl p-4 w-full max-w-lg">
         <h1 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
           Create New Asset
         </h1>

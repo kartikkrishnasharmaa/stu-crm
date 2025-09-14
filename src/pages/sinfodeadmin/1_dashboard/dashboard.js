@@ -426,7 +426,7 @@ if (revenueData) {
 
   return (
     <SAAdminLayout>
-      <div className="p-6 bg-[#F4F9FD] min-h-screen">
+      <div className="px-6 bg-[#F4F9FD] min-h-screen">
         {/* Filter Section - Moved to Top */}
         <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

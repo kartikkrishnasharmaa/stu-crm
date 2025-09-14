@@ -333,48 +333,6 @@ export default function Branch() {
                     >
                       {expandedBranchId === branch.id ? "Show Less" : "View Details"}
                     </button>
-                    <div className="relative">
-                      <button
-                        onClick={() => setOpenMenuId(openMenuId === branch.id ? null : branch.id)}
-                        className="menu-toggle p-2 hover:bg-gray-100 rounded-full"
-                      >
-                        <HiDotsVertical size={20} />
-                      </button>
-                      {openMenuId === branch.id && (
-                        <div
-                          className="absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-40 py-2 z-50 menu-container"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleStatus(branch.id, branch.status);
-                              setOpenMenuId(null);
-                            }}
-                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
-                          >
-                            {branch.status === "Active" ? (
-                              <FaToggleOn size={18} className="text-green-600" />
-                            ) : (
-                              <FaToggleOff size={18} className="text-red-600" />
-                            )}
-                            Toggle Status
-                          </button>
-
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditClick(branch);
-                              setOpenMenuId(null);
-                            }}
-                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-blue-600"
-                          >
-                            <FaEdit size={16} /> Edit
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </div>
 

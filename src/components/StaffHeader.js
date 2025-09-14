@@ -67,7 +67,7 @@ const Staffheader = ({ toggleSidebar }) => {
                 onClick={() => {
                   localStorage.removeItem("token");
                   localStorage.removeItem("user");
-                  window.location.href = "/staff/login";
+                  window.location.href = "/";
                 }}
               >
                 Logout

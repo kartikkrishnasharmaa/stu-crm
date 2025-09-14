@@ -71,7 +71,7 @@ const Adminheader = ({ toggleSidebar }) => {
                 onClick={() => {
                   localStorage.removeItem("token");
                   localStorage.removeItem("user");
-                  window.location.href = "/sinfode-admin/login";
+                  window.location.href = "/";
                 }}
               >
                 Logout

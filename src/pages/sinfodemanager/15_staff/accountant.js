@@ -8,15 +8,19 @@ import {
   FaToggleOff,
   FaPlus,
   FaTimes,
+  FaFileExcel,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 export default function Accountant() {
   const [accountantList, setAccountantList] = useState([]);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editingAccountantId, setEditingAccountantId] = useState(null);
+  const [currentAccountant, setCurrentAccountant] = useState(null);
   const navigate = useNavigate();
 
   // Form data for accountant
@@ -66,8 +70,17 @@ export default function Accountant() {
     fetchAccountants();
   }, []);
 
+  // Handle form input with contact number validation
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    // For contact number, limit to 10 digits
+    if (e.target.name === "contact_number") {
+      const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
+      if (value.length <= 10) {
+        setFormData({ ...formData, [e.target.name]: value });
+      }
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
   };
 
   // Toggle attendance status
@@ -121,6 +134,22 @@ export default function Accountant() {
       (accountant.accountant_code || "").toLowerCase().includes(search.toLowerCase())
   );
 
+  // // View accountant details
+  // const handleViewClick = async (id) => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const res = await axios.get(`/accountant/${id}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+      
+  //     setCurrentAccountant(res.data);
+  //     setViewModalOpen(true);
+  //   } catch (error) {
+  //     console.error("Error fetching accountant details:", error);
+  //     alert("Failed to load accountant details");
+  //   }
+  // };
+
   // Edit click
   const handleEditClick = (accountant) => {
     setEditingAccountantId(accountant.id);
@@ -138,6 +167,13 @@ export default function Accountant() {
       acccreate_email: accountant.user?.email || "",
       acccreate_password: "" // Don't prefill password for security
     });
+    setIsModalOpen(true);
+  };
+
+  // Create click
+  const handleCreateClick = () => {
+    setEditingAccountantId(null);
+    resetForm();
     setIsModalOpen(true);
   };
 
@@ -193,6 +229,27 @@ export default function Accountant() {
     });
   };
 
+  // Export to Excel function
+  const exportToExcel = () => {
+    // Prepare data for export
+    const dataToExport = filteredAccountants.map(accountant => ({
+      "Accountant Name": accountant.accountant_name,
+      "Accountant Code": accountant.accountant_code,
+      "Department": accountant.department,
+      "Joining Date": accountant.joining_date,
+      "Contact Number": accountant.contact_number,
+      "Email": accountant.email,
+      "Monthly Salary": accountant.monthly_salary,
+      "Branch ID": accountant.branch_id,
+      "Attendance Status": accountant.attendance_status
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Accountants Data");
+    XLSX.writeFile(workbook, "accountants_data.xlsx");
+  };
+
   // Format currency
   const formatCurrency = (amount) => {
     if (!amount) return "0.00";
@@ -203,119 +260,94 @@ export default function Accountant() {
   };
 
   return (
-    <div>
-      <div className="p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="bg-white rounded-lg shadow-md p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">All Accountants</h1>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2"
-          >
-            <FaPlus /> Create Accountant
-          </button>
+          <h1 className="text-2xl font-bold text-gray-800">All Accountants</h1>
+          <div className="flex gap-2">
+            <button
+              onClick={exportToExcel}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <FaFileExcel /> Export to Excel
+            </button>
+            <button
+              onClick={handleCreateClick}
+              className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <FaPlus /> Create Accountant
+            </button>
+          </div>
         </div>
 
         {/* Search */}
-        <div className="mb-4">
+        <div className="mb-6">
           <input
             type="text"
             placeholder="Search by name, department, or code..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border p-2 rounded w-full md:w-1/3"
+            className="border border-gray-300 p-2 rounded-lg w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto bg-white rounded-lg shadow">
+          <table className="w-full text-left">
             <thead className="bg-gray-100">
               <tr>
-                <th className="p-3 border">Sr. No.</th>
-                <th className="p-3 border">Name</th>
-                <th className="p-3 border">Code</th>
-                <th className="p-3 border">Department</th>
-                <th className="p-3 border">Joining Date</th>
-                <th className="p-3 border">Contact</th>
-                <th className="p-3 border">Email</th>
-                {/* <th className="p-3 border">Monthly Salary</th> */}
-                {/* <th className="p-3 border">Branch</th> */}
-                {/* <th className="p-3 border">Attendance</th> */}
-                <th className="p-3 border text-center">Actions</th>
+                <th className="p-3 font-semibold text-gray-700">Sr. No.</th>
+                <th className="p-3 font-semibold text-gray-700">Name</th>
+                <th className="p-3 font-semibold text-gray-700">Code</th>
+                <th className="p-3 font-semibold text-gray-700">Department</th>
+                <th className="p-3 font-semibold text-gray-700">Joining Date</th>
+                <th className="p-3 font-semibold text-gray-700">Contact</th>
+                <th className="p-3 font-semibold text-gray-700">Email</th>
+                <th className="p-3 font-semibold text-gray-700 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredAccountants.length > 0 ? (
                 filteredAccountants.map((accountant, index) => (
-                  <tr key={accountant.id} className="hover:bg-gray-50">
-                    <td className="p-3 border">{index + 1}</td>
-                    <td className="p-3 border">{accountant.accountant_name}</td>
-                    <td className="p-3 border">{accountant.accountant_code}</td>
-                    <td className="p-3 border">{accountant.department}</td>
-                    <td className="p-3 border">{accountant.joining_date}</td>
-                    <td className="p-3 border">{accountant.contact_number}</td>
-                    <td className="p-3 border">{accountant.email}</td>
-                    {/* <td className="p-3 border">₹{formatCurrency(accountant.monthly_salary)}</td> */}
-                    {/* <td className="p-3 border">{accountant.branch?.branch_name || accountant.branch_id}</td> */}
-                    {/* <td className="p-3 border">
-                      <span
-                        className={`px-2 py-1 text-sm rounded ${
-                          accountant.attendance_status === "Present"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {accountant.attendance_status}
-                      </span>
-                    </td> */}
-                    <td className="p-3 border text-center flex justify-center gap-3">
-                      {/* <button
-                        onClick={() =>
-                          toggleAttendance(accountant.id, accountant.attendance_status)
-                        }
-                        className={`p-2 rounded ${
-                          accountant.attendance_status === "Present"
-                            ? "text-green-600 hover:bg-green-100"
-                            : "text-red-600 hover:bg-red-100"
-                        }`}
-                        title="Toggle Attendance"
-                      >
-                        {accountant.attendance_status === "Present" ? (
-                          <FaToggleOn size={20} />
-                        ) : (
-                          <FaToggleOff size={20} />
-                        )}
-                      </button> */}
-                      {/* <button
-                        onClick={() =>
-                          navigate(`/sinfodemanager/accountant/${accountant.id}`)
-                        }
-                        className="p-2 text-purple-600 hover:bg-purple-100 rounded"
-                        title="View Accountant"
-                      >
-                        <FaEye size={18} />
-                      </button> */}
-                      <button
-                        onClick={() => handleEditClick(accountant)}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded"
-                        title="Edit Accountant"
-                      >
-                        <FaEdit size={18} />
-                      </button>
-                      <button
-                        onClick={() => deleteAccountant(accountant.id)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded"
-                        title="Delete Accountant"
-                      >
-                        <FaTrash size={18} />
-                      </button>
+                  <tr key={accountant.id} className="border-t hover:bg-gray-50">
+                    <td className="p-3">{index + 1}</td>
+                    <td className="p-3 font-medium">{accountant.accountant_name}</td>
+                    <td className="p-3">{accountant.accountant_code}</td>
+                    <td className="p-3">{accountant.department}</td>
+                    <td className="p-3">{accountant.joining_date}</td>
+                    <td className="p-3">{accountant.contact_number}</td>
+                    <td className="p-3">{accountant.email}</td>
+                    <td className="p-3 text-center">
+                      <div className="flex justify-center gap-2">
+                        {/* <button
+                          onClick={() => handleViewClick(accountant.id)}
+                          className="p-2 text-purple-600 hover:bg-purple-100 rounded-full transition-colors"
+                          title="View Accountant"
+                        >
+                          <FaEye size={18} />
+                        </button> */}
+                        <button
+                          onClick={() => handleEditClick(accountant)}
+                          className="p-2 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
+                          title="Edit Accountant"
+                        >
+                          <FaEdit size={18} />
+                        </button>
+                        <button
+                          onClick={() => deleteAccountant(accountant.id)}
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-full transition-colors"
+                          title="Delete Accountant"
+                        >
+                          <FaTrash size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="11" className="text-center p-4 text-gray-500">
+                  <td colSpan="8" className="text-center p-6 text-gray-500">
                     No accountants found.
                   </td>
                 </tr>
@@ -324,145 +356,275 @@ export default function Accountant() {
           </table>
         </div>
 
-        {/* Modal */}
+        {/* Create/Edit Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <button
                 onClick={() => {
                   setIsModalOpen(false);
                   setEditingAccountantId(null);
                   resetForm();
                 }}
-                className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
               >
-                <FaTimes />
+                <FaTimes size={24} />
               </button>
 
               <h2 className="text-xl font-bold mb-4">
                 {editingAccountantId ? "Update Accountant" : "Create Accountant"}
               </h2>
-              <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-                <input
-                  name="accountant_name"
-                  value={formData.accountant_name}
-                  onChange={handleChange}
-                  placeholder="Accountant Name"
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  name="accountant_code"
-                  value={formData.accountant_code}
-                  onChange={handleChange}
-                  placeholder="Accountant Code"
-                  className="border p-2 rounded"
-                  required={!editingAccountantId}
-                />
-                <input
-                  name="joining_date"
-                  value={formData.joining_date}
-                  onChange={handleChange}
-                  type="date"
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  name="contact_number"
-                  value={formData.contact_number}
-                  onChange={handleChange}
-                  placeholder="Contact Number"
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Email"
-                  type="email"
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  placeholder="Department"
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  name="monthly_salary"
-                  value={formData.monthly_salary}
-                  onChange={handleChange}
-                  placeholder="Monthly Salary"
-                  type="number"
-                  className="border p-2 rounded"
-                  required
-                />
-                <select
-                  name="attendance_status"
-                  value={formData.attendance_status}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                >
-                  <option value="Present">Present</option>
-                  <option value="Absent">Absent</option>
-                  <option value="On Leave">On Leave</option>
-                </select>
-                <input
-                  name="branch_id"
-                  value={formData.branch_id}
-                  onChange={handleChange}
-                  placeholder="Branch ID"
-                  type="number"
-                  className="border p-2 rounded"
-                  required
-                />
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Accountant Name</label>
+                  <input
+                    name="accountant_name"
+                    value={formData.accountant_name}
+                    onChange={handleChange}
+                    placeholder="Accountant Name"
+                    className="border border-gray-300 p-2 rounded w-full"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Accountant Code</label>
+                  <input
+                    name="accountant_code"
+                    value={formData.accountant_code}
+                    onChange={handleChange}
+                    placeholder="Accountant Code"
+                    className="border border-gray-300 p-2 rounded w-full"
+                    required={!editingAccountantId}
+                    disabled={editingAccountantId}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Joining Date</label>
+                  <input
+                    name="joining_date"
+                    value={formData.joining_date}
+                    onChange={handleChange}
+                    type="date"
+                    className="border border-gray-300 p-2 rounded w-full"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                  <input
+                    name="contact_number"
+                    value={formData.contact_number}
+                    onChange={handleChange}
+                    placeholder="Contact Number"
+                    className="border border-gray-300 p-2 rounded w-full"
+                    type="tel"
+                    maxLength="10"
+                    pattern="[0-9]{10}"
+                    title="Please enter exactly 10 digits"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Email"
+                    type="email"
+                    className="border border-gray-300 p-2 rounded w-full"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                  <input
+                    name="department"
+                    value={formData.department}
+                    onChange={handleChange}
+                    placeholder="Department"
+                    className="border border-gray-300 p-2 rounded w-full"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Salary</label>
+                  <input
+                    name="monthly_salary"
+                    value={formData.monthly_salary}
+                    onChange={handleChange}
+                    placeholder="Monthly Salary"
+                    type="number"
+                    className="border border-gray-300 p-2 rounded w-full"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Attendance Status</label>
+                  <select
+                    name="attendance_status"
+                    value={formData.attendance_status}
+                    onChange={handleChange}
+                    className="border border-gray-300 p-2 rounded w-full"
+                  >
+                    <option value="Present">Present</option>
+                    <option value="Absent">Absent</option>
+                    <option value="On Leave">On Leave</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Branch ID</label>
+                  <input
+                    name="branch_id"
+                    value={formData.branch_id}
+                    onChange={handleChange}
+                    placeholder="Branch ID"
+                    type="number"
+                    className="border border-gray-300 p-2 rounded w-full"
+                    required
+                  />
+                </div>
                 
                 {/* User creation fields - only show when creating new accountant */}
                 {!editingAccountantId && (
                   <>
-                    <input
-                      name="acccreate_name"
-                      value={formData.acccreate_name}
-                      onChange={handleChange}
-                      placeholder="Login Username"
-                      className="border p-2 rounded"
-                      required
-                    />
-                    <input
-                      name="acccreate_email"
-                      value={formData.acccreate_email}
-                      onChange={handleChange}
-                      placeholder="Login Email"
-                      type="email"
-                      className="border p-2 rounded"
-                      required
-                    />
-                    <input
-                      name="acccreate_password"
-                      value={formData.acccreate_password}
-                      onChange={handleChange}
-                      placeholder="Login Password"
-                      type="password"
-                      className="border p-2 rounded"
-                      required
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Login Username</label>
+                      <input
+                        name="acccreate_name"
+                        value={formData.acccreate_name}
+                        onChange={handleChange}
+                        placeholder="Login Username"
+                        className="border border-gray-300 p-2 rounded w-full"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Login Email</label>
+                      <input
+                        name="acccreate_email"
+                        value={formData.acccreate_email}
+                        onChange={handleChange}
+                        placeholder="Login Email"
+                        type="email"
+                        className="border border-gray-300 p-2 rounded w-full"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Login Password</label>
+                      <input
+                        name="acccreate_password"
+                        value={formData.acccreate_password}
+                        onChange={handleChange}
+                        placeholder="Login Password"
+                        type="password"
+                        className="border border-gray-300 p-2 rounded w-full"
+                        required
+                      />
+                    </div>
                   </>
                 )}
                 
-                <div className="col-span-2 flex justify-end mt-4">
+                <div className="md:col-span-2 flex justify-end mt-4">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg disabled:opacity-50"
                   >
                     {loading ? "Saving..." : "Save Accountant"}
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* View Details Modal */}
+        {viewModalOpen && currentAccountant && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+              <button
+                onClick={() => {
+                  setViewModalOpen(false);
+                  setCurrentAccountant(null);
+                }}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+              >
+                <FaTimes size={24} />
+              </button>
+
+              <h2 className="text-xl font-bold mb-4 border-b pb-2">Accountant Details</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-lg mb-3 text-blue-700">Personal Information</h3>
+                  <div className="space-y-2">
+                    <p><span className="font-medium">Name:</span> {currentAccountant.accountant_name}</p>
+                    <p><span className="font-medium">Code:</span> {currentAccountant.accountant_code}</p>
+                    <p><span className="font-medium">Email:</span> {currentAccountant.email}</p>
+                    <p><span className="font-medium">Contact:</span> {currentAccountant.contact_number}</p>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-lg mb-3 text-blue-700">Employment Details</h3>
+                  <div className="space-y-2">
+                    <p><span className="font-medium">Department:</span> {currentAccountant.department}</p>
+                    <p><span className="font-medium">Joining Date:</span> {currentAccountant.joining_date}</p>
+                    <p><span className="font-medium">Monthly Salary:</span> ₹{formatCurrency(currentAccountant.monthly_salary)}</p>
+                    <p><span className="font-medium">Branch ID:</span> {currentAccountant.branch_id}</p>
+                  </div>
+                </div>
+                
+                <div className="md:col-span-2 bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-lg mb-3 text-blue-700">Status Information</h3>
+                  <div className="flex justify-between items-center">
+                    <p><span className="font-medium">Attendance Status:</span> 
+                      <span className={`ml-2 px-2 py-1 rounded text-sm ${
+                        currentAccountant.attendance_status === "Present" 
+                          ? "bg-green-100 text-green-800" 
+                          : currentAccountant.attendance_status === "Absent"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
+                      }`}>
+                        {currentAccountant.attendance_status}
+                      </span>
+                    </p>
+                    
+                    <button
+                      onClick={() => toggleAttendance(currentAccountant.id, currentAccountant.attendance_status)}
+                      className={`px-3 py-1 rounded flex items-center gap-1 ${
+                        currentAccountant.attendance_status === "Present" 
+                          ? "bg-red-100 text-red-700 hover:bg-red-200" 
+                          : "bg-green-100 text-green-700 hover:bg-green-200"
+                      }`}
+                    >
+                      {currentAccountant.attendance_status === "Present" ? (
+                        <>
+                          <FaToggleOff /> Mark Absent
+                        </>
+                      ) : (
+                        <>
+                          <FaToggleOn /> Mark Present
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={() => {
+                    setViewModalOpen(false);
+                    setCurrentAccountant(null);
+                  }}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}

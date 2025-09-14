@@ -24,7 +24,7 @@ export default function Fees() {
           >
             📋 Dashboard
           </button> */}
-          <button
+          {/* <button
             onClick={() => setActiveTab("fees")}
             className={`block w-full text-left px-4 py-5 rounded-lg ${
               activeTab === "fees"
@@ -33,7 +33,7 @@ export default function Fees() {
             }`}
           >
             💰 Fees Structure
-          </button>
+          </button> */}
           {/* <button
             onClick={() => setActiveTab("generate")}
             className={`block w-full text-left px-4 py-5 rounded-lg ${

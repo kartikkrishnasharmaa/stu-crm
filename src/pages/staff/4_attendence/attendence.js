@@ -12,22 +12,6 @@ function AddAttendance() {
   const [attendanceData, setAttendanceData] = useState({});
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
-  // // Fetch all branches
-  // useEffect(() => {
-  //   const fetchBranches = async () => {
-  //     try {
-  //       const token = localStorage.getItem("token");
-  //       const res = await axios.get("/branches", {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       });
-  //       setBranches(res.data || []);
-  //     } catch (error) {
-  //       console.error("Error fetching branches:", error);
-  //     }
-  //   };
-  //   fetchBranches();
-  // }, []);
-
   // Fetch all courses
   useEffect(() => {
     const fetchCourses = async () => {
@@ -268,7 +252,7 @@ export default function Attendance() {
                 : "hover:bg-blue-100 text-black"
             }`}
           >
-            📋 All Attendance
+            📋 Attendance Report
           </button>
       
         </div>

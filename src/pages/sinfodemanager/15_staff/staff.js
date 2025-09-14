@@ -10,8 +10,10 @@ import {
   FaToggleOff,
   FaPlus,
   FaTimes,
+  FaFileExcel,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; // for navigation
+import * as XLSX from "xlsx";
 
 export default function Staff() {
   const [staffList, setStaffList] = useState([]);
@@ -118,7 +120,15 @@ export default function Staff() {
 
   // Handle form input
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    // For contact number, limit to 10 digits
+    if (e.target.name === "contact_number") {
+      const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
+      if (value.length <= 10) {
+        setFormData({ ...formData, [e.target.name]: value });
+      }
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
   };
 
   // Edit click
@@ -138,6 +148,13 @@ export default function Staff() {
       staffcreate_password: "", // Don't prefill password for security
       monthly_salary: staff.monthly_salary
     });
+    setIsModalOpen(true);
+  };
+
+  // Create click
+  const handleCreateClick = () => {
+    setEditingStaffId(null);
+    resetForm();
     setIsModalOpen(true);
   };
 
@@ -210,18 +227,34 @@ export default function Staff() {
     });
   };
 
+  // Export to Excel function
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredStaff);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Staff Data");
+    XLSX.writeFile(workbook, "staff_data.xlsx");
+  };
+
   return (
     <div>
       <div className="p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">All Staff</h1>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2"
-          >
-            <FaPlus /> Create Staff
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={exportToExcel}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2"
+            >
+              <FaFileExcel /> Export to Excel
+            </button>
+            <button
+              onClick={handleCreateClick}
+              className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2"
+            >
+              <FaPlus /> Create Staff
+            </button>
+          </div>
         </div>
 
         {/* Search */}
@@ -243,8 +276,6 @@ export default function Staff() {
                 <th className="p-3 border">Sr. No.</th>
                 <th className="p-3 border">Name</th>
                 <th className="p-3 border">Designation</th>
-                <th className="p-3 border">Department</th>
-                <th className="p-3 border">Joining Date</th>
                 <th className="p-3 border">Contact</th>
                 <th className="p-3 border">Email</th>
                 <th className="p-3 border">Status</th>
@@ -258,8 +289,6 @@ export default function Staff() {
                     <td className="p-3 border">{index + 1}</td>
                     <td className="p-3 border">{staff.employee_name}</td>
                     <td className="p-3 border">{staff.designation}</td>
-                    <td className="p-3 border">{staff.department}</td>
-                    <td className="p-3 border">{staff.joining_date}</td>
                     <td className="p-3 border">{staff.contact_number}</td>
                     <td className="p-3 border">{staff.email}</td>
                     <td className="p-3 border">
@@ -386,6 +415,10 @@ export default function Staff() {
                   onChange={handleChange}
                   placeholder="Contact Number"
                   className="border p-2 rounded"
+                  type="tel"
+                  maxLength="10"
+                  pattern="[0-9]{10}"
+                  title="Please enter exactly 10 digits"
                   required
                 />
                 <input

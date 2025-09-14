@@ -567,15 +567,7 @@ export default function Lead() {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-sf-text mb-2">
-                          Branch
-                        </label>
-                        <input
-                          type="text"
-                          value={userData.branch_name || "Current User Branch"}
-                          disabled
-                          className="w-full px-4 py-3 border border-sf-border rounded-lg bg-gray-100"
-                        />
+                      
                         <input
                           type="hidden"
                           id="branch_id"
@@ -601,7 +593,7 @@ export default function Lead() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
-                          type="tel"
+                          type="number"
                           id="contact_number_primary"
                           value={formData.contact_number_primary}
                           onChange={handleInputChange}
@@ -614,7 +606,7 @@ export default function Lead() {
                           Alternate Contact
                         </label>
                         <input
-                          type="tel"
+                          type="number"
                           id="contact_number_alternate"
                           value={formData.contact_number_alternate}
                           onChange={handleInputChange}

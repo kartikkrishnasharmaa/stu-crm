@@ -66,7 +66,7 @@ const Managerheader = ({ toggleSidebar }) => {
                 onClick={() => {
                   localStorage.removeItem("token");
                   localStorage.removeItem("user");
-                  window.location.href = "/sinfode-manager/login";
+                  window.location.href = "/";
                 }}
               >
                 Logout

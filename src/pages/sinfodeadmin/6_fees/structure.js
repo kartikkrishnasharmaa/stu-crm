@@ -35,6 +35,10 @@ const StudentFees = () => {
   const [studentSearch, setStudentSearch] = useState('');
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [showStudentDropdown, setShowStudentDropdown] = useState(false);
+  
+  // Table search state
+  const [tableSearch, setTableSearch] = useState('');
+  const [filteredFees, setFilteredFees] = useState([]);
 
   // Fetch all student fees
   const fetchStudentFees = async () => {
@@ -44,6 +48,7 @@ const StudentFees = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStudentFees(res.data || []);
+      setFilteredFees(res.data || []);
     } catch (error) {
       console.error("Error fetching student fees:", error);
     }
@@ -101,6 +106,7 @@ const StudentFees = () => {
       console.error("Error fetching coupons:", error);
     }
   };
+  
   const fetchInstallmentDetails = async (feeStructureId) => {
     try {
       const token = localStorage.getItem("token");
@@ -138,6 +144,25 @@ const StudentFees = () => {
       setShowStudentDropdown(false);
     }
   }, [studentSearch, students]);
+
+  // Update filtered fees when table search changes
+  useEffect(() => {
+    if (tableSearch) {
+      const filtered = studentFees.filter(fee => {
+        const student = students.find(s => s.id === fee.student_id);
+        if (!student) return false;
+        
+        return (
+          student.full_name.toLowerCase().includes(tableSearch.toLowerCase()) ||
+          student.admission_number.toLowerCase().includes(tableSearch.toLowerCase()) ||
+          getCourseName(fee.course_id).toLowerCase().includes(tableSearch.toLowerCase())
+        );
+      });
+      setFilteredFees(filtered);
+    } else {
+      setFilteredFees(studentFees);
+    }
+  }, [tableSearch, studentFees, students]);
 
   // Update selected student when formData.student_id changes
   useEffect(() => {
@@ -324,6 +349,7 @@ const StudentFees = () => {
       console.error("Error fetching student fee details:", error);
     }
   };
+  
   const closeViewModal = () => {
     setShowViewModal(false);
     setViewFee(null);
@@ -385,7 +411,7 @@ const StudentFees = () => {
         number_of_installments: formData.payment_mode === 'installments' ? parseInt(formData.number_of_installments) : 0,
         coupon_id: formData.coupon_id ? parseInt(formData.coupon_id) : null,
         branch_id: selectedStudent.branch_id, // Add branch_id from student
-  branch_discount_percent: formData.branch_discount_percent ? parseFloat(formData.branch_discount_percent) : 0 // Add branch discount
+        branch_discount_percent: formData.branch_discount_percent ? parseFloat(formData.branch_discount_percent) : 0 // Add branch discount
       };
 
       // Create fee structure
@@ -407,6 +433,7 @@ const StudentFees = () => {
       // Update both lists
       setFeeStructures([...feeStructures, structureRes.data]);
       setStudentFees([...studentFees, feeRes.data]);
+      setFilteredFees([...studentFees, feeRes.data]); // Update filtered fees too
 
       closeModal();
     } catch (error) {
@@ -429,6 +456,7 @@ const StudentFees = () => {
 
       // Update the fee in the list
       setStudentFees(studentFees.map(f => f.id === currentEditId ? res.data : f));
+      setFilteredFees(filteredFees.map(f => f.id === currentEditId ? res.data : f));
       closePaymentModal();
     } catch (error) {
       console.error("Error updating payment:", error);
@@ -504,12 +532,33 @@ const StudentFees = () => {
             </div>
           </div>
 
+          <div className="sf-stat-card">
+            <div className="sf-stat-content">
+              <div className="sf-stat-icon bg-purple">
+                <i className="fas fa-users"></i>
+              </div>
+              <div className="sf-stat-text">
+                <p>Total Records</p>
+                <h3>{studentFees.length}</h3>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Student Fees Table */}
         <div className="sf-table-container">
           <div className="sf-table-header">
             <h2>Student Fees</h2>
+            <div className="sf-table-search">
+              <i className="fas fa-search"></i>
+              <input
+                type="text"
+                placeholder="Search by student name, admission number, or course..."
+                value={tableSearch}
+                onChange={(e) => setTableSearch(e.target.value)}
+                className="sf-search-input"
+              />
+            </div>
           </div>
           <div className="sf-table-wrapper">
             <table className="sf-table">
@@ -525,7 +574,7 @@ const StudentFees = () => {
                 </tr>
               </thead>
               <tbody>
-                {studentFees.map(fee => (
+                {filteredFees.map(fee => (
                   <tr key={fee.id}>
                     <td>
                       <div className="sf-student-info">
@@ -567,11 +616,21 @@ const StudentFees = () => {
                         <button onClick={() => handleView(fee.id)} className="sf-action-btn text-blue">
                           <i className="fas fa-eye"></i>
                         </button>
-
+                        {/* <button onClick={() => openPaymentModal(fee.id)} className="sf-action-btn text-green">
+                          <i className="fas fa-money-bill"></i>
+                        </button> */}
                       </div>
                     </td>
                   </tr>
                 ))}
+                {filteredFees.length === 0 && (
+                  <tr>
+                    <td colSpan="7" className="sf-no-data">
+                      <i className="fas fa-info-circle"></i>
+                      {tableSearch ? 'No matching records found' : 'No fee records available'}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -610,12 +669,23 @@ const StudentFees = () => {
                             className="sf-search-dropdown-item"
                             onClick={() => handleStudentSelect(student)}
                           >
-                            {student.full_name} ({student.admission_number})
+                            <div className="sf-student-dropdown-info">
+                              <div className="sf-student-dropdown-name">{student.full_name}</div>
+                              {/* <div className="sf-student-dropdown-admission">{student.admission_number}</div> */}
+                            </div>
+                            {/* {student.course_id && (
+                              <div className="sf-student-dropdown-course">
+                                {getCourseDetails(student.course_id)}
+                              </div>
+                            )} */}
                           </div>
                         ))}
-                        {filteredStudents.length === 0 && (
-                          <div className="sf-search-dropdown-item">No students found</div>
-                        )}
+                        {/* {filteredStudents.length === 0 && (
+                          <div className="sf-search-dropdown-item no-results">
+                            <i className="fas fa-exclamation-circle"></i>
+                            No students found
+                          </div>
+                        )} */}
                       </div>
                     )}
                   </div>
@@ -635,7 +705,7 @@ const StudentFees = () => {
                       </div>
                     ) : (
                       <div className="sf-no-course-message">
-                        No course assigned to this student
+                        No course assigned
                       </div>
                     )}
                   </div>
@@ -729,33 +799,6 @@ const StudentFees = () => {
                 </div>
               </div>
 
-              {/* Student Details Display */}
-              {selectedStudent && (
-                <div className="sf-student-details-card">
-                  <h4>Student Details</h4>
-                  <div className="sf-student-details-grid">
-                    <div>
-                      <p><strong>Name:</strong> {selectedStudent.full_name}</p>
-                      <p><strong>Admission No:</strong> {selectedStudent.admission_number}</p>
-                      <p><strong>Contact:</strong> {selectedStudent.contact_number}</p>
-                    </div>
-                    <div>
-                      <p><strong>Email:</strong> {selectedStudent.email}</p>
-                      <p><strong>Current Course:</strong> {getCourseDetails(selectedStudent.course_id)}</p>
-                      <p><strong>Guardian:</strong> {selectedStudent.guardian_name}</p>
-                      <p><strong>Guardian Contact:</strong> {selectedStudent.guardian_contact}</p>
-                    </div>
-                  </div>
-
-                  {/* Check if student already has fee structure for selected course */}
-                  {selectedStudent.course_id && hasExistingFeeStructure(formData.student_id, selectedStudent.course_id) && (
-                    <div className="sf-warning-message">
-                      <i className="fas fa-exclamation-triangle"></i>
-                      This student already has a fee structure for the selected course.
-                    </div>
-                  )}
-                </div>
-              )}
 
               <div className="sf-modal-actions">
                 <button type="button" onClick={closeModal} className="sf-cancel-btn">
@@ -831,8 +874,6 @@ const StudentFees = () => {
                           <th>Installment #</th>
                           <th>Due Date</th>
                           <th>Amount</th>
-
-                          {/* <th>Status</th> */}
                         </tr>
                       </thead>
                       <tbody>
@@ -850,14 +891,8 @@ const StudentFees = () => {
                           return (
                             <tr key={installment.id || index}>
                               <td>{installment.installment_number}</td>
-
                               <td>{installment.due_date ? new Date(installment.due_date).toLocaleDateString() : 'N/A'}</td>
                               <td>₹{parseFloat(installment.amount || 0).toLocaleString()}</td>
-                              {/* <td>
-                  <span className={`status-badge ${status}`}>
-                    {status.toUpperCase()} {paidAmount > 0 && `(₹${paidAmount.toLocaleString()})`}
-                  </span>
-                </td> */}
                             </tr>
                           );
                         })}
@@ -870,7 +905,7 @@ const StudentFees = () => {
               {/* Payment History */}
               {viewFee.payments && viewFee.payments.length > 0 && (
                 <div>
-                  <h4 class="installment-title">Payment History</h4>
+                  <h4 className="installment-title">Payment History</h4>
                   <div className="sf-info-box">
                     <div className="sf-payments-list">
                       <table className="sf-payments-table">
@@ -880,7 +915,6 @@ const StudentFees = () => {
                             <th>Amount Paid</th>
                             <th>Payment Date</th>
                             <th>Payment Mode</th>
-                            {/* <th>Installment #</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -890,7 +924,6 @@ const StudentFees = () => {
                               <td>₹{parseFloat(payment.amount_paid || 0).toLocaleString()}</td>
                               <td>{new Date(payment.payment_date).toLocaleDateString()}</td>
                               <td>{payment.payment_mode || 'N/A'}</td>
-                              {/* <td>{payment.installment_number || 'N/A'}</td> */}
                             </tr>
                           ))}
                         </tbody>
@@ -904,7 +937,41 @@ const StudentFees = () => {
         </div>
       )}
 
-
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="sf-modal-backdrop">
+          <div className="sf-modal">
+            <div className="sf-modal-header">
+              <h3>Record Payment</h3>
+              <button onClick={closePaymentModal} className="sf-modal-close">
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <form onSubmit={handlePaymentSubmit} className="sf-modal-form">
+              <div className="sf-form-group">
+                <label>Payment Amount</label>
+                <input
+                  type="number"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div className="sf-modal-actions">
+                <button type="button" onClick={closePaymentModal} className="sf-cancel-btn">
+                  Cancel
+                </button>
+                <button type="submit" className="sf-save-btn">
+                  <i className="fas fa-money-bill"></i>
+                  Record Payment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import SAAdminLayout from "../../../layouts/Sinfodeadmin";
 import { useState } from "react";
-import Dashboard from "./dashboard";
 import FeesStructure from "./structure";
 import Collection from "./collection";
 import Reminder from "./remider";
@@ -49,7 +48,6 @@ export default function Fees() {
 
         {/* Content */}
         <div className="flex-1 rounded-lg p-6 overflow-y-auto">
-          {activeTab === "dashboard" && <Dashboard />}
           {activeTab === "fees" && <FeesStructure />}
           {activeTab === "collection" && <Collection />}
           {activeTab === "reminder" && <Reminder />}

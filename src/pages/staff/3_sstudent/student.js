@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "../../../api/axiosConfig";
-import Staff from "../../../layouts/StaffLayout";
 import {
   FaEye,
   FaEdit,
   FaTrash,
   FaTimes,
-  FaSave
+  FaSave,
+  FaFileExport
 } from "react-icons/fa";
 import { HiDotsVertical } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import Staff from "../../../layouts/StaffLayout";
+
+import * as XLSX from "xlsx";
 
 export default function Allstudents() {
   const [students, setStudents] = useState([]);
@@ -52,14 +55,15 @@ export default function Allstudents() {
     if (user) {
       setUserRole(user.role);
       setUserBranchId(user.branch_id);
-      // For staff, set the selected branch to their branch
+      // For Trainers, set the selected branch to their branch
       if (user.role === "staff") {
         setSelectedBranch(user.branch_id.toString());
       }
     }
   }, []);
 
-const fetchStudents = async () => {
+  // Fetch Students based on user role
+  const fetchStudents = async () => {
     try {
       const token = localStorage.getItem("token");
       const user = JSON.parse(localStorage.getItem("user"));
@@ -78,7 +82,6 @@ const fetchStudents = async () => {
 
   useEffect(() => {
     fetchStudents();
-
   }, []);
 
   // Fetch single student data
@@ -105,6 +108,33 @@ const fetchStudents = async () => {
     });
   };
 
+  // Export to Excel function
+  const exportToExcel = () => {
+    // Prepare data for export
+    const dataToExport = filteredStudents.map(student => ({
+      "Admission Number": student.admission_number,
+      "Full Name": student.full_name,
+      "Email": student.email,
+      "Phone": student.contact_number,
+      "Guardian Name": student.guardian_name,
+      "Guardian Contact": student.guardian_contact,
+      "Admission Date": student.admission_date,
+      "Course": student.course?.course_name || "N/A",
+      "Batch": student.batch?.batch_name || "N/A",
+      "Status": student.enrollment_status
+    }));
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+    
+    // Generate Excel file and trigger download
+    XLSX.writeFile(wb, "students_data.xlsx");
+  };
+
   // Filter students by branch + search
   const filteredStudents = students.filter((s) => {
     // For branch managers, we already filtered by API, but still check
@@ -120,16 +150,6 @@ const fetchStudents = async () => {
     return matchesBranch && matchesSearch;
   });
 
-  // Filter batches by selected branch (for branch managers)
-  const filteredBatches = userRole === "branch_manager"
-    ? batches.filter(batch => batch.branch_id === parseInt(userBranchId))
-    : batches;
-
-  // Filter courses by selected branch (for branch managers)
-  const filteredCourses = userRole === "branch_manager"
-    ? courses.filter(course => course.branch_id === parseInt(userBranchId))
-    : courses;
-
   return (
     <Staff>
     <div className="px-5">
@@ -142,46 +162,57 @@ const fetchStudents = async () => {
           </span>
         </h1>
 
-        {/* Branch Dropdown - only show for admin */}
-        {userRole === "admin" && (
-          <select
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-            className="border p-2 rounded w-full md:w-60"
-          >
-            <option value="">All Branches</option>
-            {branches.map((branch) => (
-              <option key={branch.id} value={branch.id}>
-                {branch.branch_name}
-              </option>
-            ))}
-          </select>
-        )}
+        <div className="flex items-center gap-4">
+          {/* Branch Dropdown - only show for admin */}
+          {userRole === "admin" && (
+            <select
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              className="border p-2 rounded w-full md:w-60"
+            >
+              <option value="">All Branches</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.branch_name}
+                </option>
+              ))}
+            </select>
+          )}
 
-        <div className="flex gap-2 bg-gray-200 p-1 rounded-full">
-          <button
-            onClick={() => setViewMode("list")}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === "list"
-                ? "bg-[#3F8CFF] text-white"
-                : "bg-transparent text-gray-600 hover:bg-gray-300"
-              }`}
+         
+
+          <div className="flex gap-2 bg-gray-200 p-1 rounded-full">
+            <button
+              onClick={() => setViewMode("list")}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === "list"
+                  ? "bg-[#3F8CFF] text-white"
+                  : "bg-transparent text-gray-600 hover:bg-gray-300"
+                }`}
+            >
+              List View
+            </button>
+            <button
+              onClick={() => setViewMode("card")}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === "card"
+                  ? "bg-[#3F8CFF] text-white"
+                  : "bg-transparent text-gray-600 hover:bg-gray-300"
+                }`}
+            >
+              Card View
+            </button>
+            
+          </div>
+           <button
+            onClick={exportToExcel}
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition-colors"
           >
-            List View
-          </button>
-          <button
-            onClick={() => setViewMode("card")}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === "card"
-                ? "bg-[#3F8CFF] text-white"
-                : "bg-transparent text-gray-600 hover:bg-gray-300"
-              }`}
-          >
-            Card View
+            <FaFileExport /> Export to Excel
           </button>
         </div>
       </div>
 
       {/* Search */}
-      <div className="mb-4">
+      <div className="mb-4 flex gap-4">
         <input
           type="text"
           placeholder="Search by name, email, or admission number..."
@@ -198,8 +229,9 @@ const fetchStudents = async () => {
             <div
               key={student.id}
               className="bg-white shadow-sm hover:shadow-md transition rounded-xl px-5 py-4 flex items-center"
+              style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 0.5fr", gap: "1rem", alignItems: "center" }}
             >
-              {/* Left: Profile + Details */}
+              {/* Student Info */}
               <div className="flex items-center gap-4">
                 <img
                   src={student.photo || "/default-avatar.png"}
@@ -211,21 +243,31 @@ const fetchStudents = async () => {
                     {student.full_name}
                   </h3>
                   <p className="text-gray-500 text-sm">{student.email}</p>
+                  <p className="text-gray-500 text-sm">{student.contact_number}</p>
                 </div>
               </div>
 
-              {/* Middle Info */}
-              <div className="hidden md:flex flex-col text-sm text-gray-600 flex-1 items-center">
+              {/* Admission Details */}
+              <div className="flex flex-col text-sm text-gray-600">
+              
+                <span className="font-medium mt-1">Joining Date:</span>
+                <span>{student.admission_date}</span>
+              </div>
+
+              {/* Guardian Name */}
+              <div className="flex flex-col text-sm text-gray-600">
                 <span className="font-medium">Guardian Name:</span>
                 <span>{student.guardian_name}</span>
               </div>
 
-              <div className="hidden md:flex flex-col text-sm text-gray-600 flex-1 items-center">
+              {/* Guardian Contact */}
+              <div className="flex flex-col text-sm text-gray-600">
                 <span className="font-medium">Guardian Phone:</span>
                 <span>{student.guardian_contact}</span>
               </div>
+
               {/* Right Menu */}
-              <div className="relative">
+              <div className="relative flex justify-end">
                 <button
                   onClick={() =>
                     setOpenMenuId(openMenuId === student.id ? null : student.id)
@@ -356,11 +398,6 @@ const fetchStudents = async () => {
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-sm text-gray-500">Guardian Contact</p>
                   <p className="font-medium">{selectedStudent.guardian_contact}</p>
-                </div>
-
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-sm text-gray-500">Batch</p>
-                  <p className="font-medium">{selectedStudent.batch?.batch_name}</p>
                 </div>
 
                 <div className="bg-gray-50 p-3 rounded-lg">
