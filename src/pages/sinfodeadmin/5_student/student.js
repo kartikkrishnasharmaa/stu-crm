@@ -80,17 +80,17 @@ function AddStudent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-       const { name, value,gc } = e.target;
-    
-    // Validate phone number
-    if (name === "contact_number") {
-      // Only allow numbers and limit to 10 digits
-      if (!/^\d{0,10}$/.test(value)) return;
-    }
-      if (gc === "guardian_contact") {
-      // Only allow numbers and limit to 10 digits
-      if (!/^\d{0,10}$/.test(value)) return;
-    }
+      const { name, value, gc } = e.target;
+
+     if (contactNumber.length !== 10) {
+    alert("Contact number must be exactly 10 digits");
+    return;
+  }
+  
+  if (guardianContact && guardianContact.length !== 10) {
+    alert("Guardian contact must be exactly 10 digits if provided");
+    return;
+  }
 
       const token = localStorage.getItem("token");
       const formData = new FormData();
@@ -129,7 +129,7 @@ function AddStudent() {
 
   return (
     <div className="p-6 w-full bg-[#F4F9FD]">
-      <h1 className="text-[30px] mb-4 font-semibold">Add Student</h1>
+      <h1 className="text-[30px] mb-4 font-semibold">Add Studenttt</h1>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Basic Info */}
@@ -176,12 +176,15 @@ function AddStudent() {
             </label>
             <input
               value={contactNumber}
-              onChange={(e) => setContactNumber(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                setContactNumber(value);
+              }}
               className="w-full border rounded-lg px-3 py-2"
               placeholder="Enter contact number"
-              maxLength={10}
-              minLength={10}
-              type="number"
+              type="tel" // Better for phone number input
+              pattern="[0-9]{10}"
+              required
             />
           </div>
           <div>
@@ -237,19 +240,22 @@ function AddStudent() {
               Parent/Guardian Contact
             </label>
             <input
-              type="number"
               value={guardianContact}
-              onChange={(e) => setGuardianContact(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                setGuardianContact(value);
+              }}
               className="w-full border rounded-lg px-3 py-2"
               placeholder="Enter contact number"
-              maxLength={10}
+              type="tel"
+              pattern="[0-9]{10}"
             />
           </div>
         </div>
 
         {/* Admission Details */}
         <div className="bg-white shadow-md rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-       
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Admission Date *
@@ -335,42 +341,38 @@ export default function Student() {
         <div className="w-60 bg-white rounded-xl shadow-md p-4 space-y-3">
           <button
             onClick={() => setActiveTab("addStudent")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${
-              activeTab === "addStudent"
-                ? "bg-blue-100 text-black"
-                : "hover:bg-blue-100 text-black"
-            }`}
+            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "addStudent"
+              ? "bg-blue-100 text-black"
+              : "hover:bg-blue-100 text-black"
+              }`}
           >
             ➕ Add Student
           </button>
 
           <button
             onClick={() => setActiveTab("studentList")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${
-              activeTab === "studentList"
-                ? "bg-blue-100 text-black"
-                : "hover:bg-blue-100 text-black"
-            }`}
+            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "studentList"
+              ? "bg-blue-100 text-black"
+              : "hover:bg-blue-100 text-black"
+              }`}
           >
             📋 All Students
           </button>
           <button
             onClick={() => setActiveTab("idCard")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${
-              activeTab === "idCard"
-                ? "bg-blue-100 text-black"
-                : "hover:bg-blue-100 text-black"
-            }`}
+            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "idCard"
+              ? "bg-blue-100 text-black"
+              : "hover:bg-blue-100 text-black"
+              }`}
           >
             📋 ID Card
           </button>
           <button
             onClick={() => setActiveTab("academic")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${
-              activeTab === "academic"
-                ? "bg-blue-100 text-black"
-                : "hover:bg-blue-100 text-black"
-            }`}
+            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "academic"
+              ? "bg-blue-100 text-black"
+              : "hover:bg-blue-100 text-black"
+              }`}
           >
             📊 Academic Progress
           </button>

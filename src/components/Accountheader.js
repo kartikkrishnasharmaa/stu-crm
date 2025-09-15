@@ -34,12 +34,7 @@ const Accheader = ({ toggleSidebar }) => {
       {/* Desktop Navigation */}
       <nav className="hidden mr-10 mt-2 rounded-2xl text-black md:flex items-center space-x-6 text-lg font-semibold mx-auto">
         {/* Bell Icon Instead of Dashboard */}
-        <Link
-          to={getBranchLink("/accounts/dashboard")}
-          className="hover:text-blue-500 bg-white p-3 rounded-lg"
-        >
-          <HiBell size={24} />
-        </Link>
+    
 
         {/* Account with Profile Image */}
         <div ref={dropdownRef} className="relative">

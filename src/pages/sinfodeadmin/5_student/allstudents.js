@@ -321,7 +321,7 @@ export default function Allstudents() {
               <div className="col-span-3">Student</div>
               <div className="col-span-2">Email</div>
               <div className="col-span-2">Contact</div>
-              <div className="col-span-2">Admission No</div>
+              {/* <div className="col-span-2">Admission No</div> */}
               <div className="col-span-2">Branch</div>
               <div className="col-span-1 text-center">Actions</div>
             </div>
@@ -361,9 +361,9 @@ export default function Allstudents() {
                   </div>
                   
                   {/* Admission Number */}
-                  <div className="col-span-2 text-gray-600 font-medium">
+                  {/* <div className="col-span-2 text-gray-600 font-medium">
                     {student.admission_number || "N/A"}
-                  </div>
+                  </div> */}
                   
                   {/* Branch */}
                   <div className="col-span-2 text-gray-600">
@@ -585,11 +585,11 @@ export default function Allstudents() {
                 
                 {/* Batch Info */}
                 <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  {/* <h3 className="text-lg font-semibold mb-3 flex items-center">
                     <FaClock className="mr-2 text-purple-500" />
                     Batch
                   </h3>
-                  <p className="text-gray-700 font-medium">{selectedStudent.batch?.batch_name}</p>
+                  <p className="text-gray-700 font-medium">{selectedStudent.batch?.batch_name}</p> */}
                   {/* <p className="text-gray-600 text-sm">
                     Timing: {selectedStudent.batch_start_time} - {selectedStudent.batch_end_time}
                   </p>
