@@ -835,6 +835,8 @@ export default function Branch() {
                               <tr className="bg-purple-100">
                                 <th className="px-4 py-2 text-left">Name</th>
                                 <th className="px-4 py-2 text-left">Email</th>
+                                <th className="px-4 py-2 text-left">Password</th>
+
                               </tr>
                             </thead>
                             <tbody>
@@ -842,6 +844,7 @@ export default function Branch() {
                                 <tr key={manager.id} className={index % 2 === 0 ? 'bg-white' : 'bg-purple-50'}>
                                   <td className="px-4 py-2">{manager.name}</td>
                                   <td className="px-4 py-2">{manager.email}</td>
+                                  <td className="px-4 py-2">{manager.plain_password}</td>
                                 </tr>
                               ))}
                             </tbody>

@@ -580,8 +580,8 @@ const StaffSalaryManagement = () => {
                   <div className="mt-6 pt-4 border-t border-gray-200">
                     <h4 className="font-medium text-gray-700 mb-2">Salary Breakdown</h4>
                     
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
+                    <div className="space-y-4">
+                      <div className="flex justify-between mt-6">
                         <span>Monthly Salary:</span>
                         <span>₹{parseFloat(salaryData.monthly_salary).toLocaleString()}</span>
                       </div>
@@ -595,7 +595,7 @@ const StaffSalaryManagement = () => {
                       </div>
                       
                       {/* Allowances - Check if allowances exists before mapping */}
-                      <div className="mt-3">
+                      {/* <div className="mt-3">
                         <p className="font-medium">Allowances:</p>
                         {salaryData.allowances && salaryData.allowances.length > 0 ? (
                           salaryData.allowances.map((allowance, index) => (
@@ -607,7 +607,7 @@ const StaffSalaryManagement = () => {
                         ) : (
                           <div className="pl-4 text-gray-500">No allowances for this period</div>
                         )}
-                      </div>
+                      </div> */}
                       
                       <div className="flex justify-between font-medium mt-3 pt-2 border-t border-gray-200">
                         <span>Total Allowances:</span>

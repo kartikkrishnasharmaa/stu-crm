@@ -837,14 +837,14 @@ function AllCourse() {
 
 
 export default function Course() {
-  const [activeTab, setActiveTab] = useState("addCourse");
+  const [activeTab, setActiveTab] = useState("batchManagement");
 
   return (
     <SAAdminLayout>
       <div className="flex h-full">
         {/* ✅ Left Sidebar */}
         <div className="w-60 bg-white rounded-xl shadow-md p-4 space-y-3">
-          <button
+          {/* <button
             onClick={() => setActiveTab("addCourse")}
             className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "addCourse"
               ? "bg-blue-100 text-black"
@@ -852,9 +852,9 @@ export default function Course() {
               }`}
           >
             ➕ Add Course
-          </button>
+          </button> */}
 
-          <button
+          {/* <button
             onClick={() => setActiveTab("courseList")}
             className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "courseList"
               ? "bg-blue-100 text-black"
@@ -862,8 +862,8 @@ export default function Course() {
               }`}
           >
             📋 All Courses
-          </button>
-          {/* <button
+          </button> */}
+          <button
             onClick={() => setActiveTab("batchManagement")}
             className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "batchManagement"
               ? "bg-blue-100 text-black"
@@ -880,13 +880,13 @@ export default function Course() {
               }`}
           >
             📋 All Batches
-          </button> */}
+          </button>
         </div>
 
         {/* ✅ Right Content Area */}
         <div className="flex-1 rounded-lg p-6 overflow-y-auto">
-          {activeTab === "addCourse" && <AddCourse />}
-          {activeTab === "courseList" && <AllCourse />}
+          {/* {activeTab === "addCourse" && <AddCourse />}
+          {activeTab === "courseList" && <AllCourse />} */}
           {activeTab === "batchManagement" && <Batch />}
           {activeTab === "allBatches" && <Allbatch />}
         </div>

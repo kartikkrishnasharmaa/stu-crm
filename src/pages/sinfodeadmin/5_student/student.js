@@ -374,7 +374,7 @@ export default function Student() {
               : "hover:bg-blue-100 text-black"
               }`}
           >
-            📊 Academic Progress
+            📊 Student Progress
           </button>
         </div>
 

@@ -188,7 +188,7 @@ function ViewAttendance() {
           <table className="w-full border-collapse">
             <thead className="bg-indigo-600 text-white">
               <tr>
-                        <th className="p-3 text-left">Admission No</th>
+                {/* <th className="p-3 text-left">Admission No</th> */}
                 <th className="p-3 text-left">Student Name</th>
                 <th className="p-3 text-left">Total Present</th>
                 <th className="p-3 text-left">Total Absent</th>
@@ -205,7 +205,7 @@ function ViewAttendance() {
                     key={student.id}
                     className="border-b hover:bg-gray-50"
                   >
-                       <td className="p-3">{student.admission_number}</td>
+                       {/* <td className="p-3">{student.admission_number}</td> */}
                     <td className="p-3 font-medium">{student.full_name}</td>
                  
                     <td className="p-3 text-green-600 font-semibold">{presentCount}</td>

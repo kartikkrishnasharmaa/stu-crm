@@ -238,7 +238,7 @@ const fetchRevenueData = async () => {
   // Generate year options (last 10 years and next 2 years)
   const currentYear = new Date().getFullYear();
   const yearOptions = [];
-  for (let i = currentYear - 10; i <= currentYear + 2; i++) {
+  for (let i = currentYear - 2; i <= currentYear + 9; i++) {
     yearOptions.push(i);
   }
 

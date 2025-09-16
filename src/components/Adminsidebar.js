@@ -64,6 +64,11 @@ const Adminsidebar = ({ isSidebarOpen, toggleSidebar }) => {
       icon: <FaLayerGroup />,
       link: "/sinfodeadmin/courses",
     },
+     {
+      name: "Batch",
+      icon: <FaLayerGroup />,
+      link: "/sinfodeadmin/batch",
+    },
     {
       name: "Student",
       icon: <FaUsers />,
@@ -105,9 +110,14 @@ const Adminsidebar = ({ isSidebarOpen, toggleSidebar }) => {
     //   link: "/sinfodeadmin/access",
     // },
     {
-      name: "Campaigns",
+      name: "Coupans",
       icon: <FaGift />,
       link: "/sinfodeadmin/campaign",
+    },
+     {
+      name: "Communication",
+      icon: <FaFileAlt />,
+      link: "/sinfodeadmin/communication",
     },
     {
       name: "Reports",
@@ -125,7 +135,7 @@ const Adminsidebar = ({ isSidebarOpen, toggleSidebar }) => {
     <aside
       className={`bg-white rounded-[24px] ml-3 inset-y-0 left-0 transform ${
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } md:translate-x-0 transition-transform duration-300 ease-in-out w-[200px] p-4 z-30 shadow-lg md:relative overflow-y-auto max-h-screen`}
+      } md:translate-x-0 transition-transform duration-300 ease-in-out w-[220px] p-4 z-30 shadow-lg md:relative overflow-y-auto max-h-screen`}
     >
       <div className="flex-1 flex justify-center md:justify-start">
         <img

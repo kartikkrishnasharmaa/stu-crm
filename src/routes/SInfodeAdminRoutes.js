@@ -7,6 +7,7 @@ import SingleStaff from "../pages/sinfodeadmin/3_staff/singlestaff";
 import SingleAcc from "../pages/sinfodeadmin/3_staff/singleaccountant";
 import Students from "../pages/sinfodeadmin/5_student/student";
 import Courses from "../pages/sinfodeadmin/4_course_batch/course";
+import Batch from "../pages/sinfodeadmin/4_batch/course";
 import Fees from "../pages/sinfodeadmin/6_fees/fees";
 import Attendence from "../pages/sinfodeadmin/7_attendence/attendence";
 import Leads from "../pages/sinfodeadmin/8_lead_mgmt/Leads";
@@ -15,6 +16,7 @@ import Salary from "../pages/sinfodeadmin/10_salary/salary";
 import Invoice from "../pages/sinfodeadmin/11_invoice/Invoice";
 import AccessMgmt from "../pages/sinfodeadmin/12_access-role/Roles";
 import Campaign from "../pages/sinfodeadmin/13_campaign/campaign";
+import Communication from "../pages/sinfodeadmin/17_communication/branchcomm";
 import Reports from "../pages/sinfodeadmin/14_report-analytics/reports";
 import Settings from "../pages/sinfodeadmin/15_settings/settings";
 import Inventory from "../pages/sinfodeadmin/16_inventory/inventory";
@@ -39,7 +41,7 @@ const SinfodeAdminRoutes = () => {
           </ProtectedRoute>
         }
       />
-        <Route
+      <Route
         path="/sinfodeadmin/inventory"
         element={
           <ProtectedRoute>
@@ -47,7 +49,7 @@ const SinfodeAdminRoutes = () => {
           </ProtectedRoute>
         }
       />
-        <Route
+      <Route
         path="/sinfodeadmin/staff"
         element={
           <ProtectedRoute>
@@ -63,7 +65,7 @@ const SinfodeAdminRoutes = () => {
           </ProtectedRoute>
         }
       />
-       <Route
+      <Route
         path="/sinfodeadmin/accountant/:id"
         element={
           <ProtectedRoute>
@@ -84,6 +86,14 @@ const SinfodeAdminRoutes = () => {
         element={
           <ProtectedRoute>
             <Courses />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sinfodeadmin/batch"
+        element={
+          <ProtectedRoute>
+            <Batch />
           </ProtectedRoute>
         }
       />
@@ -152,6 +162,14 @@ const SinfodeAdminRoutes = () => {
         }
       />
       <Route
+        path="/sinfodeadmin/communication"
+        element={
+          <ProtectedRoute>
+            <Communication />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/sinfodeadmin/reports"
         element={
           <ProtectedRoute>
@@ -167,7 +185,7 @@ const SinfodeAdminRoutes = () => {
           </ProtectedRoute>
         }
       />
-       <Route
+      <Route
         path="/sinfodeadmin/discount"
         element={
           <ProtectedRoute>

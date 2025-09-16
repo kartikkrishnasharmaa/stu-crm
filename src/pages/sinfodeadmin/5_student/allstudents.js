@@ -336,7 +336,7 @@ export default function Allstudents() {
                   {/* Student Info */}
                   <div className="col-span-3 flex items-center gap-4">
                     <img
-                      src={student.photo}
+                      src={student.photo_url}
                       alt={student.full_name}
                       className="w-12 h-12 rounded-full object-cover border"
                     />
@@ -430,7 +430,7 @@ export default function Allstudents() {
             >
               <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white shadow-md -mt-10 mb-3">
                 <img
-                  src={student.photo}
+                  src={student.photo_url}
                   alt={student.full_name}
                   className="w-full h-full object-cover"
                 />
@@ -498,7 +498,7 @@ export default function Allstudents() {
               <div className="flex flex-col md:flex-row gap-6 mb-6">
                 <div className="flex-shrink-0 mx-auto md:mx-0">
                   <img
-                    src={selectedStudent.photo}
+                    src={selectedStudent.photo_url}
                     alt={selectedStudent.full_name}
                     className="w-40 h-40 rounded-full object-cover border-4 border-blue-100"
                   />

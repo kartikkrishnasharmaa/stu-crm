@@ -196,15 +196,8 @@ function AddAttendance() {
                     <h3 className="font-semibold text-gray-800">
                       {student.full_name}
                     </h3>
-                    <p className="text-sm text-gray-600">
-                      Admission No: {student.admission_number} | Contact:{" "}
-                      {student.contact_number}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Branch: {student.branch?.branch_name} | Course:{" "}
-                      {student.course?.course_name} | Batch:{" "}
-                      {student.batch?.batch_name}
-                    </p>
+                   
+                  
                   </div>
                 </div>
 

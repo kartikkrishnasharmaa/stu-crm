@@ -515,28 +515,6 @@ const ExamForm = ({ formData, setFormData, setShowModal, refreshData }) => {
                   ))}
                 </select>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Student ID
-                </label>
-                <input
-                  type="text"
-                  id="studentId"
-                  required
-                  value={formData.studentId}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 sf-input rounded-lg focus:outline-none"
-                  style={{
-                    border: "1px solid #dddbda",
-                    transition: "all 0.2s ease",
-                  }}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                  placeholder="Enter student ID"
-                  readOnly
-                />
-              </div>
             </div>
 
             {/* Exam Information */}
