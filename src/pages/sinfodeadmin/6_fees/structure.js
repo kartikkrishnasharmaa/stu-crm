@@ -465,9 +465,11 @@ const StudentFees = () => {
       });
 
       // Update state with the new fee
-      setStudentFees(prevFees => [...prevFees, feeRes.data]);
-      setFilteredFees(prevFees => [...prevFees, feeRes.data]);
+     setTimeout(async () => {
+      await fetchStudentFees(); // Refresh the fees list
       setFeeStructures(prevStructures => [...prevStructures, structureRes.data]);
+    }, 500);
+
 
       closeModal();
     } catch (error) {
@@ -742,8 +744,7 @@ const StudentFees = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="sf-no-course-message">
-                        No course assigned
+                      <div>
                       </div>
                     )}
                   </div>

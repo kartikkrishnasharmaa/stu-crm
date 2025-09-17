@@ -560,7 +560,7 @@ export default function Allstudents() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Branch Info */}
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold mb-3 flex items-center">
@@ -579,24 +579,10 @@ export default function Allstudents() {
                     Course
                   </h3>
                   <p className="text-gray-700 font-medium">{selectedStudent.course?.course_name}</p>
-                  <p className="text-gray-600 text-sm">{selectedStudent.course?.course_code} | {selectedStudent.course?.duration} months</p>
+                  <p className="text-gray-600 text-sm"> {selectedStudent.course?.duration} months</p>
                   <p className="text-gray-600 text-sm">Mode: {selectedStudent.course?.mode}</p>
                 </div>
-                
-                {/* Batch Info */}
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  {/* <h3 className="text-lg font-semibold mb-3 flex items-center">
-                    <FaClock className="mr-2 text-purple-500" />
-                    Batch
-                  </h3>
-                  <p className="text-gray-700 font-medium">{selectedStudent.batch?.batch_name}</p> */}
-                  {/* <p className="text-gray-600 text-sm">
-                    Timing: {selectedStudent.batch_start_time} - {selectedStudent.batch_end_time}
-                  </p>
-                  <p className="text-gray-600 text-sm">
-                    Dates: {formatDate(selectedStudent.batch?.start_date)} to {formatDate(selectedStudent.batch?.end_date)}
-                  </p> */}
-                </div>
+           
               </div>
             </div>
           </div>

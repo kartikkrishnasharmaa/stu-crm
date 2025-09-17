@@ -277,8 +277,7 @@ function AddStudent() {
               <option value="">Select</option>
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
-                  {course.course_name} (₹
-                  {course.discounted_price || course.actual_price})
+                  {course.course_name} 
                 </option>
               ))}
             </select>
