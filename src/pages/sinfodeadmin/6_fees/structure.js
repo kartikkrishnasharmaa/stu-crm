@@ -664,9 +664,9 @@ const StudentFees = () => {
                         <button onClick={() => handleView(fee.id)} className="sf-action-btn text-blue">
                           <i className="fas fa-eye"></i>
                         </button>
-                        <button onClick={() => openPaymentModal(fee.id)} className="sf-action-btn text-green">
+                        {/* <button onClick={() => openPaymentModal(fee.id)} className="sf-action-btn text-green">
                           <i className="fas fa-money-bill"></i>
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>
