@@ -66,7 +66,12 @@ function AddStudent() {
       }
     }
   }, [courseId]);
-
+const handleNumericInput = (setter) => (e) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+    if (value.length <= 10) { // Limit to 10 digits
+      setter(value);
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -158,10 +163,11 @@ function AddStudent() {
             <input
               type="text"
               value={contactNumber}
-              onChange={(e) => setContactNumber(e.target.value)}
+              onChange={handleNumericInput(setContactNumber)}
               className="w-full border rounded-lg px-3 py-2"
-              placeholder="Enter contact number"
-              
+              placeholder="Enter 10-digit contact number"
+              maxLength={10}
+              required
             />
           </div>
           <div>
@@ -217,12 +223,13 @@ function AddStudent() {
             <label className="block text-sm font-medium mb-1">
               Parent/Guardian Contact
             </label>
-            <input
+           <input
               type="text"
               value={guardianContact}
-              onChange={(e) => setGuardianContact(e.target.value)}
+              onChange={handleNumericInput(setGuardianContact)}
               className="w-full border rounded-lg px-3 py-2"
-              placeholder="Enter contact number"
+              placeholder="Enter 10-digit contact number"
+              maxLength={10}
             />
           </div>
         </div>
