@@ -252,27 +252,25 @@ export default function Dashboard() {
   return (
     <SAAdminLayout>
       <div className="p-6 bg-[#F4F9FD] min-h-screen">
-        <div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
             <p className="text-gray-500">Welcome Back,</p>
             <h1 className="text-[30px] mb-2 font-nunito">Dashboard</h1>
-
           </div>
-          <div className="flex flex-wrap gap-3">
-            <div className="flex items-center bg-gray-100 rounded-lg px-3 py-2">
-              <FaFilter className="text-gray-500 mr-2" />
-              <select
-                className="bg-transparent border-none text-sm focus:ring-0"
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              >
-                {yearOptions.map(year => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
+          
+          <div className="flex items-center bg-gray-100 rounded-lg px-3 py-2 mt-4 md:mt-0">
+            <FaFilter className="text-gray-500 mr-2" />
+            <select
+              className="bg-transparent border-none text-sm focus:ring-0"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            >
+              {yearOptions.map(year => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
