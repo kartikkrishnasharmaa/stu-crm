@@ -115,7 +115,7 @@ const fetchRevenueData = async () => {
   // Generate year options (last 10 years and next 2 years)
   const currentYear = new Date().getFullYear();
   const yearOptions = [];
-  for (let i = currentYear - 10; i <= currentYear + 2; i++) {
+  for (let i = currentYear - 1; i <= currentYear + 7; i++) {
     yearOptions.push(i);
   }
 
@@ -252,9 +252,27 @@ const fetchRevenueData = async () => {
   return (
     <SAAdminLayout>
       <div className="p-6 bg-[#F4F9FD] min-h-screen">
-        <p className="text-gray-500">Welcome Back,</p>
-        <h1 className="text-[30px] mb-2 font-nunito">Dashboard</h1>
-        
+       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <div>
+                  <p className="text-gray-500">Welcome Back,</p>
+                  <h1 className="text-[30px] mb-2 font-nunito">Dashboard</h1>
+                </div>
+                
+                <div className="flex items-center bg-gray-100 rounded-lg px-3 py-2 mt-4 md:mt-0">
+                  <FaFilter className="text-gray-500 mr-2" />
+                  <select
+                    className="bg-transparent border-none text-sm focus:ring-0"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                  >
+                    {yearOptions.map(year => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
         {/* Quick Action Shortcuts */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <a 
@@ -362,22 +380,7 @@ const fetchRevenueData = async () => {
                 <h2 className="font-semibold text-xl font-nunito text-gray-800 mb-4 md:mb-0">Revenue Analytics</h2>
                 
                 {/* Year Selector */}
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex items-center bg-gray-100 rounded-lg px-3 py-2">
-                    <FaFilter className="text-gray-500 mr-2" />
-                    <select 
-                      className="bg-transparent border-none text-sm focus:ring-0"
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    >
-                      {yearOptions.map(year => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+             
               </div>
               
               {/* Display current branch info */}

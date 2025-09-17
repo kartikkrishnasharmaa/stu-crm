@@ -84,20 +84,28 @@ export default function Lead() {
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+
+    // Special handling for contact number fields
+    if (id === 'contact_number_primary' || id === 'contact_number_alternate') {
+      // Only allow numbers and limit to 10 digits
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData((prev) => ({ ...prev, [id]: numericValue }));
+    } else {
+      setFormData((prev) => ({ ...prev, [id]: value }));
+    }
   };
 
   const saveLead = async (e) => {
     e.preventDefault();
-    
+
     try {
       setIsLoading(true);
       const token = localStorage.getItem("token");
-      
+
       // Format follow_up_datetime
       const formattedData = {
         ...formData,
-        follow_up_datetime: formData.follow_up_datetime 
+        follow_up_datetime: formData.follow_up_datetime
           ? `${formData.follow_up_datetime.replace("T", " ")}:00`
           : null
       };
@@ -157,7 +165,7 @@ export default function Lead() {
 
   const deleteLead = async (id) => {
     if (!window.confirm("Are you sure you want to delete this lead?")) return;
-    
+
     try {
       const token = localStorage.getItem("token");
       const response = await axios.delete(`/leads/destroy/${id}`, {
@@ -186,14 +194,14 @@ export default function Lead() {
       lead_status: lead.lead_status,
       priority: lead.priority,
       notes: lead.notes || "",
-      follow_up_datetime: lead.follow_up_datetime 
+      follow_up_datetime: lead.follow_up_datetime
         ? lead.follow_up_datetime.replace(" ", "T").slice(0, 16)
         : "",
       assigned_to: lead.assigned_to?.id || lead.assigned_to,
       course_id: lead.course_id,
       budget_range: lead.budget_range || "",
     };
-    
+
     setFormData(formattedLead);
     setActiveTab("new-lead");
   };
@@ -339,31 +347,28 @@ export default function Lead() {
               <nav className="flex space-x-8 px-6">
                 <button
                   onClick={() => setActiveTab("leads")}
-                  className={`py-4 px-1 border-b-2 ${
-                    activeTab === "leads"
+                  className={`py-4 px-1 border-b-2 ${activeTab === "leads"
                       ? "border-sf-blue text-sf-blue"
                       : "border-transparent text-sf-text-light hover:text-sf-text"
-                  } font-medium text-sm`}
+                    } font-medium text-sm`}
                 >
                   <i className="fas fa-users mr-2"></i>Leads
                 </button>
                 <button
                   onClick={() => setActiveTab("new-lead")}
-                  className={`py-4 px-1 border-b-2 ${
-                    activeTab === "new-lead"
+                  className={`py-4 px-1 border-b-2 ${activeTab === "new-lead"
                       ? "border-sf-blue text-sf-blue"
                       : "border-transparent text-sf-text-light hover:text-sf-text"
-                  } font-medium text-sm`}
+                    } font-medium text-sm`}
                 >
                   <i className="fas fa-plus mr-2"></i>New Lead
                 </button>
                 <button
                   onClick={() => setActiveTab("reports")}
-                  className={`py-4 px-1 border-b-2 ${
-                    activeTab === "reports"
+                  className={`py-4 px-1 border-b-2 ${activeTab === "reports"
                       ? "border-sf-blue text-sf-blue"
                       : "border-transparent text-sf-text-light hover:text-sf-text"
-                  } font-medium text-sm`}
+                    } font-medium text-sm`}
                 >
                   <i className="fas fa-chart-bar mr-2"></i>Reports
                 </button>
@@ -567,7 +572,7 @@ export default function Lead() {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="md:col-span-2">
-                      
+
                         <input
                           type="hidden"
                           id="branch_id"
@@ -593,12 +598,16 @@ export default function Lead() {
                           <span className="text-red-500">*</span>
                         </label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           id="contact_number_primary"
                           value={formData.contact_number_primary}
                           onChange={handleInputChange}
                           required
+                          maxLength={10}
                           className="w-full px-4 py-3 border border-sf-border rounded-lg focus:ring-2 focus:ring-sf-blue focus:border-transparent"
+                          placeholder="10-digit number"
                         />
                       </div>
                       <div>
@@ -606,11 +615,15 @@ export default function Lead() {
                           Alternate Contact
                         </label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           id="contact_number_alternate"
                           value={formData.contact_number_alternate}
                           onChange={handleInputChange}
+                          maxLength={10}
                           className="w-full px-4 py-3 border border-sf-border rounded-lg focus:ring-2 focus:ring-sf-blue focus:border-transparent"
+                          placeholder="10-digit number"
                         />
                       </div>
                       <div className="md:col-span-2">
@@ -733,7 +746,7 @@ export default function Lead() {
                           Budget Range
                         </label>
                         <input
-                          type="text"
+                          type="number"
                           id="budget_range"
                           value={formData.budget_range}
                           onChange={handleInputChange}
