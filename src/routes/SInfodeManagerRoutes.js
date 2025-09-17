@@ -13,6 +13,8 @@ import Salary from "../pages/sinfodemanager/9_salary/salary";
 import Invoice from "../pages/sinfodemanager/10_invoice/Invoice";
 // import AccessMgmt from "../pages/sinfodemanager/11_access-role/Roles";
 import Campaign from "../pages/sinfodemanager/12_campaign/campaign";
+import Communication from "../pages/sinfodemanager/12_campaign/branchcomm";
+
 import Reports from "../pages/sinfodemanager/13_report-analytics/reports";
 import Staff from "../pages/sinfodemanager/15_staff/allstaff";
 // import Inventory from "../pages/sinfodemanager/16_inventory/inventory";
@@ -131,6 +133,14 @@ const sinfodemanagerRoutes = () => {
         element={
           <ProtectedRoute>
             <Campaign />
+          </ProtectedRoute>
+        }
+      />
+       <Route
+        path="/sinfodemanager/communication"
+        element={
+          <ProtectedRoute>
+            <Communication />
           </ProtectedRoute>
         }
       />

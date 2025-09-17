@@ -579,7 +579,7 @@ const StaffSalaryManagement = () => {
                       </div>
                       
                       {/* Allowances - Check if allowances exists before mapping */}
-                      <div className="mt-3">
+                      {/* <div className="mt-3">
                         <p className="font-medium">Allowances:</p>
                         {salaryData.allowances && salaryData.allowances.length > 0 ? (
                           salaryData.allowances.map((allowance, index) => (
@@ -589,10 +589,10 @@ const StaffSalaryManagement = () => {
                             </div>
                           ))
                         ) : (
-                          <div className="pl-4 text-gray-500">No allowances for this period</div>
+                          <div></div>
                         )}
                       </div>
-                      
+                       */}
                       <div className="flex justify-between font-medium mt-3 pt-2 border-t border-gray-200">
                         <span>Total Allowances:</span>
                         <span>₹{parseFloat(salaryData.total_allowances || 0).toLocaleString()}</span>

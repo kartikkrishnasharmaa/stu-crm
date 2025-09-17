@@ -36,7 +36,8 @@ export default function Accountant() {
     monthly_salary: "",
     acccreate_name: "",
     acccreate_email: "",
-    acccreate_password: ""
+    acccreate_password: "",
+    status: "Active" // Added status field with default value "Active"
   });
 
   // Fetch accountants list
@@ -134,22 +135,6 @@ export default function Accountant() {
       (accountant.accountant_code || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  // // View accountant details
-  // const handleViewClick = async (id) => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const res = await axios.get(`/accountant/${id}`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-      
-  //     setCurrentAccountant(res.data);
-  //     setViewModalOpen(true);
-  //   } catch (error) {
-  //     console.error("Error fetching accountant details:", error);
-  //     alert("Failed to load accountant details");
-  //   }
-  // };
-
   // Edit click
   const handleEditClick = (accountant) => {
     setEditingAccountantId(accountant.id);
@@ -165,7 +150,8 @@ export default function Accountant() {
       monthly_salary: accountant.monthly_salary,
       acccreate_name: accountant.user?.email || "",
       acccreate_email: accountant.user?.email || "",
-      acccreate_password: "" // Don't prefill password for security
+      acccreate_password: "", // Don't prefill password for security
+      status: accountant.status || "Active" // Prefill status
     });
     setIsModalOpen(true);
   };
@@ -225,7 +211,8 @@ export default function Accountant() {
       monthly_salary: "",
       acccreate_name: "",
       acccreate_email: "",
-      acccreate_password: ""
+      acccreate_password: "",
+      status: "Active" // Reset to default value "Active"
     });
   };
 
@@ -241,7 +228,8 @@ export default function Accountant() {
       "Email": accountant.email,
       "Monthly Salary": accountant.monthly_salary,
       "Branch ID": accountant.branch_id,
-      "Attendance Status": accountant.attendance_status
+      "Attendance Status": accountant.attendance_status,
+      "Status": accountant.status // Added status to export
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -299,11 +287,10 @@ export default function Accountant() {
               <tr>
                 <th className="p-3 font-semibold text-gray-700">Sr. No.</th>
                 <th className="p-3 font-semibold text-gray-700">Name</th>
-                <th className="p-3 font-semibold text-gray-700">Code</th>
                 <th className="p-3 font-semibold text-gray-700">Department</th>
                 <th className="p-3 font-semibold text-gray-700">Joining Date</th>
                 <th className="p-3 font-semibold text-gray-700">Contact</th>
-                <th className="p-3 font-semibold text-gray-700">Email</th>
+                <th className="p-3 font-semibold text-gray-700">Status</th>
                 <th className="p-3 font-semibold text-gray-700 text-center">Actions</th>
               </tr>
             </thead>
@@ -313,20 +300,20 @@ export default function Accountant() {
                   <tr key={accountant.id} className="border-t hover:bg-gray-50">
                     <td className="p-3">{index + 1}</td>
                     <td className="p-3 font-medium">{accountant.accountant_name}</td>
-                    <td className="p-3">{accountant.accountant_code}</td>
                     <td className="p-3">{accountant.department}</td>
                     <td className="p-3">{accountant.joining_date}</td>
                     <td className="p-3">{accountant.contact_number}</td>
-                    <td className="p-3">{accountant.email}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        accountant.status === "Active" 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {accountant.status}
+                      </span>
+                    </td>
                     <td className="p-3 text-center">
                       <div className="flex justify-center gap-2">
-                        {/* <button
-                          onClick={() => handleViewClick(accountant.id)}
-                          className="p-2 text-purple-600 hover:bg-purple-100 rounded-full transition-colors"
-                          title="View Accountant"
-                        >
-                          <FaEye size={18} />
-                        </button> */}
                         <button
                           onClick={() => handleEditClick(accountant)}
                           className="p-2 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
@@ -387,18 +374,6 @@ export default function Accountant() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Accountant Code</label>
-                  <input
-                    name="accountant_code"
-                    value={formData.accountant_code}
-                    onChange={handleChange}
-                    placeholder="Accountant Code"
-                    className="border border-gray-300 p-2 rounded w-full"
-                    required={!editingAccountantId}
-                    disabled={editingAccountantId}
-                  />
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Joining Date</label>
                   <input
                     name="joining_date"
@@ -416,11 +391,11 @@ export default function Accountant() {
                     value={formData.contact_number}
                     onChange={handleChange}
                     placeholder="Contact Number"
-                    className="border border-gray-300 p-2 rounded w-full"
                     type="tel"
                     maxLength="10"
                     pattern="[0-9]{10}"
                     title="Please enter exactly 10 digits"
+                    className="border border-gray-300 p-2 rounded w-full"
                     required
                   />
                 </div>
@@ -459,30 +434,19 @@ export default function Accountant() {
                     required
                   />
                 </div>
+                
+                {/* Status Dropdown */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Attendance Status</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                   <select
-                    name="attendance_status"
-                    value={formData.attendance_status}
+                    name="status"
+                    value={formData.status}
                     onChange={handleChange}
                     className="border border-gray-300 p-2 rounded w-full"
                   >
-                    <option value="Present">Present</option>
-                    <option value="Absent">Absent</option>
-                    <option value="On Leave">On Leave</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
                   </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Branch ID</label>
-                  <input
-                    name="branch_id"
-                    value={formData.branch_id}
-                    onChange={handleChange}
-                    placeholder="Branch ID"
-                    type="number"
-                    className="border border-gray-300 p-2 rounded w-full"
-                    required
-                  />
                 </div>
                 
                 {/* User creation fields - only show when creating new accountant */}
@@ -536,95 +500,6 @@ export default function Accountant() {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
-
-        {/* View Details Modal */}
-        {viewModalOpen && currentAccountant && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
-              <button
-                onClick={() => {
-                  setViewModalOpen(false);
-                  setCurrentAccountant(null);
-                }}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
-              >
-                <FaTimes size={24} />
-              </button>
-
-              <h2 className="text-xl font-bold mb-4 border-b pb-2">Accountant Details</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-lg mb-3 text-blue-700">Personal Information</h3>
-                  <div className="space-y-2">
-                    <p><span className="font-medium">Name:</span> {currentAccountant.accountant_name}</p>
-                    <p><span className="font-medium">Code:</span> {currentAccountant.accountant_code}</p>
-                    <p><span className="font-medium">Email:</span> {currentAccountant.email}</p>
-                    <p><span className="font-medium">Contact:</span> {currentAccountant.contact_number}</p>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-lg mb-3 text-blue-700">Employment Details</h3>
-                  <div className="space-y-2">
-                    <p><span className="font-medium">Department:</span> {currentAccountant.department}</p>
-                    <p><span className="font-medium">Joining Date:</span> {currentAccountant.joining_date}</p>
-                    <p><span className="font-medium">Monthly Salary:</span> ₹{formatCurrency(currentAccountant.monthly_salary)}</p>
-                    <p><span className="font-medium">Branch ID:</span> {currentAccountant.branch_id}</p>
-                  </div>
-                </div>
-                
-                <div className="md:col-span-2 bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-lg mb-3 text-blue-700">Status Information</h3>
-                  <div className="flex justify-between items-center">
-                    <p><span className="font-medium">Attendance Status:</span> 
-                      <span className={`ml-2 px-2 py-1 rounded text-sm ${
-                        currentAccountant.attendance_status === "Present" 
-                          ? "bg-green-100 text-green-800" 
-                          : currentAccountant.attendance_status === "Absent"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
-                      }`}>
-                        {currentAccountant.attendance_status}
-                      </span>
-                    </p>
-                    
-                    <button
-                      onClick={() => toggleAttendance(currentAccountant.id, currentAccountant.attendance_status)}
-                      className={`px-3 py-1 rounded flex items-center gap-1 ${
-                        currentAccountant.attendance_status === "Present" 
-                          ? "bg-red-100 text-red-700 hover:bg-red-200" 
-                          : "bg-green-100 text-green-700 hover:bg-green-200"
-                      }`}
-                    >
-                      {currentAccountant.attendance_status === "Present" ? (
-                        <>
-                          <FaToggleOff /> Mark Absent
-                        </>
-                      ) : (
-                        <>
-                          <FaToggleOn /> Mark Present
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-end mt-6">
-                <button
-                  onClick={() => {
-                    setViewModalOpen(false);
-                    setCurrentAccountant(null);
-                  }}
-                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
-                >
-                  Close
-                </button>
-              </div>
             </div>
           </div>
         )}

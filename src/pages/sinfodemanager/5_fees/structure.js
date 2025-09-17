@@ -30,6 +30,7 @@ const StudentFees = () => {
   const [selectedCoupon, setSelectedCoupon] = useState('');
   const [installmentDetails, setInstallmentDetails] = useState([]);
   const [feeStructureDetails, setFeeStructureDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Search functionality states
   const [studentSearch, setStudentSearch] = useState('');
@@ -101,6 +102,7 @@ const StudentFees = () => {
       console.error("Error fetching coupons:", error);
     }
   };
+  
   const fetchInstallmentDetails = async (feeStructureId) => {
     try {
       const token = localStorage.getItem("token");
@@ -116,12 +118,33 @@ const StudentFees = () => {
     }
   };
 
+  // Refresh data function
+  const refreshData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchStudentFees(),
+        fetchCourses(),
+        fetchStudents(),
+        fetchFeeStructures(),
+        fetchCoupons()
+      ]);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchStudentFees();
-    fetchCourses();
-    fetchStudents();
-    fetchFeeStructures();
-    fetchCoupons();
+    // Initial data fetch
+    refreshData();
+
+    // Set up interval to refresh data every 2 seconds
+    const intervalId = setInterval(refreshData, 2000);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   // Update filtered students when search changes
@@ -351,7 +374,9 @@ const StudentFees = () => {
       await axios.delete(`/studentfees/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setStudentFees(studentFees.filter(f => f.id !== id));
+      
+      // Use functional updates to ensure we're working with the latest state
+      setStudentFees(prevFees => prevFees.filter(f => f.id !== id));
     } catch (error) {
       console.error("Error deleting student fee:", error);
     }
@@ -385,7 +410,7 @@ const StudentFees = () => {
         number_of_installments: formData.payment_mode === 'installments' ? parseInt(formData.number_of_installments) : 0,
         coupon_id: formData.coupon_id ? parseInt(formData.coupon_id) : null,
         branch_id: selectedStudent.branch_id, // Add branch_id from student
-  branch_discount_percent: formData.branch_discount_percent ? parseFloat(formData.branch_discount_percent) : 0 // Add branch discount
+        branch_discount_percent: formData.branch_discount_percent ? parseFloat(formData.branch_discount_percent) : 0 // Add branch discount
       };
 
       // Create fee structure
@@ -404,10 +429,7 @@ const StudentFees = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Update both lists
-      setFeeStructures([...feeStructures, structureRes.data]);
-      setStudentFees([...studentFees, feeRes.data]);
-
+      // The data will be automatically refreshed by the interval
       closeModal();
     } catch (error) {
       console.error("Error creating fee structure and student fee:", error);
@@ -423,12 +445,11 @@ const StudentFees = () => {
         paid_amount: parseFloat(paymentAmount)
       };
 
-      const res = await axios.put(`/studentfee/update/${currentEditId}`, paymentData, {
+      await axios.put(`/studentfee/update/${currentEditId}`, paymentData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Update the fee in the list
-      setStudentFees(studentFees.map(f => f.id === currentEditId ? res.data : f));
+      // The data will be automatically refreshed by the interval
       closePaymentModal();
     } catch (error) {
       console.error("Error updating payment:", error);
@@ -457,10 +478,13 @@ const StudentFees = () => {
               <p>Manage student fees and payments</p>
             </div>
           </div>
-          <button onClick={openModal} className="sf-add-btn">
-            <i className="fas fa-plus"></i>
-            Generate Fee
-          </button>
+          <div className="sf-header-right">
+        
+            <button onClick={openModal} className="sf-add-btn">
+              <i className="fas fa-plus"></i>
+              Generate Fee
+            </button>
+          </div>
         </div>
       </header>
 
@@ -613,9 +637,7 @@ const StudentFees = () => {
                             {student.full_name} ({student.admission_number})
                           </div>
                         ))}
-                        {filteredStudents.length === 0 && (
-                          <div className="sf-search-dropdown-item">No students found</div>
-                        )}
+                    
                       </div>
                     )}
                   </div>
@@ -634,8 +656,7 @@ const StudentFees = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="sf-no-course-message">
-                        No course assigned to this student
+                      <div>
                       </div>
                     )}
                   </div>
@@ -729,34 +750,7 @@ const StudentFees = () => {
                 </div>
               </div>
 
-              {/* Student Details Display */}
-              {selectedStudent && (
-                <div className="sf-student-details-card">
-                  <h4>Student Details</h4>
-                  <div className="sf-student-details-grid">
-                    <div>
-                      <p><strong>Name:</strong> {selectedStudent.full_name}</p>
-                      <p><strong>Admission No:</strong> {selectedStudent.admission_number}</p>
-                      <p><strong>Contact:</strong> {selectedStudent.contact_number}</p>
-                    </div>
-                    <div>
-                      <p><strong>Email:</strong> {selectedStudent.email}</p>
-                      <p><strong>Current Course:</strong> {getCourseDetails(selectedStudent.course_id)}</p>
-                      <p><strong>Guardian:</strong> {selectedStudent.guardian_name}</p>
-                      <p><strong>Guardian Contact:</strong> {selectedStudent.guardian_contact}</p>
-                    </div>
-                  </div>
-
-                  {/* Check if student already has fee structure for selected course */}
-                  {selectedStudent.course_id && hasExistingFeeStructure(formData.student_id, selectedStudent.course_id) && (
-                    <div className="sf-warning-message">
-                      <i className="fas fa-exclamation-triangle"></i>
-                      This student already has a fee structure for the selected course.
-                    </div>
-                  )}
-                </div>
-              )}
-
+        
               <div className="sf-modal-actions">
                 <button type="button" onClick={closeModal} className="sf-cancel-btn">
                   Cancel

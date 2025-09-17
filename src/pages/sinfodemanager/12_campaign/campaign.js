@@ -1,6 +1,6 @@
 import SAAdminLayout from "../../../layouts/Sinfodemanager";
 import AllCoupans from "./allcoupan";
-import Branchcommunnication from "./branchcomm"
+// import Branchcommunnication from "./branchcomm"
 import { useState, useEffect } from "react";
 import axios from "../../../api/axiosConfig";
 
@@ -41,7 +41,7 @@ export default function Campaign() {
           >
             📋 All Coupons
           </button>
-            <button
+            {/* <button
             onClick={() => setActiveTab("branchCommunication")}
             className={`block w-full text-left px-4 py-5 rounded-lg ${
               activeTab === "branchCommunication"
@@ -50,14 +50,14 @@ export default function Campaign() {
             }`}
           >
             📋 Branch Communication
-          </button> 
+          </button>  */}
         </div>
 
         {/* Content */}
         <div className="flex-1 rounded-lg p-6 overflow-y-auto">
           {/* {activeTab === "addCoupan" && <AddCoupan />} */}
           {activeTab === "coupanList" && <AllCoupans />}
-          {activeTab === "branchCommunication" && <Branchcommunnication />}
+          {/* {activeTab === "branchCommunication" && <Branchcommunnication />} */}
         </div>
       </div>
     </SAAdminLayout>

@@ -33,7 +33,12 @@ const Managerheader = ({ toggleSidebar }) => {
 
       {/* Desktop Navigation */}
       <nav className="hidden mr-10 mt-2 rounded-2xl text-black md:flex items-center space-x-6 text-lg font-semibold mx-auto">
-   
+    <Link
+          to={getBranchLink("/sinfodemanager/communication")}
+          className="hover:text-blue-500 bg-white p-3 rounded-lg"
+        >
+          <HiBell size={24} />
+        </Link>
         {/* Account with Profile Image */}
         <div ref={dropdownRef} className="relative">
           <div
@@ -69,20 +74,6 @@ const Managerheader = ({ toggleSidebar }) => {
         </div>
       </nav>
 
-      {/* Mobile Dropdown Menu */}
-      {menuOpen && (
-        <nav className="absolute top-24 left-0 w-full bg-white shadow-md flex flex-col md:hidden py-4 space-y-4 text-center z-40">
-          <Link to={"/staff/dashboard"} className="hover:text-blue-600">
-            Dashboard
-          </Link>
-          <Link
-            to={"/staff/create-booking"}
-            className="hover:text-blue-600"
-          >
-            Bookings
-          </Link>
-        </nav>
-      )}
     </header>
   );
 };

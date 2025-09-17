@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from "../../../api/axiosConfig";
+import SAAdminLayout from "../../../layouts/Sinfodemanager";
 
 const BranchCommunication = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -202,6 +203,7 @@ const BranchCommunication = () => {
   }
 
   return (
+    <SAAdminLayout>
     <div className="min-h-screen">
       {/* Header */}
       <header className="text-gray-500 shadow-sm">
@@ -464,6 +466,7 @@ const BranchCommunication = () => {
         </div>
       </div>
     </div>
+    </SAAdminLayout>
   );
 };
 

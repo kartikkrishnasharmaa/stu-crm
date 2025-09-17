@@ -84,7 +84,17 @@ export default function Lead() {
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+
+    // Special handling for contact number fields
+    if (id === 'contact_number_primary' || id === 'contact_number_alternate') {
+      // Remove any non-numeric characters
+      const numericValue = value.replace(/\D/g, '');
+      // Limit to 10 digits
+      const truncatedValue = numericValue.slice(0, 10);
+      setFormData((prev) => ({ ...prev, [id]: truncatedValue }));
+    } else {
+      setFormData((prev) => ({ ...prev, [id]: value }));
+    }
   };
 
   const saveLead = async (e) => {
@@ -566,22 +576,7 @@ export default function Lead() {
                       Lead Information
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-sf-text mb-2">
-                          Branch
-                        </label>
-                        <input
-                          type="text"
-                          value={userData.branch_name || "Current User Branch"}
-                          disabled
-                          className="w-full px-4 py-3 border border-sf-border rounded-lg bg-gray-100"
-                        />
-                        <input
-                          type="hidden"
-                          id="branch_id"
-                          value={formData.branch_id}
-                        />
-                      </div>
+                     
                       <div>
                         <label className="block text-sm font-medium text-sf-text mb-2">
                           Full Name <span className="text-red-500">*</span>
@@ -741,7 +736,7 @@ export default function Lead() {
                           Budget Range
                         </label>
                         <input
-                          type="text"
+                          type="number"
                           id="budget_range"
                           value={formData.budget_range}
                           onChange={handleInputChange}

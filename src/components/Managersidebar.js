@@ -92,9 +92,14 @@ const ManagerSidebar = ({ isSidebarOpen, toggleSidebar }) => {
     //   link: "/sinfodemanager",
     // },
     {
-      name: "Campaign",
+      name: "Coupans",
       icon: <FaUsers />,
       link: "/sinfodemanager/campaign",
+    },
+    {
+      name: "Communication",
+      icon: <FaUsers />,
+      link: "/sinfodemanager/communication",
     },
     {
       name: "Reports",
@@ -107,7 +112,7 @@ const ManagerSidebar = ({ isSidebarOpen, toggleSidebar }) => {
     <aside
       className={`bg-white rounded-[24px] ml-3 inset-y-0 left-0 transform ${
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } md:translate-x-0 transition-transform duration-300 ease-in-out w-[200px] p-4 z-30 shadow-lg md:relative overflow-y-auto max-h-screen`}
+      } md:translate-x-0 transition-transform duration-300 ease-in-out w-[220px] p-4 z-30 shadow-lg md:relative overflow-y-auto max-h-screen`}
     >
       <div className="flex-1 flex justify-center md:justify-start">
         <img

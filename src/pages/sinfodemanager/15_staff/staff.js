@@ -408,6 +408,7 @@ export default function Staff() {
                   placeholder="Monthly Salary"
                   className="border p-2 rounded"
                   required
+                  type="number"
                 />
                 <input
                   name="contact_number"
