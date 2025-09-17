@@ -45,41 +45,41 @@ export default function Dashboard() {
   const userBranchId = userData.branch_id;
   const userBranchName = userData.branch_name || "Your Branch";
 
-// Replace the fetchRevenueData function with this updated version
-const fetchRevenueData = async () => {
-  if (!userBranchId) return;
-  
-  setLoading(true);
-  try {
-    const token = localStorage.getItem("token");
-    const res = await axios.get("/monthly-revenue", {
-      headers: { Authorization: `Bearer ${token}` },
-      params: {
-        year: selectedYear,
-        branch_id: userBranchId
-      }
-    });
-    
-    // Find the data for the current user's branch
-    const userBranchData = res.data.branches.find(
-      branch => branch.branch_id === userBranchId
-    );
-    
-    setRevenueData(userBranchData);
-    
-    // Calculate total revenue
-    const total = userBranchData?.monthly_revenue?.reduce((sum, month) => {
-      return sum + parseFloat(month.student_fee || 0);
-    }, 0) || 0;
-    
-    setTotalRevenue(total);
-  } catch (error) {
-    console.error("Error fetching revenue data:", error);
-    alert("Failed to load revenue data");
-  } finally {
-    setLoading(false);
-  }
-};
+  // Replace the fetchRevenueData function with this updated version
+  const fetchRevenueData = async () => {
+    if (!userBranchId) return;
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("/monthly-revenue", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: {
+          year: selectedYear,
+          branch_id: userBranchId
+        }
+      });
+
+      // Find the data for the current user's branch
+      const userBranchData = res.data.branches.find(
+        branch => branch.branch_id === userBranchId
+      );
+
+      setRevenueData(userBranchData);
+
+      // Calculate total revenue
+      const total = userBranchData?.monthly_revenue?.reduce((sum, month) => {
+        return sum + parseFloat(month.student_fee || 0);
+      }, 0) || 0;
+
+      setTotalRevenue(total);
+    } catch (error) {
+      console.error("Error fetching revenue data:", error);
+      alert("Failed to load revenue data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ✅ Fetch leads data (filtered by branch)
   const fetchLeadsData = async () => {
@@ -91,10 +91,10 @@ const fetchRevenueData = async () => {
           branch_id: userBranchId // Filter leads by branch
         }
       });
-      
+
       const leads = response.data || [];
       const convertedLeads = leads.filter(lead => lead.lead_status === "Converted").length;
-      
+
       setLeadsData({
         totalLeads: leads.length,
         convertedLeads,
@@ -111,21 +111,21 @@ const fetchRevenueData = async () => {
     }
   }, [userBranchId, selectedYear]);
 
- 
+
   // Generate year options (last 10 years and next 2 years)
   const currentYear = new Date().getFullYear();
   const yearOptions = [];
-  for (let i = currentYear - 10; i <= currentYear + 2; i++) {
+  for (let i = currentYear - 1; i <= currentYear + 7; i++) {
     yearOptions.push(i);
   }
 
   // Prepare chart data with attractive colors
   const chartData = {
-      labels: revenueData?.monthly_revenue?.map(item => item.month.substring(0, 3)) || [],
+    labels: revenueData?.monthly_revenue?.map(item => item.month.substring(0, 3)) || [],
     datasets: [
       {
         label: 'Monthly Revenue (₹)',
-      data: revenueData?.monthly_revenue?.map(item => item.student_fee) || [],
+        data: revenueData?.monthly_revenue?.map(item => item.student_fee) || [],
         backgroundColor: [
           'rgba(255, 99, 132, 0.8)',
           'rgba(54, 162, 235, 0.8)',
@@ -207,7 +207,7 @@ const fetchRevenueData = async () => {
         boxPadding: 6,
         usePointStyle: true,
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return `Revenue: ₹${context.raw.toLocaleString('en-IN')}`;
           }
         }
@@ -221,7 +221,7 @@ const fetchRevenueData = async () => {
         },
         ticks: {
           color: '#4B5563',
-          callback: function(value) {
+          callback: function (value) {
             return '₹' + value.toLocaleString('en-IN');
           }
         },
@@ -252,9 +252,27 @@ const fetchRevenueData = async () => {
   return (
     <SAAdminLayout>
       <div className="p-6 bg-[#F4F9FD] min-h-screen">
-        <p className="text-gray-500">Welcome Back,</p>
-        <h1 className="text-[30px] mb-2 font-nunito">Dashboard</h1>
-        
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div>
+            <p className="text-gray-500">Welcome Back,</p>
+            <h1 className="text-[30px] mb-2 font-nunito">Dashboard</h1>
+          </div>
+
+          <div className="flex items-center bg-gray-100 rounded-lg px-3 py-2 mt-4 md:mt-0">
+            <FaFilter className="text-gray-500 mr-2" />
+            <select
+              className="bg-transparent border-none text-sm focus:ring-0"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            >
+              {yearOptions.map(year => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
         {/* Quick Action Shortcuts
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <a 
@@ -312,7 +330,7 @@ const fetchRevenueData = async () => {
             </div>
           </div>
         </div>
-        
+
         {/* Leads Summary Section */}
         {/* <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
@@ -372,31 +390,15 @@ const fetchRevenueData = async () => {
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
                 <h2 className="font-semibold text-xl font-nunito text-gray-800 mb-4 md:mb-0">Revenue Analytics</h2>
-                
-                {/* Year Selector */}
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex items-center bg-gray-100 rounded-lg px-3 py-2">
-                    <FaFilter className="text-gray-500 mr-2" />
-                    <select 
-                      className="bg-transparent border-none text-sm focus:ring-0"
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    >
-                      {yearOptions.map(year => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+
+
               </div>
-              
+
               {/* Display current branch info */}
               <div className="mb-4 text-sm text-gray-600">
                 Showing data for: <span className="font-semibold">{userBranchName}</span>
               </div>
-              
+
               {/* Chart Display */}
               {loading ? (
                 <div className="flex justify-center items-center h-80">
