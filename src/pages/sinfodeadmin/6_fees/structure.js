@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from "../../../api/axiosConfig";
 import './StudentFees.css';
 
@@ -40,6 +40,27 @@ const StudentFees = () => {
   // Table search state
   const [tableSearch, setTableSearch] = useState('');
   const [filteredFees, setFilteredFees] = useState([]);
+
+  // Fee Structures table search state
+  const [feeStructureSearch, setFeeStructureSearch] = useState('');
+  const [filteredFeeStructures, setFilteredFeeStructures] = useState([]);
+
+  // Create maps for quick lookups
+  const studentsMap = useMemo(() => {
+    const map = {};
+    students.forEach(student => {
+      map[student.id] = student;
+    });
+    return map;
+  }, [students]);
+
+  const coursesMap = useMemo(() => {
+    const map = {};
+    courses.forEach(course => {
+      map[course.id] = course;
+    });
+    return map;
+  }, [courses]);
 
   // Fetch all student fees
   const fetchStudentFees = async () => {
@@ -90,6 +111,7 @@ const StudentFees = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setFeeStructures(res.data || []);
+      setFilteredFeeStructures(res.data || []);
     } catch (error) {
       console.error("Error fetching fee structures:", error);
     }
@@ -107,49 +129,26 @@ const StudentFees = () => {
       console.error("Error fetching coupons:", error);
     }
   };
-  
-  const fetchInstallmentDetails = async (feeStructureId) => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`/fee-structures/${feeStructureId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // The API returns an array with the fee structure details
-      return res.data && res.data.length > 0 ? res.data[0] : null;
-    } catch (error) {
-      console.error("Error fetching installment details:", error);
-      return null;
-    }
-  };
-
-  // Refresh data function
-  const refreshData = async () => {
-    setLoading(true);
-    try {
-      await Promise.all([
-        fetchStudentFees(),
-        fetchCourses(),
-        fetchStudents(),
-        fetchFeeStructures(),
-        fetchCoupons()
-      ]);
-    } catch (error) {
-      console.error("Error refreshing data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    // Initial data fetch
-    refreshData();
-
-    // Set up interval to refresh data every 2 seconds
-    const intervalId = setInterval(refreshData, 2000);
-
-    // Clean up interval on component unmount
-    return () => clearInterval(intervalId);
+    const initData = async () => {
+      setLoading(true);
+      try {
+        await Promise.all([
+          fetchStudentFees(),
+          fetchCourses(),
+          fetchStudents(),
+          fetchFeeStructures(),
+          fetchCoupons()
+        ]);
+      } catch (error) {
+        console.error("Error initializing data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    initData();
   }, []);
 
   // Update filtered students when search changes
@@ -171,7 +170,7 @@ const StudentFees = () => {
   useEffect(() => {
     if (tableSearch) {
       const filtered = studentFees.filter(fee => {
-        const student = students.find(s => s.id === fee.student_id);
+        const student = studentsMap[fee.student_id];
         if (!student) return false;
         
         return (
@@ -184,18 +183,37 @@ const StudentFees = () => {
     } else {
       setFilteredFees(studentFees);
     }
-  }, [tableSearch, studentFees, students]);
+  }, [tableSearch, studentFees, studentsMap]);
+
+  // Update filtered fee structures when search changes
+  useEffect(() => {
+    if (feeStructureSearch) {
+      const filtered = feeStructures.filter(structure => {
+        const student = studentsMap[structure.student_id];
+        const course = coursesMap[structure.course_id];
+        
+        return (
+          (student && student.full_name.toLowerCase().includes(feeStructureSearch.toLowerCase())) ||
+          (student && student.admission_number.toLowerCase().includes(feeStructureSearch.toLowerCase())) ||
+          (course && course.course_name.toLowerCase().includes(feeStructureSearch.toLowerCase()))
+        );
+      });
+      setFilteredFeeStructures(filtered);
+    } else {
+      setFilteredFeeStructures(feeStructures);
+    }
+  }, [feeStructureSearch, feeStructures, studentsMap, coursesMap]);
 
   // Update selected student when formData.student_id changes
   useEffect(() => {
     if (formData.student_id) {
-      const student = students.find(s => s.id === parseInt(formData.student_id));
+      const student = studentsMap[formData.student_id];
       setSelectedStudent(student);
       if (student && student.course_id) {
-        const course = courses.find(c => c.id === parseInt(student.course_id));
+        const course = coursesMap[student.course_id];
         setSelectedCourse(course);
         if (course) {
-          setFinalFee(course.actual_price || 0);
+          setFinalFee(course.discounted_price_price || 0);
         }
       }
     } else {
@@ -203,7 +221,7 @@ const StudentFees = () => {
       setSelectedCourse(null);
       setFinalFee(0);
     }
-  }, [formData.student_id, students, courses]);
+  }, [formData.student_id, studentsMap, coursesMap]);
 
   // Handle student selection from dropdown
   const handleStudentSelect = (student) => {
@@ -222,7 +240,7 @@ const StudentFees = () => {
     const coupon = coupons.find(c => c.id == selectedCoupon);
     if (!coupon) return;
 
-    let newFee = parseFloat(selectedCourse?.actual_price || 0);
+    let newFee = parseFloat(selectedCourse?.discounted_price_price || 0);
 
     if (coupon.discount_type === "percentage") {
       newFee = newFee - (newFee * parseFloat(coupon.discount_value)) / 100;
@@ -250,25 +268,25 @@ const StudentFees = () => {
 
   // Get student name by ID
   const getStudentName = (studentId) => {
-    const student = students.find(s => s.id === studentId);
+    const student = studentsMap[studentId];
     return student ? student.full_name : `Student ID: ${studentId}`;
   };
 
   // Get student admission number by ID
   const getStudentAdmissionNumber = (studentId) => {
-    const student = students.find(s => s.id === studentId);
+    const student = studentsMap[studentId];
     return student ? student.admission_number : 'N/A';
   };
 
   // Get course name by ID
   const getCourseName = (courseId) => {
-    const course = courses.find(c => c.id === courseId);
+    const course = coursesMap[courseId];
     return course ? course.course_name : `Course ID: ${courseId}`;
   };
 
   // Get course details by ID
   const getCourseDetails = (courseId) => {
-    const course = courses.find(c => c.id === courseId);
+    const course = coursesMap[courseId];
     return course ? `${course.course_name} (${course.course_code})` : `Course ID: ${courseId}`;
   };
 
@@ -316,12 +334,20 @@ const StudentFees = () => {
   };
 
   // Stats calculation
-  const totalFees = studentFees.reduce((sum, fee) => sum + parseFloat(fee.total_fee || 0), 0);
-  const totalPaid = studentFees.reduce((sum, fee) => sum + parseFloat(fee.paid_amount || 0), 0);
-  const totalPending = studentFees.reduce((sum, fee) => sum + parseFloat(fee.pending_amount || 0), 0);
-  const paidFees = studentFees.filter(fee => fee.status === 'paid').length;
-  const partialFees = studentFees.filter(fee => fee.status === 'partial').length;
-  const unpaidFees = studentFees.filter(fee => fee.status === 'unpaid').length;
+  const totalFees = useMemo(() => 
+    studentFees.reduce((sum, fee) => sum + parseFloat(fee.total_fee || 0), 0), 
+    [studentFees]
+  );
+  
+  const totalPaid = useMemo(() => 
+    studentFees.reduce((sum, fee) => sum + parseFloat(fee.paid_amount || 0), 0), 
+    [studentFees]
+  );
+  
+  const totalPending = useMemo(() => 
+    studentFees.reduce((sum, fee) => sum + parseFloat(fee.pending_amount || 0), 0), 
+    [studentFees]
+  );
 
   const openModal = () => {
     setFormData({
@@ -391,23 +417,6 @@ const StudentFees = () => {
     setPaymentAmount('');
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this fee record?")) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`/studentfees/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      // Use functional updates to ensure we're working with the latest state
-      setStudentFees(prevFees => prevFees.filter(f => f.id !== id));
-      setFilteredFees(prevFees => prevFees.filter(f => f.id !== id));
-    } catch (error) {
-      console.error("Error deleting student fee:", error);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -431,12 +440,12 @@ const StudentFees = () => {
         student_id: parseInt(formData.student_id),
         course_id: parseInt(selectedStudent.course_id),
         fee_type: formData.fee_type,
-        amount: finalFee > 0 ? finalFee : parseFloat(selectedCourse?.actual_price || 0),
+        amount: finalFee > 0 ? finalFee : parseFloat(selectedCourse?.discounted_price_price || 0),
         payment_mode: formData.payment_mode,
         number_of_installments: formData.payment_mode === 'installments' ? parseInt(formData.number_of_installments) : 0,
         coupon_id: formData.coupon_id ? parseInt(formData.coupon_id) : null,
-        branch_id: selectedStudent.branch_id, // Add branch_id from student
-        branch_discount_percent: formData.branch_discount_percent ? parseFloat(formData.branch_discount_percent) : 0 // Add branch discount
+        branch_id: selectedStudent.branch_id,
+        branch_discount_percent: formData.branch_discount_percent ? parseFloat(formData.branch_discount_percent) : 0
       };
 
       // Create fee structure
@@ -455,10 +464,15 @@ const StudentFees = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // The data will be automatically refreshed by the interval
+      // Update state with the new fee
+      setStudentFees(prevFees => [...prevFees, feeRes.data]);
+      setFilteredFees(prevFees => [...prevFees, feeRes.data]);
+      setFeeStructures(prevStructures => [...prevStructures, structureRes.data]);
+
       closeModal();
     } catch (error) {
       console.error("Error creating fee structure and student fee:", error);
+      alert("Error creating fee structure. Please try again.");
     }
   };
 
@@ -471,14 +485,18 @@ const StudentFees = () => {
         paid_amount: parseFloat(paymentAmount)
       };
 
-      await axios.put(`/studentfee/update/${currentEditId}`, paymentData, {
+      const res = await axios.put(`/studentfee/update/${currentEditId}`, paymentData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // The data will be automatically refreshed by the interval
+      // Update the specific fee in the state
+      setStudentFees(prevFees => prevFees.map(f => f.id === currentEditId ? res.data : f));
+      setFilteredFees(prevFees => prevFees.map(f => f.id === currentEditId ? res.data : f));
+      
       closePaymentModal();
     } catch (error) {
       console.error("Error updating payment:", error);
+      alert("Error recording payment. Please try again.");
     }
   };
 
@@ -489,6 +507,17 @@ const StudentFees = () => {
       [name]: value
     });
   };
+
+  if (loading) {
+    return (
+      <div className="student-fees-container">
+        <div className="sf-loading">
+          <i className="fas fa-spinner fa-spin"></i>
+          <p>Loading data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="student-fees-container">
@@ -504,16 +533,10 @@ const StudentFees = () => {
               <p>Manage student fees and payments</p>
             </div>
           </div>
-          <div className="sf-header-right">
-            {/* <button onClick={refreshData} className="sf-refresh-btn" disabled={loading}>
-              <i className={`fas fa-sync ${loading ? 'fa-spin' : ''}`}></i>
-              {loading ? 'Refreshing...' : 'Refresh Data'}
-            </button> */}
-            <button onClick={openModal} className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2">
-              <i className="fas fa-plus"></i>
-              Generate Fee
-            </button>
-          </div>
+          <button onClick={openModal} className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2">
+            <i className="fas fa-plus"></i>
+            Generate Fee
+          </button>
         </div>
       </header>
 
@@ -557,7 +580,17 @@ const StudentFees = () => {
             </div>
           </div>
 
-      
+          <div className="sf-stat-card">
+            <div className="sf-stat-content">
+              <div className="sf-stat-icon bg-purple">
+                <i className="fas fa-users"></i>
+              </div>
+              <div className="sf-stat-text">
+                <p>Total Records</p>
+                <h3>{studentFees.length}</h3>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Student Fees Table */}
@@ -597,9 +630,9 @@ const StudentFees = () => {
                           <i className="fas fa-user"></i>
                         </div>
                         <div>
-                          <div className="sf-student-name">{fee.student?.name || getStudentName(fee.student_id)}</div>
+                          <div className="sf-student-name">{getStudentName(fee.student_id)}</div>
                           <div className="sf-student-details">
-                            Admission No: {fee.student?.admission_number || getStudentAdmissionNumber(fee.student_id)}
+                            Admission No: {getStudentAdmissionNumber(fee.student_id)}
                           </div>
                         </div>
                       </div>
@@ -631,7 +664,9 @@ const StudentFees = () => {
                         <button onClick={() => handleView(fee.id)} className="sf-action-btn text-blue">
                           <i className="fas fa-eye"></i>
                         </button>
-                   
+                        <button onClick={() => openPaymentModal(fee.id)} className="sf-action-btn text-green">
+                          <i className="fas fa-money-bill"></i>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -648,6 +683,8 @@ const StudentFees = () => {
             </table>
           </div>
         </div>
+
+  
       </main>
 
       {/* Generate Fee Modal */}
@@ -684,14 +721,9 @@ const StudentFees = () => {
                           >
                             <div className="sf-student-dropdown-info">
                               <div className="sf-student-dropdown-name">{student.full_name}</div>
-                              <div className="sf-student-dropdown-admission">{student.admission_number}</div>
-                            </div>
-                            <div className="sf-student-dropdown-course">
-                              {getCourseName(student.course_id)}
                             </div>
                           </div>
                         ))}
-              
                       </div>
                     )}
                   </div>
@@ -705,12 +737,13 @@ const StudentFees = () => {
                         {getCourseDetails(selectedStudent.course_id)}
                         {selectedCourse && (
                           <div className="sf-course-price-info">
-                            <p>Course Price: ₹{parseFloat(selectedCourse.actual_price || 0).toLocaleString()}</p>
+                            <p>Course Price: ₹{parseFloat(selectedCourse.discounted_price || 0).toLocaleString()}</p>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div>
+                      <div className="sf-no-course-message">
+                        No course assigned
                       </div>
                     )}
                   </div>
@@ -796,14 +829,13 @@ const StudentFees = () => {
                       Apply
                     </button>
                   </div>
-                  {finalFee > 0 && finalFee !== parseFloat(selectedCourse?.actual_price || 0) && (
+                  {finalFee > 0 && finalFee !== parseFloat(selectedCourse?.discounted_price_price || 0) && (
                     <div className="sf-final-fee">
                       Final Fee after discount: ₹{finalFee.toLocaleString()}
                     </div>
                   )}
                 </div>
               </div>
-
 
               <div className="sf-modal-actions">
                 <button type="button" onClick={closeModal} className="sf-cancel-btn">
@@ -838,19 +870,9 @@ const StudentFees = () => {
                 <div>
                   <h4>Student Information</h4>
                   <div className="sf-info-box">
-                    {viewFee.student ? (
-                      <>
-                        <p className="sf-info-title"><strong>Name:</strong> {viewFee.student.full_name}</p>
-                        <p><strong>Admission No:</strong> {viewFee.student.admission_number}</p>
-                        <p><strong>Current Course:</strong> {getCourseDetails(viewFee.student.course_id)}</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="sf-info-title"><strong>Name:</strong> {getStudentName(viewFee.student_id)}</p>
-                        <p><strong>Admission No:</strong> {getStudentAdmissionNumber(viewFee.student_id)}</p>
-                        <p><strong>Current Course:</strong> {getCourseDetails(viewFee.course_id)}</p>
-                      </>
-                    )}
+                    <p className="sf-info-title"><strong>Name:</strong> {getStudentName(viewFee.student_id)}</p>
+                    <p><strong>Admission No:</strong> {getStudentAdmissionNumber(viewFee.student_id)}</p>
+                    <p><strong>Current Course:</strong> {getCourseDetails(viewFee.course_id)}</p>
                   </div>
                 </div>
                 <div>
@@ -900,6 +922,39 @@ const StudentFees = () => {
                         })}
                       </tbody>
                     </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Payment History */}
+              {viewFee.payments && viewFee.payments.length > 0 && (
+                <div>
+                  <h4 className="installment-title">Payment History</h4>
+                  <div className="sf-info-box">
+                    <div className="sf-payments-list">
+                      <table className="sf-payments-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Amount Paid</th>
+                            <th>Payment Date</th>
+                            <th>Payment Mode</th>
+                            {/* <th>Installment</th> */}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {viewFee.payments.map((payment, index) => (
+                            <tr key={payment.id || index}>
+                              <td>{index + 1}</td>
+                              <td>₹{parseFloat(payment.amount_paid || 0).toLocaleString()}</td>
+                              <td>{new Date(payment.payment_date).toLocaleDateString()}</td>
+                              <td>{payment.payment_mode || 'N/A'}</td>
+                            
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               )}

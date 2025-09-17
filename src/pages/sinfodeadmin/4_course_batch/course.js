@@ -17,7 +17,7 @@ function AddCourse() {
   const [mode, setMode] = useState("Online");
   const [level, setLevel] = useState("Beginner");
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
-  const [actualprice, setAprice] = useState("");
+  // const [actualprice, setAprice] = useState("");
   const [discountprice, setDprice] = useState("");
 
   const [staffList, setStaffList] = useState([]);
@@ -81,7 +81,7 @@ function AddCourse() {
       duration,
       mode,
       course_level: level, // Correct key
-      actual_price: actualprice, // Correct key
+      // actual_price: actualprice, // Correct key
       discounted_price: discountprice,
       course_description: draftToHtml(
         convertToRaw(editorState.getCurrentContent())
@@ -247,8 +247,8 @@ function AddCourse() {
               </label>
               <input
                 type="number"
-                value={actualprice}
-                onChange={(e) => setAprice(e.target.value)}
+                value={discountprice}
+                onChange={(e) => setDprice(e.target.value)}
                 className="w-full border rounded-lg px-3 py-2"
               />
             </div>
@@ -517,7 +517,7 @@ function AllCourse() {
                 <div>
                   <div className="flex items-center text-lg font-bold text-green-700">
                     <FaRupeeSign className="text-sm" />
-                    <span>{course.actual_price}</span>
+                    <span>{course.discounted_price}</span>
                   </div>
                   {/* {course.discounted_price && (
                     <div className="flex items-center text-sm text-gray-500 line-through">
@@ -709,7 +709,7 @@ function AllCourse() {
                   <input
                     type="number"
                     name="actual_price"
-                    value={formData.actual_price || ""}
+                    value={formData.discounted_price || ""}
                     onChange={handleInputChange}
                     className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300"
                   />
