@@ -129,7 +129,7 @@ function AddStudent() {
 
   return (
     <div className="p-6 w-full bg-[#F4F9FD]">
-      <h1 className="text-[30px] mb-4 font-semibold">Add Studenttt</h1>
+      <h1 className="text-[30px] mb-4 font-semibold">Add Student</h1>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Basic Info */}
