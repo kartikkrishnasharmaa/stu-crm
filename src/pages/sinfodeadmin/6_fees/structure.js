@@ -30,6 +30,7 @@ const StudentFees = () => {
   const [selectedCoupon, setSelectedCoupon] = useState('');
   const [installmentDetails, setInstallmentDetails] = useState([]);
   const [feeStructureDetails, setFeeStructureDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Search functionality states
   const [studentSearch, setStudentSearch] = useState('');
@@ -122,12 +123,33 @@ const StudentFees = () => {
     }
   };
 
+  // Refresh data function
+  const refreshData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchStudentFees(),
+        fetchCourses(),
+        fetchStudents(),
+        fetchFeeStructures(),
+        fetchCoupons()
+      ]);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchStudentFees();
-    fetchCourses();
-    fetchStudents();
-    fetchFeeStructures();
-    fetchCoupons();
+    // Initial data fetch
+    refreshData();
+
+    // Set up interval to refresh data every 2 seconds
+    const intervalId = setInterval(refreshData, 2000);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   // Update filtered students when search changes
@@ -377,7 +399,10 @@ const StudentFees = () => {
       await axios.delete(`/studentfees/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setStudentFees(studentFees.filter(f => f.id !== id));
+      
+      // Use functional updates to ensure we're working with the latest state
+      setStudentFees(prevFees => prevFees.filter(f => f.id !== id));
+      setFilteredFees(prevFees => prevFees.filter(f => f.id !== id));
     } catch (error) {
       console.error("Error deleting student fee:", error);
     }
@@ -430,11 +455,7 @@ const StudentFees = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Update both lists
-      setFeeStructures([...feeStructures, structureRes.data]);
-      setStudentFees([...studentFees, feeRes.data]);
-      setFilteredFees([...studentFees, feeRes.data]); // Update filtered fees too
-
+      // The data will be automatically refreshed by the interval
       closeModal();
     } catch (error) {
       console.error("Error creating fee structure and student fee:", error);
@@ -450,13 +471,11 @@ const StudentFees = () => {
         paid_amount: parseFloat(paymentAmount)
       };
 
-      const res = await axios.put(`/studentfee/update/${currentEditId}`, paymentData, {
+      await axios.put(`/studentfee/update/${currentEditId}`, paymentData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Update the fee in the list
-      setStudentFees(studentFees.map(f => f.id === currentEditId ? res.data : f));
-      setFilteredFees(filteredFees.map(f => f.id === currentEditId ? res.data : f));
+      // The data will be automatically refreshed by the interval
       closePaymentModal();
     } catch (error) {
       console.error("Error updating payment:", error);
@@ -485,10 +504,16 @@ const StudentFees = () => {
               <p>Manage student fees and payments</p>
             </div>
           </div>
-          <button onClick={openModal} className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2">
-            <i className="fas fa-plus"></i>
-            Generate Fee
-          </button>
+          <div className="sf-header-right">
+            {/* <button onClick={refreshData} className="sf-refresh-btn" disabled={loading}>
+              <i className={`fas fa-sync ${loading ? 'fa-spin' : ''}`}></i>
+              {loading ? 'Refreshing...' : 'Refresh Data'}
+            </button> */}
+            <button onClick={openModal} className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl flex items-center gap-2">
+              <i className="fas fa-plus"></i>
+              Generate Fee
+            </button>
+          </div>
         </div>
       </header>
 
@@ -532,17 +557,7 @@ const StudentFees = () => {
             </div>
           </div>
 
-          <div className="sf-stat-card">
-            <div className="sf-stat-content">
-              <div className="sf-stat-icon bg-purple">
-                <i className="fas fa-users"></i>
-              </div>
-              <div className="sf-stat-text">
-                <p>Total Records</p>
-                <h3>{studentFees.length}</h3>
-              </div>
-            </div>
-          </div>
+      
         </div>
 
         {/* Student Fees Table */}
@@ -616,9 +631,7 @@ const StudentFees = () => {
                         <button onClick={() => handleView(fee.id)} className="sf-action-btn text-blue">
                           <i className="fas fa-eye"></i>
                         </button>
-                        {/* <button onClick={() => openPaymentModal(fee.id)} className="sf-action-btn text-green">
-                          <i className="fas fa-money-bill"></i>
-                        </button> */}
+                   
                       </div>
                     </td>
                   </tr>
@@ -671,21 +684,14 @@ const StudentFees = () => {
                           >
                             <div className="sf-student-dropdown-info">
                               <div className="sf-student-dropdown-name">{student.full_name}</div>
-                              {/* <div className="sf-student-dropdown-admission">{student.admission_number}</div> */}
+                              <div className="sf-student-dropdown-admission">{student.admission_number}</div>
                             </div>
-                            {/* {student.course_id && (
-                              <div className="sf-student-dropdown-course">
-                                {getCourseDetails(student.course_id)}
-                              </div>
-                            )} */}
+                            <div className="sf-student-dropdown-course">
+                              {getCourseName(student.course_id)}
+                            </div>
                           </div>
                         ))}
-                        {/* {filteredStudents.length === 0 && (
-                          <div className="sf-search-dropdown-item no-results">
-                            <i className="fas fa-exclamation-circle"></i>
-                            No students found
-                          </div>
-                        )} */}
+              
                       </div>
                     )}
                   </div>
@@ -704,8 +710,7 @@ const StudentFees = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="sf-no-course-message">
-                        No course assigned
+                      <div>
                       </div>
                     )}
                   </div>
@@ -874,61 +879,27 @@ const StudentFees = () => {
                           <th>Installment #</th>
                           <th>Due Date</th>
                           <th>Amount</th>
+                          <th>Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {installmentDetails.map((installment, index) => {
-                          const paidAmount = viewFee.payments
-                            .filter(p => p.installment_number === installment.installment_number)
-                            .reduce((sum, payment) => sum + parseFloat(payment.amount_paid || 0), 0);
-
-                          const status = paidAmount >= parseFloat(installment.amount || 0)
-                            ? 'paid'
-                            : paidAmount > 0
-                              ? 'partial'
-                              : 'pending';
-
+                          const status = getInstallmentStatus(installment, viewFee.payments || []);
                           return (
                             <tr key={installment.id || index}>
                               <td>{installment.installment_number}</td>
                               <td>{installment.due_date ? new Date(installment.due_date).toLocaleDateString() : 'N/A'}</td>
                               <td>₹{parseFloat(installment.amount || 0).toLocaleString()}</td>
+                              <td>
+                                <span className={`sf-badge ${getStatusClass(status)}`}>
+                                  {status}
+                                </span>
+                              </td>
                             </tr>
                           );
                         })}
                       </tbody>
                     </table>
-                  </div>
-                </div>
-              )}
-
-              {/* Payment History */}
-              {viewFee.payments && viewFee.payments.length > 0 && (
-                <div>
-                  <h4 className="installment-title">Payment History</h4>
-                  <div className="sf-info-box">
-                    <div className="sf-payments-list">
-                      <table className="sf-payments-table">
-                        <thead>
-                          <tr>
-                            <th>#</th>
-                            <th>Amount Paid</th>
-                            <th>Payment Date</th>
-                            <th>Payment Mode</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {viewFee.payments.map((payment, index) => (
-                            <tr key={payment.id || index}>
-                              <td>{index + 1}</td>
-                              <td>₹{parseFloat(payment.amount_paid || 0).toLocaleString()}</td>
-                              <td>{new Date(payment.payment_date).toLocaleDateString()}</td>
-                              <td>{payment.payment_mode || 'N/A'}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
                   </div>
                 </div>
               )}

@@ -988,9 +988,7 @@ const generateReceipt = (payment, feeRecord) => {
             </div>
 
             <div className="modal-actions">
-              <button type="button" onClick={closePaymentHistoryModal} className="btn btn-secondary">
-                Close
-              </button>
+
             </div>
           </div>
         </div>

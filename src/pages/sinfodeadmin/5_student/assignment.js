@@ -400,12 +400,12 @@ export default function AssignmentTable() {
                             Review
                           </button>
                           <div className="group">
-                            <button className="text-gray-600 hover:text-gray-900">
+                            <button className="text-gray-600">
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
                               </svg>
                             </button>
-                            <div className="right-0 mt-1 w-32 bg-white rounded-md shadow-lg py-1 hidden group-hover:block z-10">
+                            <div className="mt-1 w-32 bg-white rounded-md shadow-lg py-1 hidden group-hover:block z-10">
                               <button
                                 onClick={() => handleDeleteClick(assignment)}
                                 className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"

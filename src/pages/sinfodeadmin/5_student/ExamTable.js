@@ -138,13 +138,21 @@ const ExamTable = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      await fetchBranches();
-      await fetchExamRecords();
-    };
-    
-    fetchData();
-  }, []);
+  const fetchData = async () => {
+    await fetchBranches();
+    await fetchExamRecords();
+  };
+
+  fetchData();
+
+  // Auto refresh exam records every 2 seconds
+  const interval = setInterval(() => {
+    fetchExamRecords();
+  }, 2000);
+
+  return () => clearInterval(interval); // cleanup on unmount
+}, []);
+
 
   useEffect(() => {
     filterByBranch(selectedBranch);
@@ -159,11 +167,11 @@ const ExamTable = () => {
   }
 
   return (
-    <div>
-      <div className="mb-6 flex justify-between items-center">
+    <div className="w-full">
+      <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         
         <div className="flex items-center space-x-4">
-          <label htmlFor="branchFilter" className="text-sm  ml-2 font-medium text-gray-700">
+          <label htmlFor="branchFilter" className="text-sm font-medium text-gray-700">
             Filter by Branch:
           </label>
           <select
@@ -182,90 +190,73 @@ const ExamTable = () => {
         </div>
       </div>
 
-      <div className="sf-card rounded-lg overflow-hidden" style={{ background: '#ffffff', border: '1px solid #dddbda', boxShadow: '0 2px 4px rgba(0,0,0,0.07)' }}>
+      <div className="sf-card rounded-lg overflow-hidden w-full" style={{ background: '#ffffff', border: '1px solid #dddbda', boxShadow: '0 2px 4px rgba(0,0,0,0.07)' }}>
         <div className="sf-table-header px-6 py-4" style={{ background: '#f3f2f2', borderBottom: '2px solid #dddbda' }}>
           <h3 className="text-lg font-semibold text-gray-800">Exam Records</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="sf-table-header" style={{ background: '#f3f2f2', borderBottom: '2px solid #dddbda' }}>
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Branch</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Course</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Exam Date</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Exam Name</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Marks</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Obtained</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Percentage</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredRecords.length === 0 ? (
-                <tr id="emptyState">
-                  <td colSpan="12" className="px-6 py-16 text-center">
-                    <div className="text-gray-400">
-                      <svg className="mx-auto h-16 w-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                      </svg>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No exam records found</h3>
-                      <p className="text-gray-500">Get started by adding your first exam record.</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredRecords.map(record => {
-                  const gradeInfo = getGrade(record.percentage);
-                  const formattedDate = new Date(record.examDate).toLocaleDateString();
-                  
-                  return (
-                    <tr key={record.id} className="sf-table-row hover:bg-gray-50">
-                  
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{record.studentName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{record.branch}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{record.course}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formattedDate}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{record.examName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="text-sm font-medium text-gray-900">{record.totalMarks}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="text-sm font-medium text-gray-900">{record.obtainedMarks}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span className={`sf-badge ${gradeInfo.class}`} style={{ display: 'inline-flex', alignItems: 'center', padding: '0.25rem 0.75rem', borderRadius: '0.375rem', fontSize: '0.75rem', fontWeight: '600' }}>
-                          {record.percentage.toFixed(1)}% ({gradeInfo.grade})
-                        </span>
-                      </td>
-                      
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="flex items-center justify-center space-x-2">
-                          <button onClick={() => deleteRecord(record.id)} 
-                            className="text-red-600 hover:text-red-900 transition-colors p-2 rounded-lg hover:bg-red-50" title="Delete Record">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <div className="overflow-x-auto w-full">
+  <table className="w-full border-collapse">
+    <thead className="bg-gray-100 border-b">
+      <tr>
+        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+      
+        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Course</th>
+        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Exam Date</th>
+        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Exam Name</th>
+        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Marks</th>
+        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Obtained</th>
+        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Percentage</th>
+        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+      </tr>
+    </thead>
+
+    <tbody className="divide-y divide-gray-200 bg-white">
+      {filteredRecords.length === 0 ? (
+        <tr>
+          <td colSpan="9" className="px-6 py-16 text-center text-gray-500">
+            No exam records found
+          </td>
+        </tr>
+      ) : (
+        filteredRecords.map((record) => {
+          const gradeInfo = getGrade(record.percentage);
+          const formattedDate = new Date(record.examDate).toLocaleDateString();
+
+          return (
+            <tr key={record.id} className="hover:bg-gray-50">
+              <td className="px-4 py-3 text-sm font-medium text-gray-900 truncate">{record.studentName}</td>
+             
+              <td className="px-4 py-3 text-sm text-gray-900 truncate">{record.course}</td>
+              <td className="px-4 py-3 text-sm text-gray-900">{formattedDate}</td>
+              <td className="px-4 py-3 text-sm text-gray-900 truncate">{record.examName}</td>
+              <td className="px-4 py-3 text-center text-sm font-medium text-gray-900">{record.totalMarks}</td>
+              <td className="px-4 py-3 text-center text-sm font-medium text-gray-900">{record.obtainedMarks}</td>
+              <td className="px-4 py-3 text-center">
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${gradeInfo.class}`}
+                >
+                  {record.percentage.toFixed(1)}% ({gradeInfo.grade})
+                </span>
+              </td>
+              <td className="px-4 py-3 text-center">
+                <button
+                  onClick={() => deleteRecord(record.id)}
+                  className="text-red-600 hover:text-red-900 transition-colors p-2 rounded-lg hover:bg-red-50"
+                  title="Delete Record"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          );
+        })
+      )}
+    </tbody>
+  </table>
+</div>
+
       </div>
     </div>
   );
