@@ -494,6 +494,7 @@ export default function Staff() {
             >
               <div className="md:col-span-2">
                 <h3 className="text-md font-medium mb-2 border-b pb-1">Employee Details</h3>
+                 <p>(* Use Designation "Trainer")</p>
               </div>
 
               <input
