@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "../../../api/axiosConfig";
 import SAAdminLayout from "../../../layouts/Sinfodeadmin";
-import { FaArrowDown, FaArrowUp, FaFilter, FaRupeeSign, FaPlus, FaUserPlus, FaUserTie, FaMoneyBill, FaPercent } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaFilter, FaRupeeSign, FaPlus, FaUserPlus, FaUserTie, FaMoneyBill, FaPercent, FaCalendarAlt } from "react-icons/fa";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -42,6 +42,7 @@ export default function Dashboard() {
     convertedLeads: 0,
     branchLeads: []
   });
+  const [showYearPicker, setShowYearPicker] = useState(false);
 
   // ✅ Branches API fetch - Filter only active branches
   const fetchBranches = async () => {
@@ -81,105 +82,105 @@ export default function Dashboard() {
     }
   };
 
-// ✅ Revenue API fetch - Modified to handle both response structures
-const fetchRevenueData = async () => {
-  setLoading(true);
-  try {
-    const token = localStorage.getItem("token");
-    let params = { year: selectedYear };
-   
-    // Only add branch_id if a specific branch is selected
-    if (selectedBranch !== "all") {
-      params.branch_id = selectedBranch;
-    }
-   
-    const res = await axios.get("/monthly-revenue", {
-      headers: { Authorization: `Bearer ${token}` },
-      params: params
-    });
-   
-    let filteredRevenueData = res.data;
-    
-    if (selectedBranch === "all") {
-      // For "all" option, extract the branches array from the response
-      const branchesData = res.data.branches || [];
+  // ✅ Revenue API fetch - Modified to handle both response structures
+  const fetchRevenueData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      let params = { year: selectedYear };
+     
+      // Only add branch_id if a specific branch is selected
+      if (selectedBranch !== "all") {
+        params.branch_id = selectedBranch;
+      }
+     
+      const res = await axios.get("/monthly-revenue", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: params
+      });
+     
+      let filteredRevenueData = res.data;
       
-      // Filter to only include active branches
-      const activeBranchIds = activeBranches.map(branch => branch.id);
-      filteredRevenueData = branchesData.filter(branch => 
-        activeBranchIds.includes(branch.branch_id)
-      );
-    } else {
-      // For single branch, check if it's active
-      const activeBranchIds = activeBranches.map(branch => branch.id);
-      if (!activeBranchIds.includes(parseInt(selectedBranch))) {
-        filteredRevenueData = null;
+      if (selectedBranch === "all") {
+        // For "all" option, extract the branches array from the response
+        const branchesData = res.data.branches || [];
+        
+        // Filter to only include active branches
+        const activeBranchIds = activeBranches.map(branch => branch.id);
+        filteredRevenueData = branchesData.filter(branch => 
+          activeBranchIds.includes(branch.branch_id)
+        );
       } else {
-        // Ensure we have the proper structure for single branch
-        // If the API returns a single branch object directly
-        if (res.data.branch_id) {
-          filteredRevenueData = res.data;
-        } else if (res.data.branches && res.data.branches.length > 0) {
-          // If the API returns a structure with branches array even for single branch
-          filteredRevenueData = res.data.branches[0];
+        // For single branch, check if it's active
+        const activeBranchIds = activeBranches.map(branch => branch.id);
+        if (!activeBranchIds.includes(parseInt(selectedBranch))) {
+          filteredRevenueData = null;
         } else {
-          // If no data found for the branch, create empty structure
-          filteredRevenueData = {
+          // Ensure we have the proper structure for single branch
+          // If the API returns a single branch object directly
+          if (res.data.branch_id) {
+            filteredRevenueData = res.data;
+          } else if (res.data.branches && res.data.branches.length > 0) {
+            // If the API returns a structure with branches array even for single branch
+            filteredRevenueData = res.data.branches[0];
+          } else {
+            // If no data found for the branch, create empty structure
+            filteredRevenueData = {
+              branch_id: parseInt(selectedBranch),
+              monthly_revenue: Array(12).fill(0).map((_, i) => ({
+                month: new Date(selectedYear, i, 1).toLocaleString('default', { month: 'long' }),
+                student_fee: 0
+              }))
+            };
+          }
+        }
+      }
+     
+      setRevenueData(filteredRevenueData);
+     
+      // Calculate total revenue
+      let total = 0;
+      
+      if (Array.isArray(filteredRevenueData)) {
+        // If we have an array of branches (for "all" selection)
+        total = filteredRevenueData.reduce((sum, branch) => {
+          return sum + (branch.monthly_revenue || []).reduce((branchSum, month) => {
+            return branchSum + parseFloat(month.student_fee || 0);
+          }, 0);
+        }, 0);
+      } else if (filteredRevenueData && filteredRevenueData.monthly_revenue) {
+        // If we have a single branch
+        total = filteredRevenueData.monthly_revenue.reduce((sum, month) => {
+          return sum + parseFloat(month.student_fee || 0);
+        }, 0);
+      }
+     
+      setTotalRevenue(total);
+    } catch (error) {
+      console.error("Error fetching revenue data:", error);
+      // If it's a 404 error (no data found), create empty data structure
+      if (error.response && error.response.status === 404) {
+        if (selectedBranch === "all") {
+          setRevenueData([]);
+        } else {
+          // Create empty monthly revenue data for the selected branch
+          const emptyData = {
             branch_id: parseInt(selectedBranch),
             monthly_revenue: Array(12).fill(0).map((_, i) => ({
               month: new Date(selectedYear, i, 1).toLocaleString('default', { month: 'long' }),
               student_fee: 0
             }))
           };
+          setRevenueData(emptyData);
         }
-      }
-    }
-   
-    setRevenueData(filteredRevenueData);
-   
-    // Calculate total revenue
-    let total = 0;
-    
-    if (Array.isArray(filteredRevenueData)) {
-      // If we have an array of branches (for "all" selection)
-      total = filteredRevenueData.reduce((sum, branch) => {
-        return sum + (branch.monthly_revenue || []).reduce((branchSum, month) => {
-          return branchSum + parseFloat(month.student_fee || 0);
-        }, 0);
-      }, 0);
-    } else if (filteredRevenueData && filteredRevenueData.monthly_revenue) {
-      // If we have a single branch
-      total = filteredRevenueData.monthly_revenue.reduce((sum, month) => {
-        return sum + parseFloat(month.student_fee || 0);
-      }, 0);
-    }
-   
-    setTotalRevenue(total);
-  } catch (error) {
-    console.error("Error fetching revenue data:", error);
-    // If it's a 404 error (no data found), create empty data structure
-    if (error.response && error.response.status === 404) {
-      if (selectedBranch === "all") {
-        setRevenueData([]);
+        setTotalRevenue(0);
       } else {
-        // Create empty monthly revenue data for the selected branch
-        const emptyData = {
-          branch_id: parseInt(selectedBranch),
-          monthly_revenue: Array(12).fill(0).map((_, i) => ({
-            month: new Date(selectedYear, i, 1).toLocaleString('default', { month: 'long' }),
-            student_fee: 0
-          }))
-        };
-        setRevenueData(emptyData);
+        alert("Failed to load revenue data");
       }
-      setTotalRevenue(0);
-    } else {
-      alert("Failed to load revenue data");
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // ✅ Fetch leads data - Modified to handle "all" branches and filter by active status
   const fetchLeadsData = async () => {
@@ -242,56 +243,56 @@ const fetchRevenueData = async () => {
     yearOptions.push(i);
   }
 
- // Prepare chart data - modified to handle "all" branches case and empty data
-let chartLabels = [];
-let chartDataValues = [];
+  // Prepare chart data - modified to handle "all" branches case and empty data
+  let chartLabels = [];
+  let chartDataValues = [];
 
-if (revenueData) {
-  if (Array.isArray(revenueData)) {
-    // For "all" branches - aggregate data by month
-    const monthlyTotals = {};
-    
-    // Initialize all months with 0
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                   'July', 'August', 'September', 'October', 'November', 'December'];
-    months.forEach(month => {
-      monthlyTotals[month] = 0;
-    });
-    
-    // Sum up revenue for each month across all branches
-    revenueData.forEach(branch => {
-      if (branch.monthly_revenue) {
-        branch.monthly_revenue.forEach(monthData => {
-          if (monthlyTotals[monthData.month] !== undefined) {
-            monthlyTotals[monthData.month] += parseFloat(monthData.student_fee || 0);
-          }
-        });
-      }
-    });
-    
-    // Prepare data for chart
-    chartLabels = months.map(month => month.substring(0, 3));
-    chartDataValues = Object.values(monthlyTotals);
-  } else {
-    // For single branch
-    if (revenueData.monthly_revenue) {
-      chartLabels = revenueData.monthly_revenue.map(item => item.month.substring(0, 3));
-      chartDataValues = revenueData.monthly_revenue.map(item => item.student_fee);
+  if (revenueData) {
+    if (Array.isArray(revenueData)) {
+      // For "all" branches - aggregate data by month
+      const monthlyTotals = {};
+      
+      // Initialize all months with 0
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                     'July', 'August', 'September', 'October', 'November', 'December'];
+      months.forEach(month => {
+        monthlyTotals[month] = 0;
+      });
+      
+      // Sum up revenue for each month across all branches
+      revenueData.forEach(branch => {
+        if (branch.monthly_revenue) {
+          branch.monthly_revenue.forEach(monthData => {
+            if (monthlyTotals[monthData.month] !== undefined) {
+              monthlyTotals[monthData.month] += parseFloat(monthData.student_fee || 0);
+            }
+          });
+        }
+      });
+      
+      // Prepare data for chart
+      chartLabels = months.map(month => month.substring(0, 3));
+      chartDataValues = Object.values(monthlyTotals);
     } else {
-      // If no monthly_revenue data, create empty arrays
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      chartLabels = months;
-      chartDataValues = Array(12).fill(0);
+      // For single branch
+      if (revenueData.monthly_revenue) {
+        chartLabels = revenueData.monthly_revenue.map(item => item.month.substring(0, 3));
+        chartDataValues = revenueData.monthly_revenue.map(item => item.student_fee);
+      } else {
+        // If no monthly_revenue data, create empty arrays
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        chartLabels = months;
+        chartDataValues = Array(12).fill(0);
+      }
     }
+  } else {
+    // If no revenueData, create empty arrays
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    chartLabels = months;
+    chartDataValues = Array(12).fill(0);
   }
-} else {
-  // If no revenueData, create empty arrays
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  chartLabels = months;
-  chartDataValues = Array(12).fill(0);
-}
 
   const chartData = {
     labels: chartLabels,
@@ -424,6 +425,51 @@ if (revenueData) {
     maintainAspectRatio: false
   };
 
+  // Year Picker Component
+  const YearPicker = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    
+    // Generate years from currentYear-2 to currentYear+9
+    for (let i = currentYear - 2; i <= currentYear + 9; i++) {
+      years.push(i);
+    }
+    
+    // Group years into rows of 4
+    const yearRows = [];
+    for (let i = 0; i < years.length; i += 4) {
+      yearRows.push(years.slice(i, i + 4));
+    }
+
+    return (
+      <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-10 w-64 p-4">
+        <div className="text-center font-semibold mb-3 text-gray-700">Select Year</div>
+        <div className="space-y-3">
+          {yearRows.map((row, rowIndex) => (
+            <div key={rowIndex} className="flex justify-between">
+              {row.map(year => (
+                <button
+                  key={year}
+                  className={`w-14 h-10 rounded-md flex items-center justify-center transition-colors ${
+                    year === selectedYear 
+                      ? 'bg-blue-500 text-white' 
+                      : 'hover:bg-gray-100 text-gray-700'
+                  }`}
+                  onClick={() => {
+                    setSelectedYear(year);
+                    setShowYearPicker(false);
+                  }}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <SAAdminLayout>
       <div className="px-6 bg-[#F4F9FD] min-h-screen">
@@ -452,18 +498,17 @@ if (revenueData) {
                 </select>
               </div>
              
-              <div className="flex items-center bg-gray-100 rounded-lg px-3 py-2">
-                <select
-                  className="bg-transparent border-none text-sm focus:ring-0"
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              {/* Year Picker Button */}
+              <div className="relative">
+                <button
+                  className="flex items-center bg-gray-100 rounded-lg px-3 py-2"
+                  onClick={() => setShowYearPicker(!showYearPicker)}
                 >
-                  {yearOptions.map(year => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
+                  <FaCalendarAlt className="text-gray-500 mr-2" />
+                  <span>{selectedYear}</span>
+                </button>
+                
+                {showYearPicker && <YearPicker />}
               </div>
             </div>
           </div>
