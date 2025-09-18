@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "../../../api/axiosConfig";
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 function StaffAttendancePage() {
   const [branches, setBranches] = useState([]);
@@ -19,6 +21,7 @@ function StaffAttendancePage() {
         setBranches(res.data || []);
       } catch (error) {
         console.error("Error fetching branches:", error);
+        toast.error("Error fetching branches");
       }
     };
     fetchBranches();
@@ -38,6 +41,7 @@ function StaffAttendancePage() {
         setStaffList(res.data.filter((s) => s.branch_id?.toString() === selectedBranch));
       } catch (error) {
         console.error("Error fetching staff:", error);
+        toast.error("Error fetching staff");
       }
     };
 
@@ -59,6 +63,7 @@ function StaffAttendancePage() {
       allPresent[s.id] = "Present";
     });
     setAttendanceData(allPresent);
+    toast.success("All staff marked as present");
   };
 
   // ✅ Attendance Save (Bulk ek hi request)
@@ -80,16 +85,30 @@ function StaffAttendancePage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      alert("✅ Staff Attendance saved successfully!");
+      toast.success("✅ Staff Attendance saved successfully!");
       setAttendanceData({});
     } catch (err) {
       console.error(err);
-      alert("❌ Error saving attendance");
+      toast.error("❌ Error saving attendance");
     }
   };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* Toast Container for notifications */}
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-cyan-500 text-white flex items-center justify-between shadow-lg border-b-4 border-indigo-600 mb-6 rounded-xl px-6 py-4">
         <h1 className="text-[30px] mb-2 font-nunito">Staff Attendance</h1>
