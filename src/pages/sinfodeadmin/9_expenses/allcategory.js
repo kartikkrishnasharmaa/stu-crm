@@ -8,8 +8,8 @@ function AllCategory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [branchFilter, setBranchFilter] = useState("all");
   const [branches, setBranches] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(null);
   const [editModal, setEditModal] = useState({ isOpen: false, category: null });
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, category: null });
   const [editForm, setEditForm] = useState({ name: "", branch_id: "" });
 
   // ✅ Fetch all categories
@@ -28,7 +28,7 @@ function AllCategory() {
           }),
           axios.get("/branches", {
             headers: { Authorization: `Bearer ${token}` },
-          })
+          }),
         ]);
 
         setCategories(categoriesRes.data);
@@ -48,45 +48,45 @@ function AllCategory() {
   // Filter categories based on search term and branch filter
   useEffect(() => {
     let result = categories;
-    
+
     if (searchTerm) {
-      result = result.filter(cat => 
-        cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (cat.branch && cat.branch.branch_name.toLowerCase().includes(searchTerm.toLowerCase()))
+      result = result.filter(
+        (cat) =>
+          cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (cat.branch &&
+            cat.branch.branch_name.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
-    
+
     if (branchFilter !== "all") {
-      result = result.filter(cat => cat.branch_id == branchFilter);
+      result = result.filter((cat) => cat.branch_id == branchFilter);
     }
-    
+
     setFilteredCategories(result);
   }, [searchTerm, branchFilter, categories]);
 
-  // Handle delete category
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this category?")) return;
-    
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`/categories/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      setCategories(categories.filter(cat => cat.id !== id));
-      setShowDropdown(null);
-      alert("Category deleted successfully!");
-    } catch (error) {
-      console.error("Error deleting category:", error);
-      alert("Failed to delete category");
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (editModal.isOpen || deleteModal.isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
     }
-  };
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [editModal.isOpen, deleteModal.isOpen]);
 
   // Handle update category
   const handleUpdate = (category) => {
     setEditModal({ isOpen: true, category });
     setEditForm({ name: category.name, branch_id: category.branch_id });
-    setShowDropdown(null);
+  };
+
+  // Handle delete category
+  const handleDelete = (category) => {
+    setDeleteModal({ isOpen: true, category });
   };
 
   // Handle save updated category
@@ -95,16 +95,19 @@ function AllCategory() {
     try {
       const token = localStorage.getItem("token");
       const { id } = editModal.category;
-      
-      const res = await axios.put(`/categories/${id}`, 
+
+      const res = await axios.put(
+        `/categories/${id}`,
         { name: editForm.name },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      setCategories(categories.map(cat => 
-        cat.id === id ? { ...cat, name: editForm.name } : cat
-      ));
-      
+
+      setCategories(
+        categories.map((cat) =>
+          cat.id === id ? { ...cat, name: editForm.name } : cat
+        )
+      );
+
       setEditModal({ isOpen: false, category: null });
       alert("Category updated successfully!");
     } catch (error) {
@@ -113,23 +116,37 @@ function AllCategory() {
     }
   };
 
-  // Toggle dropdown menu
-  const toggleDropdown = (id) => {
-    setShowDropdown(showDropdown === id ? null : id);
+  // Handle confirm delete category
+  const handleConfirmDelete = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const { id } = deleteModal.category;
+
+      await axios.delete(`/categories/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setCategories(categories.filter((cat) => cat.id !== id));
+      setDeleteModal({ isOpen: false, category: null });
+      alert("Category deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      alert("Failed to delete category");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
+        <div className="bg-white shadow-xl rounded-2xl">
           {/* Header Section */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
-            <h2 className="text-3xl font-bold mb-2">All Categories</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">All Categories</h2>
             <p className="text-blue-100">Manage and organize your product categories</p>
           </div>
 
           {/* Filters Section */}
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-4 md:p-6 border-b border-gray-200">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -145,7 +162,7 @@ function AllCategory() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              
+
               <div className="w-full md:w-48">
                 <select
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -153,7 +170,7 @@ function AllCategory() {
                   onChange={(e) => setBranchFilter(e.target.value)}
                 >
                   <option value="all">All Branches</option>
-                  {branches.map(branch => (
+                  {branches.map((branch) => (
                     <option key={branch.id} value={branch.id}>
                       {branch.branch_name}
                     </option>
@@ -163,8 +180,7 @@ function AllCategory() {
             </div>
           </div>
 
-          {/* Content Section */}
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             {loading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -179,66 +195,38 @@ function AllCategory() {
               </div>
             ) : (
               <div className="overflow-x-auto rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredCategories.map((cat) => (
-                      <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
-                      
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold">{cat.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          <div className="flex items-center">
-                            <span className="mr-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {cat.branch?.branch_code}
-                            </span>
-                            {cat.branch?.branch_name}
+                      <tr key={cat.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-4 text-sm font-semibold text-gray-900">{cat.name}</td>
+                        <td className="px-4 py-4 text-sm text-gray-700">{cat.branch?.branch_name}</td>
+                        <td className="px-4 py-4 text-sm text-gray-700">
+                          {new Date(cat.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                        </td>
+                        <td className="px-4 py-4 text-sm font-medium text-right">
+                          <div className="flex justify-end space-x-2">
+                            <button
+                              onClick={() => handleUpdate(cat)}
+                              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(cat)}
+                              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                            >
+                              Delete
+                            </button>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          {new Date(cat.created_at).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'short', 
-                            day: 'numeric' 
-                          })}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative">
-                          <button 
-                            onClick={() => toggleDropdown(cat.id)}
-                            className="inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                          >
-                            <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                            </svg>
-                          </button>
-                          
-                          {showDropdown === cat.id && (
-                            <div className="origin-top-right absolute right-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                              <div className="py-1" role="menu" aria-orientation="vertical">
-                                <button
-                                  onClick={() => handleUpdate(cat)}
-                                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                                  role="menuitem"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(cat.id)}
-                                  className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
-                                  role="menuitem"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          )}
                         </td>
                       </tr>
                     ))}
@@ -252,10 +240,10 @@ function AllCategory() {
 
       {/* Edit Modal */}
       {editModal.isOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Category</h3>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-auto">
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Edit Category</h3>
               <form onSubmit={handleSaveUpdate}>
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
@@ -265,27 +253,58 @@ function AllCategory() {
                     type="text"
                     id="name"
                     value={editForm.name}
-                    onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     required
+                    autoFocus
                   />
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={() => setEditModal({ isOpen: false, category: null })}
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
                   >
                     Save Changes
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-auto">
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Delete Category</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete the category "{deleteModal.category?.name}"? This action cannot be undone.
+              </p>
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setDeleteModal({ isOpen: false, category: null })}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         </div>
