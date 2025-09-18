@@ -12,16 +12,23 @@ const Login = () => {
 
   const [, setError] = useState("");
   const [, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess(false);
+    setIsLoading(true);
 
     try {
       const response = await axios.post("/login", formData);
@@ -33,20 +40,43 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(user));
 
       setSuccess(true);
+      setIsLoading(false);
+      
+      // Show success toast
+      toast.success('Login successful! Redirecting...', {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
 
-      if (user.role === "admin") {
-        navigate("/sinfodeadmin/dashboard");
-      } else if (user.role === "branch_manager") {
-        navigate("/sinfodemanager/dashboard");
-      } else if (user.role === "staff") {
-        navigate("/staff/dashboard");
-      } else {
-        navigate("/"); // default
-      }
+      // Navigate after a short delay to allow the toast to be seen
+      setTimeout(() => {
+        if (user.role === "admin") {
+          navigate("/sinfodeadmin/dashboard");
+        } else if (user.role === "branch_manager") {
+          navigate("/sinfodemanager/dashboard");
+        } else if (user.role === "staff") {
+          navigate("/staff/dashboard");
+        } else {
+          navigate("/"); // default
+        }
+      }, 2000);
+      
     } catch (err) {
+      setIsLoading(false);
       const errorMessage = err.response?.data?.message || "Invalid credentials";
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
@@ -54,14 +84,7 @@ const Login = () => {
     <div className="flex min-h-screen">
       {/* Left Side */}
       <div className="hidden md:flex w-1/2 bg-indigo-600 text-white flex-col justify-center items-center p-8">
-        {/* <h1 className="text-4xl font-bold mb-2">Admin Login</h1> */}
-
-        {/* Logo */}
         <img src="/imag.png" alt="Logo" className="w-[490px] h-[300px] mb-4" />
-
-        {/* Heading */}
-
-        {/* Subtitle */}
       </div>
 
       {/* Right Side - Login Form */}
@@ -85,7 +108,8 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter your email"
-                className="border-gray-300 rounded-md w-full p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="border border-gray-300 rounded-md w-full p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
               />
             </div>
 
@@ -101,32 +125,59 @@ const Login = () => {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Enter your password"
-                  className="border-gray-300 rounded-md w-full p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
+                  className="border border-gray-300 rounded-md w-full p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
+                  required
                 />
                 <button
-                  type="submit"
-                  className="absolute right-2 top-2 text-gray-500"
-                ></button>
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-600 focus:outline-none"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                      <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                    </svg>
+                  )}
+                </button>
               </div>
             </div>
 
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white text-lg p-2 rounded-md hover:bg-indigo-700 transition"
+              disabled={isLoading}
+              className={`w-full text-white text-lg p-2 rounded-md transition ${
+                isLoading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
+              }`}
             >
-              Login
+              {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </form>
         </div>
       </div>
 
-      {/* Toast */}
-      {/* <ToastContainer position="top-right" autoClose={3000} /> */}
+      {/* Toast Container - Now properly enabled */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };
