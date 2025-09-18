@@ -403,7 +403,7 @@ function AllCourse() {
                 {/* Price Section */}
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-green-600 font-bold text-xl">
-                    ₹{course.actual_price}
+                    ₹{course.discounted_price}
                   </span>
              
                 </div>
