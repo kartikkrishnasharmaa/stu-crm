@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import axios from "../../../api/axiosConfig";
 import Transferassest from "./transfer";
 import History from "./history";
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+
 
 function AddAssets() {
   const [branches, setBranches] = useState([]);
@@ -74,7 +77,7 @@ function AddAssets() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      alert("✅ Asset created successfully!");
+      toast.success("✅ Asset created successfully!");
       setFormData({
         asset_name: "",
         asset_code: "",
@@ -86,12 +89,24 @@ function AddAssets() {
       });
     } catch (error) {
       console.error("Error creating asset:", error.response?.data || error);
-      alert(error.response?.data?.message || "Failed to create asset!");
+      toast.error(error.response?.data?.message || "Failed to create asset!");
     }
   };
 
   return (
     <div className="items-center">
+       <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
       <div className="bg-white shadow-lg rounded-2xl p-4 w-full max-w-lg">
         <h1 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
           Create New Asset
