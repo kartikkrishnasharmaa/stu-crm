@@ -238,9 +238,7 @@ function StudentIDCardGenerator() {
             </div>
 
             <div className="modal-footer">
-              <button className="btn btn-print" onClick={handlePrint}>
-                Print
-              </button>
+
               <button className="btn btn-download" onClick={handleDownload}>
                 Download
               </button>
