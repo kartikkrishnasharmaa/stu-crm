@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "../../../api/axiosConfig";
 import { FaEdit, FaTrash, FaDownload, FaFilter } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 function Allassets() {
   const [assets, setAssets] = useState([]);
@@ -33,6 +35,7 @@ function Allassets() {
       setAssets(res.data);
     } catch (error) {
       console.error("Error fetching assets:", error);
+      toast.error("Failed to load assets");
     }
   };
 
@@ -50,6 +53,7 @@ function Allassets() {
       setBranches(branchData);
     } catch (error) {
       console.error("Error fetching branches:", error);
+      toast.error("Failed to load branches");
     }
   };
 
@@ -69,6 +73,7 @@ function Allassets() {
       setStaffs(staffData);
     } catch (error) {
       console.error("Error fetching staff:", error);
+      toast.error("Failed to load staff data");
     }
   };
 
@@ -101,9 +106,11 @@ function Allassets() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setShowModal(false);
+      toast.success("Asset updated successfully!");
       fetchAssets();
     } catch (error) {
       console.error("Error updating asset:", error);
+      toast.error("Failed to update asset");
     }
   };
 
@@ -115,9 +122,11 @@ function Allassets() {
       await axios.delete(`/assets/${id}/delete`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      toast.success("Asset deleted successfully!");
       fetchAssets();
     } catch (error) {
       console.error("Error deleting asset:", error);
+      toast.error("Failed to delete asset");
     }
   };
 
@@ -137,6 +146,7 @@ function Allassets() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Assets");
     XLSX.writeFile(workbook, "assets.xlsx");
+    toast.success("Assets exported successfully!");
   };
 
   // ✅ Filter assets based on selected branch and status
@@ -162,6 +172,20 @@ function Allassets() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">All Assets</h1>
         
