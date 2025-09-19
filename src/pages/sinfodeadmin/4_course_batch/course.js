@@ -9,6 +9,8 @@ import { FaEdit, FaTrash, FaEye,FaClock,FaMapMarkerAlt,FaUserTie,FaRupeeSign } f
 import Batch from "./batch";
 import Allbatch from "./allbatch";
 import htmlToDraft from "html-to-draftjs";
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 function AddCourse() {
   const [courseName, setCourseName] = useState("");
@@ -94,7 +96,7 @@ function AddCourse() {
       const res = await axios.post("/courses/store", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      alert("✅ Course created successfully!");
+      toast.success("✅ Course created successfully!");
       console.log("Response:", res.data);
       // Reset form
       setCourseName("");
@@ -107,12 +109,24 @@ function AddCourse() {
       setSelectedBranch("");
     } catch (error) {
       console.error("Error creating course:", error);
-      alert("❌ Failed to create course");
+      toast.error("❌ Failed to create course");
     }
   };
 
   return (
     <div className="p-6 w-full bg-[#F4F9FD]">
+       <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
       <h1 className="text-[30px] mb-2 font-semibold font-nunito">
         Create Course
       </h1>
@@ -415,12 +429,12 @@ function AllCourse() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      alert("✅ Course updated successfully!");
+      toast.success(" Course updated successfully!");
       setModalType("");
       fetchCourses();
     } catch (error) {
       console.error("Update failed:", error.response?.data || error);
-      alert("❌ Update failed!");
+      toast.error("❌ Update failed!");
     }
   };
 
@@ -431,12 +445,12 @@ function AllCourse() {
       await axios.delete(`/courses/${selectedCourse.id}/destroy`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      alert("Course deleted successfully!");
+      toast.success("✅ Course deleted successfully!");
       setModalType("");
       fetchCourses();
     } catch (error) {
       console.error("Delete failed:", error);
-      alert("Delete failed!");
+      toast.error("❌ Delete failed!");
     }
   };
 
@@ -447,6 +461,18 @@ function AllCourse() {
 
   return (
     <div className="p-6">
+          <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
       <h1 className="text-[30px] mb-6 font-semibold font-nunito">
         All Course Management
       </h1>
