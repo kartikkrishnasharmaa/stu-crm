@@ -13,6 +13,8 @@ import {
 import { HiDotsVertical } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Accountant() {
   const [accountantList, setAccountantList] = useState([]);
@@ -212,13 +214,13 @@ export default function Accountant() {
         await axios.put(`/accountants/${editingAccountantId}`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Accountant updated successfully!");
+        toast.success("Accountant updated successfully!");
       } else {
         // Create
         await axios.post("/accountants", formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Accountant created successfully!");
+        toast.success("Accountant created successfully!");
       }
       fetchAccountants();
       setIsModalOpen(false);
@@ -226,7 +228,7 @@ export default function Accountant() {
       resetForm();
     } catch (error) {
       console.error(error);
-      alert(editingAccountantId ? "Error updating accountant" : "Error creating accountant");
+      toast.error(editingAccountantId ? "Error updating accountant" : "Error creating accountant");
     } finally {
       setLoading(false);
     }
@@ -253,6 +255,18 @@ export default function Accountant() {
 
   return (
     <div className="px-5 py-6">
+        <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         {/* Left: Heading */}
