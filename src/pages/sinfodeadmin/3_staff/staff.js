@@ -13,6 +13,8 @@ import {
 import { HiDotsVertical } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Staff() {
   const [staffList, setStaffList] = useState([]);
@@ -73,6 +75,7 @@ export default function Staff() {
       setBranches(branchList);
     } catch (error) {
       console.error("Error fetching branches:", error);
+      toast.error("Failed to load branches");
     }
   };
 
@@ -85,6 +88,7 @@ export default function Staff() {
       setStaffList(res.data || []);
     } catch (error) {
       console.error("Error fetching staff:", error);
+      toast.error("Failed to load staff data");
     }
   };
 
@@ -128,8 +132,10 @@ export default function Staff() {
           staff.id === id ? { ...staff, status: newStatus } : staff
         )
       );
+      toast.success(`Staff status changed to ${newStatus}`);
     } catch (error) {
       console.error("Error updating status:", error);
+      toast.error("Failed to update staff status");
     }
   };
 
@@ -140,9 +146,11 @@ export default function Staff() {
         await axios.delete(`/staff/delete/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        toast.success("Staff member deleted successfully!");
         fetchStaff();
       } catch (error) {
         console.error("Error deleting staff:", error);
+        toast.error("Failed to delete staff member");
       }
     }
   };
@@ -212,12 +220,12 @@ export default function Staff() {
         await axios.put(`/staff/update/${editingStaffId}`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Staff updated successfully!");
+        toast.success("Staff updated successfully!");
       } else {
         await axios.post("/staff/create", formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Staff created successfully!");
+        toast.success("Staff created successfully!");
       }
       fetchStaff();
       setIsModalOpen(false);
@@ -225,7 +233,7 @@ export default function Staff() {
       resetForm();
     } catch (error) {
       console.error(error);
-      alert(editingStaffId ? "Error updating staff" : "Error creating staff");
+      toast.error(editingStaffId ? "Error updating staff" : "Error creating staff");
     } finally {
       setLoading(false);
     }
@@ -268,10 +276,25 @@ export default function Staff() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Staff Data");
     XLSX.writeFile(workbook, "staff_data.xlsx");
+    toast.success("Staff data exported successfully!");
   };
 
   return (
     <div className="px-5">
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       <div className="flex items-center gap-4 mb-4">
         <select
           value={selectedBranch}
@@ -492,9 +515,9 @@ export default function Staff() {
               onSubmit={handleSubmit}
               className="grid mt-3 grid-cols-1 md:grid-cols-2 gap-4"
             >
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 flex">
                 <h3 className="text-md font-medium mb-2 border-b pb-1">Employee Details</h3>
-                 <p>(* Use Designation "Trainer")</p>
+                <p>(* Use Designation "Trainer")</p>
               </div>
 
               <input
