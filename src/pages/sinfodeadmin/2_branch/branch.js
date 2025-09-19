@@ -21,6 +21,8 @@ import {
   FaKey
 } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Branch() {
   const [branches, setBranches] = useState([]);
@@ -82,7 +84,7 @@ export default function Branch() {
       setIsModalOpen(true);
     } catch (error) {
       console.error("Failed to load branch details for edit:", error);
-      alert("Could not load branch data. Please try again.");
+      toast.error("Could not load branch data. Please try again.");
     }
   };
 
@@ -97,7 +99,7 @@ export default function Branch() {
       setViewModalOpen(true);
     } catch (error) {
       console.error("Error fetching branch details:", error);
-      alert("Failed to load branch details");
+      toast.error("Failed to load branch details");
     } finally {
       setDetailsLoading(false);
     }
@@ -123,6 +125,7 @@ export default function Branch() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Branches");
     XLSX.writeFile(workbook, "branches_export.xlsx");
+    toast.success("Branches exported successfully!");
   };
 
   const [formData, setFormData] = useState({
@@ -146,7 +149,7 @@ export default function Branch() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("No token found! Please login again.");
+        toast.error("No token found! Please login again.");
         return;
       }
       const res = await axios.get("branches", {
@@ -172,7 +175,7 @@ export default function Branch() {
       setBranches(branchData);
     } catch (error) {
       console.error("Error fetching branches:", error);
-      alert("Failed to load branches");
+      toast.error("Failed to load branches");
     }
   };
 
@@ -194,10 +197,10 @@ export default function Branch() {
           branch.id === id ? { ...branch, status: newStatus } : branch
         )
       );
-      alert(`Branch status changed to ${newStatus}`);
+      toast.success(`Branch status changed to ${newStatus}`);
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Failed to update status");
+      toast.error("Failed to update status");
     }
   };
 
@@ -208,11 +211,11 @@ export default function Branch() {
         await axios.delete(`branches/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Branch deleted successfully!");
+        toast.success("Branch deleted successfully!");
         fetchBranches();
       } catch (error) {
         console.error("Error deleting branch:", error);
-        alert("Failed to delete branch");
+        toast.error("Failed to delete branch");
       }
     }
   };
@@ -267,13 +270,13 @@ export default function Branch() {
             branch.id === editingBranchId ? { ...branch, ...res.data } : branch
           )
         );
-        alert("Branch updated successfully!");
+        toast.success("Branch updated successfully!");
       } else {
         const res = await axios.post("branches", formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setBranches([...branches, res.data]);
-        alert("Branch created successfully!");
+        toast.success("Branch created successfully!");
       }
       fetchBranches();
       setIsModalOpen(false);
@@ -281,7 +284,7 @@ export default function Branch() {
       resetForm();
     } catch (error) {
       console.error(error);
-      alert(
+      toast.error(
         editingBranchId ? "Error updating branch" : "Error creating branch"
       );
     } finally {
@@ -311,6 +314,20 @@ export default function Branch() {
 
   return (
     <SAAdminLayout>
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       <div className="max-w-7xl mx-auto p-6 w-full">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
