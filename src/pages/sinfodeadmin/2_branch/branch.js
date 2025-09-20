@@ -316,7 +316,7 @@ export default function Branch() {
     <SAAdminLayout>
       {/* Toast Container */}
       <ToastContainer
-        position="top-right"
+        position="top-center"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
