@@ -20,6 +20,8 @@ import {
 } from "react-icons/fa";
 import { HiDotsVertical } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Allstudents() {
   const [students, setStudents] = useState([]);
@@ -34,6 +36,8 @@ export default function Allstudents() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editFormData, setEditFormData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [editPhoto, setEditPhoto] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState("");
   const navigate = useNavigate();
 
   // Close menu on outside click
@@ -117,6 +121,7 @@ export default function Allstudents() {
     if (studentData) {
       setSelectedStudent(studentData);
       setEditFormData(studentData);
+      setPhotoPreview(studentData.photo || "");
       setShowEditModal(true);
     }
     setIsLoading(false);
@@ -124,6 +129,7 @@ export default function Allstudents() {
   };
 
   // Handle Update Student
+// Handle Update Student
   const handleUpdateStudent = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -142,6 +148,35 @@ export default function Allstudents() {
     setIsLoading(false);
   };
 
+  // Handle photo change
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditPhoto(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle input change with number validation for contact fields
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    // For contact fields, only allow numbers and limit to 10 digits
+    if (name === 'contact_number' || name === 'guardian_contact') {
+      // Remove non-numeric characters and limit to 10 digits
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setEditFormData({ ...editFormData, [name]: numericValue });
+    } else {
+      setEditFormData({ ...editFormData, [name]: value });
+    }
+  };
+
   // Handle Delete Student
   const handleDeleteStudent = async () => {
     setIsLoading(true);
@@ -152,10 +187,10 @@ export default function Allstudents() {
       });
       setShowDeleteModal(false);
       fetchStudents(); // Refresh the list
-      alert("Student deleted successfully!");
+      toast.success("Student deleted successfully!");
     } catch (error) {
       console.error("Error deleting student:", error);
-      alert("Failed to delete student.");
+      toast.error("Failed to delete student.");
     }
     setIsLoading(false);
   };
@@ -182,7 +217,7 @@ export default function Allstudents() {
     // Create workbook and worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(dataForExport);
-    
+
     // Set column widths
     const columnWidths = [
       { wch: 15 }, // Admission No
@@ -195,15 +230,15 @@ export default function Allstudents() {
       { wch: 20 }, // Guardian Name
       { wch: 15 }, // Guardian Contact
       { wch: 40 }, // Address
-      { wch: 20 }, // Branch
+      { wch: 35 }, // Branch
       { wch: 20 }, // Course
       { wch: 20 }  // Batch
     ];
     worksheet['!cols'] = columnWidths;
-    
+
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-    
+
     // Generate Excel file and trigger download
     XLSX.writeFile(workbook, "students.xlsx");
   };
@@ -233,6 +268,18 @@ export default function Allstudents() {
 
   return (
     <div className="px-5">
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
         <h1 className="text-[34px] font-nunito">
@@ -241,7 +288,7 @@ export default function Allstudents() {
             ({filteredStudents.length})
           </span>
         </h1>
-        
+
         <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
           {/* Branch Dropdown */}
           <select
@@ -256,31 +303,29 @@ export default function Allstudents() {
               </option>
             ))}
           </select>
-          
+
           {/* View Mode Toggle */}
           <div className="flex gap-2 bg-gray-200 p-1 rounded-full">
             <button
               onClick={() => setViewMode("list")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                viewMode === "list"
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === "list"
                   ? "bg-[#3F8CFF] text-white"
                   : "bg-transparent text-gray-600 hover:bg-gray-300"
-              }`}
+                }`}
             >
               List View
             </button>
             <button
               onClick={() => setViewMode("card")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                viewMode === "card"
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === "card"
                   ? "bg-[#3F8CFF] text-white"
                   : "bg-transparent text-gray-600 hover:bg-gray-300"
-              }`}
+                }`}
             >
               Card View
             </button>
           </div>
-          
+
           {/* Export Button */}
           <button
             onClick={exportToExcel}
@@ -325,7 +370,7 @@ export default function Allstudents() {
               <div className="col-span-2">Branch</div>
               <div className="col-span-1 text-center">Actions</div>
             </div>
-            
+
             {/* Table Rows */}
             <div className="space-y-3">
               {filteredStudents.map((student) => (
@@ -349,27 +394,27 @@ export default function Allstudents() {
                       </p>
                     </div>
                   </div>
-                  
+
                   {/* Email */}
                   <div className="col-span-2 text-gray-600 truncate">
                     {student.email || "N/A"}
                   </div>
-                  
+
                   {/* Contact */}
                   <div className="col-span-2 text-gray-600">
                     {student.contact_number || "N/A"}
                   </div>
-                  
+
                   {/* Admission Number */}
                   {/* <div className="col-span-2 text-gray-600 font-medium">
                     {student.admission_number || "N/A"}
                   </div> */}
-                  
+
                   {/* Branch */}
                   <div className="col-span-2 text-gray-600">
                     {student.branch?.branch_name || "N/A"}
                   </div>
-                  
+
                   {/* Actions */}
                   <div className="col-span-1 flex justify-center">
                     <div className="relative">
@@ -447,7 +492,7 @@ export default function Allstudents() {
               <span className="mt-4 px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
                 Admission Date: {formatDate(student.admission_date)}
               </span>
-              
+
               {/* Card View Actions */}
               <div className="flex mt-4 space-x-2">
                 <button
@@ -493,7 +538,7 @@ export default function Allstudents() {
                 <FaTimes size={24} />
               </button>
             </div>
-            
+
             <div className="p-6">
               <div className="flex flex-col md:flex-row gap-6 mb-6">
                 <div className="flex-shrink-0 mx-auto md:mx-0">
@@ -503,7 +548,7 @@ export default function Allstudents() {
                     className="w-40 h-40 rounded-full object-cover border-4 border-blue-100"
                   />
                 </div>
-                
+
                 <div className="flex-grow">
                   <h1 className="text-3xl font-bold mb-2">{selectedStudent.full_name}</h1>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -534,7 +579,7 @@ export default function Allstudents() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Address Section */}
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -544,7 +589,7 @@ export default function Allstudents() {
                   </h3>
                   <p className="text-gray-700">{selectedStudent.address}</p>
                 </div>
-                
+
                 {/* Guardian Info */}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold mb-3 flex items-center">
@@ -559,7 +604,7 @@ export default function Allstudents() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Branch Info */}
                 <div className="bg-blue-50 p-4 rounded-lg">
@@ -571,7 +616,7 @@ export default function Allstudents() {
                   <p className="text-gray-600 text-sm">{selectedStudent.branch?.address}</p>
                   <p className="text-gray-600 text-sm">{selectedStudent.branch?.city}, {selectedStudent.branch?.state}</p>
                 </div>
-                
+
                 {/* Course Info */}
                 <div className="bg-green-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold mb-3 flex items-center">
@@ -582,7 +627,7 @@ export default function Allstudents() {
                   <p className="text-gray-600 text-sm"> {selectedStudent.course?.duration} months</p>
                   <p className="text-gray-600 text-sm">Mode: {selectedStudent.course?.mode}</p>
                 </div>
-           
+
               </div>
             </div>
           </div>
@@ -596,111 +641,156 @@ export default function Allstudents() {
             <div className="flex justify-between items-center p-6 border-b">
               <h2 className="text-2xl font-bold">Edit Student</h2>
               <button
-                onClick={() => setShowEditModal(false)}
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditPhoto(null);
+                  setPhotoPreview("");
+                }}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <FaTimes size={24} />
               </button>
             </div>
-            
+
             <form onSubmit={handleUpdateStudent} className="p-6">
+              {/* Photo Upload */}
+             
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Full Name</label>
+                  <label className="block text-sm font-medium mb-1">Full Name *</label>
                   <input
                     type="text"
+                    name="full_name"
                     value={editFormData.full_name || ''}
-                    onChange={(e) => setEditFormData({...editFormData, full_name: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full border rounded-lg p-2"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <label className="block text-sm font-medium mb-1">Email *</label>
                   <input
                     type="email"
+                    name="email"
                     value={editFormData.email || ''}
-                    onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full border rounded-lg p-2"
-                    
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Contact Number</label>
+                  <label className="block text-sm font-medium mb-1">Contact Number *</label>
                   <input
-                    type="text"
+                    type="tel"
+                    name="contact_number"
                     value={editFormData.contact_number || ''}
-                    onChange={(e) => setEditFormData({...editFormData, contact_number: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full border rounded-lg p-2"
-                    
+                    pattern="[0-9]{10}"
+                    maxLength="10"
+                    required
                   />
+                  {editFormData.contact_number && editFormData.contact_number.length !== 10 && (
+                    <p className="text-red-500 text-xs mt-1">Must be exactly 10 digits</p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Date of Birth</label>
+                  <label className="block text-sm font-medium mb-1">Date of Birth *</label>
                   <input
                     type="date"
+                    name="dob"
                     value={editFormData.dob || ''}
-                    onChange={(e) => setEditFormData({...editFormData, dob: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full border rounded-lg p-2"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Gender</label>
+                  <label className="block text-sm font-medium mb-1">Gender *</label>
                   <select
+                    name="gender"
                     value={editFormData.gender || ''}
-                    onChange={(e) => setEditFormData({...editFormData, gender: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full border rounded-lg p-2"
+                    required
                   >
+                    <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Admission Number *</label>
+                  <input
+                    type="text"
+                    name="admission_number"
+                    value={editFormData.admission_number || ''}
+                    onChange={handleInputChange}
+                    className="w-full border rounded-lg p-2"
+                    required
+                  />
+                </div>
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Address</label>
                 <textarea
+                  name="address"
                   value={editFormData.address || ''}
-                  onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
+                  onChange={handleInputChange}
                   className="w-full border rounded-lg p-2"
                   rows="3"
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Guardian Name</label>
                   <input
                     type="text"
+                    name="guardian_name"
                     value={editFormData.guardian_name || ''}
-                    onChange={(e) => setEditFormData({...editFormData, guardian_name: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full border rounded-lg p-2"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Guardian Contact</label>
                   <input
-                    type="text"
+                    type="tel"
+                    name="guardian_contact"
                     value={editFormData.guardian_contact || ''}
-                    onChange={(e) => setEditFormData({...editFormData, guardian_contact: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full border rounded-lg p-2"
+                    pattern="[0-9]{10}"
+                    maxLength="10"
                   />
+                  {editFormData.guardian_contact && editFormData.guardian_contact.length !== 10 && (
+                    <p className="text-red-500 text-xs mt-1">Must be exactly 10 digits</p>
+                  )}
                 </div>
               </div>
-              
+
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowEditModal(false)}
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditPhoto(null);
+                    setPhotoPreview("");
+                  }}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  disabled={isLoading}
                 >
-                  Update Student
+                  {isLoading ? "Updating..." : "Update Student"}
                 </button>
               </div>
             </form>
@@ -721,7 +811,7 @@ export default function Allstudents() {
                 <FaTimes size={24} />
               </button>
             </div>
-            
+
             <div className="p-6">
               <p className="text-gray-700 mb-4">
                 Are you sure you want to delete student <strong>{selectedStudent.full_name}</strong>? This action cannot be undone.
