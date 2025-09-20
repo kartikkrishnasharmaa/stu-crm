@@ -4,6 +4,9 @@ import axios from "../../../api/axiosConfig";
 import Allstudents from "./allstudents";
 import Idcard from "./idcard";
 import AcademicProgress from "./academic";
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+
 function AddStudent() {
   const [fullName, setFullName] = useState("");
   const [dob, setDob] = useState("");
@@ -30,6 +33,7 @@ function AddStudent() {
   const [courseFee, setCourseFee] = useState(0);
   const [finalFee, setFinalFee] = useState(0);
   const [selectedCoupon, setSelectedCoupon] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -38,13 +42,21 @@ function AddStudent() {
       .get("/courses/index", {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => setCourses(res.data || []));
+      .then((res) => setCourses(res.data || []))
+      .catch((error) => {
+        console.error("Error fetching courses:", error);
+        toast.error("Failed to fetch courses");
+      });
 
     axios
       .get("/branches", {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => setBranches(res.data || []));
+      .then((res) => setBranches(res.data || []))
+      .catch((error) => {
+        console.error("Error fetching branches:", error);
+        toast.error("Failed to fetch branches");
+      });
 
     axios
       .get("/batches/show", {
@@ -55,13 +67,21 @@ function AddStudent() {
           ? res.data
           : res.data.data || [];
         setBatches(batchList);
+      })
+      .catch((error) => {
+        console.error("Error fetching batches:", error);
+        toast.error("Failed to fetch batches");
       });
 
     axios
       .get("/coupons", {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => setCoupons(res.data || []));
+      .then((res) => setCoupons(res.data || []))
+      .catch((error) => {
+        console.error("Error fetching coupons:", error);
+        toast.error("Failed to fetch coupons");
+      });
   }, []);
 
   useEffect(() => {
@@ -79,18 +99,20 @@ function AddStudent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    
     try {
-      const { name, value, gc } = e.target;
-
-     if (contactNumber.length !== 10) {
-    alert("Contact number must be exactly 10 digits");
-    return;
-  }
-  
-  if (guardianContact && guardianContact.length !== 10) {
-    alert("Guardian contact must be exactly 10 digits if provided");
-    return;
-  }
+      if (contactNumber.length !== 10) {
+        toast.error("Contact number must be exactly 10 digits");
+        setLoading(false);
+        return;
+      }
+      
+      if (guardianContact && guardianContact.length !== 10) {
+        toast.error("Guardian contact must be exactly 10 digits if provided");
+        setLoading(false);
+        return;
+      }
 
       const token = localStorage.getItem("token");
       const formData = new FormData();
@@ -109,7 +131,6 @@ function AddStudent() {
       formData.append("batch_id", batchId);
       formData.append("admission_date", admissionDate);
       formData.append("branch_id", branchId);
-
       formData.append("final_fee", finalFee);
       formData.append("coupon_id", selectedCoupon);
 
@@ -120,15 +141,59 @@ function AddStudent() {
         },
       });
 
-      alert("✅ Student created successfully!");
+      toast.success("Student created successfully!");
+      
+      // Reset form
+      setFullName("");
+      setDob("");
+      setGender("");
+      setContactNumber("");
+      setEmail("");
+      setAddress("");
+      setPhoto(null);
+      setGuardianName("");
+      setGuardianContact("");
+      setAdmissionNumber("");
+      setCourseId("");
+      setBatchId("");
+      setAdmissionDate("");
+      setBranchId("");
+      setCourseFee(0);
+      setFinalFee(0);
+      setSelectedCoupon("");
+      
     } catch (error) {
       console.error("Error creating student:", error.response?.data || error);
-      alert("❌ Failed to create student");
+      
+      if (error.response?.data?.message) {
+        toast.error(`❌ ${error.response.data.message}`);
+      } else if (error.response?.data?.errors) {
+        // Handle validation errors
+        const errorMessages = Object.values(error.response.data.errors).flat();
+        errorMessages.forEach(msg => toast.error(`❌ ${msg}`));
+      } else {
+        toast.error("❌ Failed to create student");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="p-6 w-full bg-[#F4F9FD]">
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       <h1 className="text-[30px] mb-4 font-semibold">Add Student</h1>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
@@ -144,6 +209,7 @@ function AddStudent() {
               onChange={(e) => setFullName(e.target.value)}
               className="w-full border rounded-lg px-3 py-2"
               placeholder="Enter full name"
+              required
             />
           </div>
           <div>
@@ -155,6 +221,7 @@ function AddStudent() {
               value={dob}
               onChange={(e) => setDob(e.target.value)}
               className="w-full border rounded-lg px-3 py-2"
+              required
             />
           </div>
           <div>
@@ -163,6 +230,7 @@ function AddStudent() {
               value={gender}
               onChange={(e) => setGender(e.target.value)}
               className="w-full border rounded-lg px-3 py-2"
+              required
             >
               <option value="">Select</option>
               <option value="Male">Male</option>
@@ -182,7 +250,7 @@ function AddStudent() {
               }}
               className="w-full border rounded-lg px-3 py-2"
               placeholder="Enter contact number"
-              type="tel" // Better for phone number input
+              type="tel"
               pattern="[0-9]{10}"
               required
             />
@@ -197,6 +265,7 @@ function AddStudent() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border rounded-lg px-3 py-2"
               placeholder="Enter email"
+              required
             />
           </div>
           <div>
@@ -255,7 +324,6 @@ function AddStudent() {
 
         {/* Admission Details */}
         <div className="bg-white shadow-md rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-
           <div>
             <label className="block text-sm font-medium mb-1">
               Admission Date *
@@ -265,6 +333,7 @@ function AddStudent() {
               value={admissionDate}
               onChange={(e) => setAdmissionDate(e.target.value)}
               className="w-full border rounded-lg px-3 py-2"
+              required
             />
           </div>
           <div>
@@ -273,6 +342,7 @@ function AddStudent() {
               value={courseId}
               onChange={(e) => setCourseId(e.target.value)}
               className="w-full border rounded-lg px-3 py-2"
+              required
             >
               <option value="">Select</option>
               {courses.map((course) => (
@@ -290,6 +360,7 @@ function AddStudent() {
               value={batchId}
               onChange={(e) => setBatchId(e.target.value)}
               className="w-full border rounded-lg px-3 py-2"
+              required
             >
               <option value="">Select</option>
               {batches.map((batch) => (
@@ -320,9 +391,10 @@ function AddStudent() {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl"
+            disabled={loading}
+            className="bg-[#3F8CFF] hover:bg-blue-700 text-white px-4 py-2 rounded-3xl disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            ✨ Add Student
+            {loading ? "Creating..." : "✨ Add Student"}
           </button>
         </div>
       </form>
