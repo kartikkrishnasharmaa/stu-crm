@@ -722,7 +722,7 @@ const BranchCommunication = () => {
                     )}
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Amount</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Amount  (Optional)</label>
                       <input
                         type="number"
                         name="amount"
