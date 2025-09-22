@@ -278,7 +278,7 @@ export default function Attendance() {
                 : "hover:bg-blue-100 text-black"
             }`}
           >
-            📋 All Attendance
+            📋 View Student Attendance
           </button>
           <button
             onClick={() => setActiveTab("staffAttendance")}
