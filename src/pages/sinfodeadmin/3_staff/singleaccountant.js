@@ -136,6 +136,34 @@ export default function StaffDetail() {
 
         {/* Right Content Section */}
         <div className="flex-1 bg-white shadow-md rounded-xl p-6">
+          {/* Login Credentials */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Login Credentials</h2>
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Login Email</p>
+                  <p className="text-lg font-semibold">{staff.user?.email || "N/A"}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-sm font-medium text-gray-600">Password</p>
+                  <div className="flex items-center justify-between bg-white p-3 rounded border">
+                    <p className="text-lg font-mono">{staff.user?.plain_password || "N/A"}</p>
+                    <button 
+                      className="text-blue-500 text-sm font-medium hover:text-blue-700"
+                      onClick={() => {
+                        navigator.clipboard.writeText(staff.user?.plain_password || "");
+                        alert("Password copied to clipboard!");
+                      }}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">System Information</h2>
             <div className="bg-gray-50 p-4 rounded-lg">
