@@ -110,7 +110,7 @@ const Adminsidebar = ({ isSidebarOpen, toggleSidebar }) => {
     //   link: "/sinfodeadmin/access",
     // },
     {
-      name: "Coupans",
+      name: "Coupons",
       icon: <FaGift />,
       link: "/sinfodeadmin/campaign",
     },
