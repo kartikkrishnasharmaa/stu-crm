@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import SAAdminLayout from "../../../layouts/Sinfodeadmin";
 import axios from "../../../api/axiosConfig";
+import * as XLSX from "xlsx";
 
 export default function Lead() {
   const [leads, setLeads] = useState([]);
@@ -11,6 +12,7 @@ export default function Lead() {
   const [staffList, setStaffList] = useState([]);
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [reportFilter, setReportFilter] = useState("all"); // New state for report filtering
 
   // Form state
   const [formData, setFormData] = useState({
@@ -322,6 +324,28 @@ export default function Lead() {
     );
   };
 
+  // Handle report card clicks
+  const handleReportClick = (filterType) => {
+    setReportFilter(filterType);
+    setActiveTab("leads");
+    
+    // Set status filter based on report type
+    switch (filterType) {
+      case "converted":
+        setStatusFilter("Converted");
+        break;
+      case "in-progress":
+        setStatusFilter("in-progress");
+        break;
+      case "lost":
+        setStatusFilter("Lost");
+        break;
+      default:
+        setStatusFilter("");
+        break;
+    }
+  };
+
   // Filter leads based on search and status filter
   const filteredLeads = leads.filter((lead) => {
     const matchesSearch =
@@ -330,8 +354,12 @@ export default function Lead() {
       lead.email_address.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lead.contact_number_primary.includes(searchTerm);
 
-    const matchesStatus =
-      statusFilter === "" || lead.lead_status === statusFilter;
+    let matchesStatus = statusFilter === "" || lead.lead_status === statusFilter;
+    
+    // Special handling for in-progress filter
+    if (statusFilter === "in-progress") {
+      matchesStatus = ["Contacted", "Follow-up", "Demo Scheduled"].includes(lead.lead_status);
+    }
 
     return matchesSearch && matchesStatus;
   });
@@ -345,6 +373,57 @@ export default function Lead() {
     ["Contacted", "Follow-up", "Demo Scheduled"].includes(l.lead_status)
   ).length;
   const lostLeads = leads.filter((l) => l.lead_status === "Lost").length;
+
+  // Export to Excel function
+  const exportToExcel = (data, fileName) => {
+    // Prepare data for export
+    const exportData = data.map(lead => ({
+      "Lead Code": lead.lead_code || "",
+      "Full Name": lead.full_name || "",
+      "Email": lead.email_address || "",
+      "Primary Contact": lead.contact_number_primary || "",
+      "Alternate Contact": lead.contact_number_alternate || "",
+      "Status": lead.lead_status || "",
+      "Priority": lead.priority || "",
+      "Source": lead.lead_source || "",
+      "Assigned To": lead.assigned_to?.employee_name || "Unassigned",
+      "Course": lead.course_id ? courses.find(c => c.id === lead.course_id)?.course_name || "" : "",
+      "Budget Range": lead.budget_range || "",
+      "Branch": lead.branch_id ? branches.find(b => b.id === lead.branch_id)?.branchName || "" : "",
+      "Notes": lead.notes || "",
+      "Follow-up Date": lead.follow_up_datetime || "",
+      "Created At": lead.created_at || ""
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Leads");
+    XLSX.writeFile(wb, `${fileName}.xlsx`);
+  };
+
+  // Export filtered data
+  const exportFilteredData = () => {
+    let fileName = "All_Leads";
+    let dataToExport = filteredLeads;
+
+    if (statusFilter === "Converted") {
+      fileName = "Converted_Leads";
+    } else if (statusFilter === "in-progress") {
+      fileName = "In_Progress_Leads";
+      dataToExport = leads.filter(lead => 
+        ["Contacted", "Follow-up", "Demo Scheduled"].includes(lead.lead_status)
+      );
+    } else if (statusFilter === "Lost") {
+      fileName = "Lost_Leads";
+    }
+
+    exportToExcel(dataToExport, fileName);
+  };
+
+  // Export all leads
+  const exportAllLeads = () => {
+    exportToExcel(leads, "All_Leads");
+  };
 
   return (
     <SAAdminLayout>
@@ -375,7 +454,11 @@ export default function Lead() {
             <div className="border-b border-sf-border">
               <nav className="flex space-x-8 px-6">
                 <button
-                  onClick={() => setActiveTab("leads")}
+                  onClick={() => {
+                    setActiveTab("leads");
+                    setReportFilter("all");
+                    setStatusFilter("");
+                  }}
                   className={`py-4 px-1 border-b-2 ${activeTab === "leads"
                       ? "border-sf-blue text-sf-blue"
                       : "border-transparent text-sf-text-light hover:text-sf-text"
@@ -414,6 +497,11 @@ export default function Lead() {
                   <div className="flex items-center space-x-4">
                     <h2 className="text-2xl font-semibold text-sf-text">
                       Leads
+                      {reportFilter !== "all" && (
+                        <span className="ml-2 text-sm font-normal text-sf-text-light capitalize">
+                          ({reportFilter.replace("-", " ")})
+                        </span>
+                      )}
                     </h2>
                     <span className="bg-sf-blue-light text-sf-blue px-3 py-1 rounded-full text-sm font-medium">
                       {filteredLeads.length} item
@@ -443,7 +531,14 @@ export default function Lead() {
                       <option value="Demo Scheduled">Demo Scheduled</option>
                       <option value="Converted">Converted</option>
                       <option value="Lost">Lost</option>
+                      <option value="in-progress">In Progress</option>
                     </select>
+                    <button
+                      onClick={exportFilteredData}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+                    >
+                      <i className="fas fa-file-excel mr-2"></i>Export Excel
+                    </button>
                     <button
                       onClick={() => setActiveTab("new-lead")}
                       className="bg-sf-blue hover:bg-sf-blue-dark text-white px-6 py-2 rounded-lg font-medium transition-colors"
@@ -499,7 +594,7 @@ export default function Lead() {
                               <i className="fas fa-users text-4xl mb-4"></i>
                               <p className="text-lg">No leads found</p>
                               <p className="text-sm">
-                                Create your first lead to get started
+                                {statusFilter ? `No leads with status "${statusFilter}"` : "Create your first lead to get started"}
                               </p>
                             </td>
                           </tr>
@@ -575,6 +670,7 @@ export default function Lead() {
             </div>
           )}
 
+          {/* New Lead Form - Same as before */}
           {/* New Lead Form */}
           {activeTab === "new-lead" && (
             <div>
@@ -870,68 +966,107 @@ export default function Lead() {
           {activeTab === "reports" && (
             <div>
               <div className="bg-white rounded-lg sf-shadow p-6">
-                <h2 className="text-2xl font-semibold text-sf-text mb-6">
-                  Lead Reports
-                </h2>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-semibold text-sf-text">
+                    Lead Reports
+                  </h2>
+                  <button
+                    onClick={exportAllLeads}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+                  >
+                    <i className="fas fa-file-excel mr-2"></i>Export All Leads
+                  </button>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-sf-blue-light p-6 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <i className="fas fa-users text-sf-blue text-2xl"></i>
+                  {/* Total Leads Card */}
+                  <div 
+                    className="bg-sf-blue-light p-6 rounded-lg cursor-pointer transition-all hover:scale-105 hover:shadow-lg"
+                    onClick={() => handleReportClick("all")}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <i className="fas fa-users text-sf-blue text-2xl"></i>
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-sf-text-light">
+                            Total Leads
+                          </p>
+                          <p className="text-2xl font-semibold text-sf-text">
+                            {totalLeads}
+                          </p>
+                        </div>
                       </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-sf-text-light">
-                          Total Leads
-                        </p>
-                        <p className="text-2xl font-semibold text-sf-text">
-                          {totalLeads}
-                        </p>
-                      </div>
+                      <i className="fas fa-chevron-right text-sf-text-light"></i>
                     </div>
                   </div>
-                  <div className="bg-green-50 p-6 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <i className="fas fa-check-circle text-green-600 text-2xl"></i>
+
+                  {/* Converted Leads Card */}
+                  <div 
+                    className="bg-green-50 p-6 rounded-lg cursor-pointer transition-all hover:scale-105 hover:shadow-lg"
+                    onClick={() => handleReportClick("converted")}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <i className="fas fa-check-circle text-green-600 text-2xl"></i>
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-sf-text-light">
+                            Converted
+                          </p>
+                          <p className="text-2xl font-semibold text-sf-text">
+                            {convertedLeads}
+                          </p>
+                        </div>
                       </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-sf-text-light">
-                          Converted
-                        </p>
-                        <p className="text-2xl font-semibold text-sf-text">
-                          {convertedLeads}
-                        </p>
-                      </div>
+                      <i className="fas fa-chevron-right text-sf-text-light"></i>
                     </div>
                   </div>
-                  <div className="bg-yellow-50 p-6 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <i className="fas fa-clock text-yellow-600 text-2xl"></i>
+
+                  {/* In Progress Leads Card */}
+                  <div 
+                    className="bg-yellow-50 p-6 rounded-lg cursor-pointer transition-all hover:scale-105 hover:shadow-lg"
+                    onClick={() => handleReportClick("in-progress")}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <i className="fas fa-clock text-yellow-600 text-2xl"></i>
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-sf-text-light">
+                            In Progress
+                          </p>
+                          <p className="text-2xl font-semibold text-sf-text">
+                            {inProgressLeads}
+                          </p>
+                        </div>
                       </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-sf-text-light">
-                          In Progress
-                        </p>
-                        <p className="text-2xl font-semibold text-sf-text">
-                          {inProgressLeads}
-                        </p>
-                      </div>
+                      <i className="fas fa-chevron-right text-sf-text-light"></i>
                     </div>
                   </div>
-                  <div className="bg-red-50 p-6 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <i className="fas fa-times-circle text-red-600 text-2xl"></i>
+
+                  {/* Lost Leads Card */}
+                  <div 
+                    className="bg-red-50 p-6 rounded-lg cursor-pointer transition-all hover:scale-105 hover:shadow-lg"
+                    onClick={() => handleReportClick("lost")}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <i className="fas fa-times-circle text-red-600 text-2xl"></i>
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-sf-text-light">
+                            Lost
+                          </p>
+                          <p className="text-2xl font-semibold text-sf-text">
+                            {lostLeads}
+                          </p>
+                        </div>
                       </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-sf-text-light">
-                          Lost
-                        </p>
-                        <p className="text-2xl font-semibold text-sf-text">
-                          {lostLeads}
-                        </p>
-                      </div>
+                      <i className="fas fa-chevron-right text-sf-text-light"></i>
                     </div>
                   </div>
                 </div>
