@@ -165,14 +165,7 @@ const Profile = () => {
               </div>
               
               {/* ID Information */}
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <div className="flex flex-wrap items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Branch Name</p>
-                    <p className="font-mono text-lg font-bold text-gray-700">#{user.id}</p>
-                  </div>
-                </div>
-              </div>
+
             </div>
           </div>
         </div>
