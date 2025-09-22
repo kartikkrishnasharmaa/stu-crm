@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "../../../api/axiosConfig";
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 function CreateExpense() {
   const [branches, setBranches] = useState([]);
@@ -11,7 +13,7 @@ function CreateExpense() {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [paymentMode, setPaymentMode] = useState("");
-  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ✅ Fetch Branches
   useEffect(() => {
@@ -19,7 +21,7 @@ function CreateExpense() {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          alert("No token found! Please login again.");
+          toast.error("No token found! Please login again.");
           return;
         }
         const res = await axios.get("/branches", {
@@ -28,7 +30,7 @@ function CreateExpense() {
         setBranches(res.data);
       } catch (error) {
         console.error("Error fetching branches:", error);
-        alert("Failed to load branches");
+        toast.error("Failed to load branches");
       }
     };
     fetchBranches();
@@ -40,7 +42,7 @@ function CreateExpense() {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          alert("No token found! Please login again.");
+          toast.error("No token found! Please login again.");
           return;
         }
         const res = await axios.get("/categories", {
@@ -49,7 +51,7 @@ function CreateExpense() {
         setCategories(res.data);
       } catch (error) {
         console.error("Error fetching categories:", error);
-        alert("Failed to load categories");
+        toast.error("Failed to load categories");
       }
     };
     fetchCategories();
@@ -58,10 +60,13 @@ function CreateExpense() {
   // ✅ Submit Expense
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("No token found! Please login again.");
+        toast.error("No token found! Please login again.");
+        setIsSubmitting(false);
         return;
       }
 
@@ -79,8 +84,9 @@ function CreateExpense() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setMessage(`✅ Expense Created: ID ${res.data.id}`);
-      // reset form
+      toast.success(`✅ Expense Created Successfully! ID: ${res.data.id}`);
+      
+      // Reset form
       setBranchId("");
       setCategoryId("");
       setPaymentTo("");
@@ -88,9 +94,24 @@ function CreateExpense() {
       setDescription("");
       setAmount("");
       setPaymentMode("");
+      
     } catch (err) {
       console.error(err);
-      setMessage("❌ Error creating expense");
+      
+      // More specific error messages
+      if (err.response?.data?.message) {
+        toast.error(`❌ Error: ${err.response.data.message}`);
+      } else if (err.response?.status === 400) {
+        toast.error("❌ Bad Request: Please check your input data");
+      } else if (err.response?.status === 401) {
+        toast.error("❌ Unauthorized: Please login again");
+      } else if (err.response?.status === 500) {
+        toast.error("❌ Server Error: Please try again later");
+      } else {
+        toast.error("❌ Error creating expense");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -216,14 +237,33 @@ function CreateExpense() {
             </select>
           </div>
 
-          {/* Submit */}
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            disabled={isSubmitting}
+            className={`w-full py-2 rounded-lg transition ${
+              isSubmitting 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
           >
-            Save Expense
+            {isSubmitting ? 'Creating Expense...' : 'Save Expense'}
           </button>
         </form>
+
+        {/* Toast Container */}
+        <ToastContainer
+          position="top-center"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </div>
     </div>
   );
