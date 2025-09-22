@@ -137,7 +137,7 @@ export default function StaffDetail() {
         {/* Right Content Section */}
         <div className="flex-1 bg-white shadow-md rounded-xl p-6">
           {/* Login Credentials */}
-          {/* <div className="mb-6">
+          <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Login Credentials</h2>
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -163,7 +163,7 @@ export default function StaffDetail() {
                 </div>
               </div>
             </div>
-          </div> */}
+          </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">System Information</h2>
             <div className="bg-gray-50 p-4 rounded-lg">
