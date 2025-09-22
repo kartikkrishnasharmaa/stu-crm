@@ -84,7 +84,7 @@ function CreateExpense() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      toast.success(`✅ Expense Created Successfully! ID: ${res.data.id}`);
+      toast.success(` Expense Created Successfully!`);
       
       // Reset form
       setBranchId("");
