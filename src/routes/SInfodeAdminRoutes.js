@@ -21,6 +21,7 @@ import Reports from "../pages/sinfodeadmin/14_report-analytics/reports";
 import Settings from "../pages/sinfodeadmin/15_settings/settings";
 import Inventory from "../pages/sinfodeadmin/16_inventory/inventory";
 import Discount from "../pages/sinfodeadmin/1_dashboard/discount";
+import Profile from "../pages/sinfodeadmin/1_dashboard/profile";
 
 const SinfodeAdminRoutes = () => {
   return (
@@ -30,6 +31,14 @@ const SinfodeAdminRoutes = () => {
         element={
           <ProtectedRoute>
             <Sinfodedashboard />
+          </ProtectedRoute>
+        }
+      />
+       <Route
+        path="/sinfodeadmin/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
