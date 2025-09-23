@@ -7,7 +7,7 @@ import GenerateFees from "./generatefees";
 import Reminder from "./remider";
 
 export default function Fees() {
-  const [activeTab, setActiveTab] = useState("fees");
+  const [activeTab, setActiveTab] = useState("collection");
 
   return (
     <SMLayout>
@@ -69,7 +69,7 @@ export default function Fees() {
         {/* Content */}
         <div className="flex-1 rounded-lg p-6 overflow-y-auto">
           {/* {activeTab === "dashboard" && <Dashboard />} */}
-          {activeTab === "fees" && <FeesStructure />}
+          {/* {activeTab === "fees" && <FeesStructure />} */}
           {/* {activeTab === "generate" && <GenerateFees />} */}
           {activeTab === "collection" && <Collection />}
           {activeTab === "reminder" && <Reminder />}
