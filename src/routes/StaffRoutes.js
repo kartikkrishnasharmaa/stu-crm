@@ -7,6 +7,8 @@ import Attendence from "../pages/staff/4_attendence/attendence";
 import Leads from "../pages/staff/5_lead_mgmt/Leads";
 import Expense from "../pages/staff/6_expenses/Expense";
 import Reports from "../pages/staff/7_report-analytics/reports";
+import Profile from "../pages/staff/1_dashboard/profile";
+
 const StaffRoutes = () => {
   return (
     <Routes>
@@ -15,6 +17,14 @@ const StaffRoutes = () => {
         element={
           <ProtectedRoute>
             <Sinfodedashboard />
+          </ProtectedRoute>
+        }
+      />
+       <Route
+        path="/staff/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
