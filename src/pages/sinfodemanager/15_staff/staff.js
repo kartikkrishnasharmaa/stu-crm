@@ -360,7 +360,7 @@ export default function Staff() {
         {/* Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
               <button
                 onClick={() => {
                   setIsModalOpen(false);
@@ -376,112 +376,204 @@ export default function Staff() {
                 {editingStaffId ? "Update Staff" : "Create Staff"}
               </h2>
               <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-                <input
-                  name="employee_name"
-                  value={formData.employee_name}
-                  onChange={handleChange}
-                  placeholder="Employee Name"
-                  className="border p-2 rounded"
-                  required
-                />
-          
-                <input
-                  name="designation"
-                  value={formData.designation}
-                  onChange={handleChange}
-                  placeholder="Designation"
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  name="joining_date"
-                  value={formData.joining_date}
-                  onChange={handleChange}
-                  type="date"
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  name="monthly_salary"
-                  value={formData.monthly_salary}
-                  onChange={handleChange}
-                  placeholder="Monthly Salary"
-                  className="border p-2 rounded"
-                  required
-                  type="number"
-                />
-                <input
-                  name="contact_number"
-                  value={formData.contact_number}
-                  onChange={handleChange}
-                  placeholder="Contact Number"
-                  className="border p-2 rounded"
-                  type="tel"
-                  maxLength="10"
-                  pattern="[0-9]{10}"
-                  title="Please enter exactly 10 digits"
-                  required
-                />
-                <input
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Email"
-                  type="email"
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  placeholder="Department"
-                  className="border p-2 rounded"
-                  required
-                />
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                  required
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-                <input
-                  name="staffcreate_name"
-                  value={formData.staffcreate_name}
-                  onChange={handleChange}
-                  placeholder="Staff Create Name"
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  name="staffcreate_email"
-                  value={formData.staffcreate_email}
-                  onChange={handleChange}
-                  placeholder="Staff Create Email"
-                  type="email"
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  name="staffcreate_password"
-                  value={formData.staffcreate_password}
-                  onChange={handleChange}
-                  placeholder="Staff Create Password"
-                  type="password"
-                  className="border p-2 rounded"
-                  required={!editingStaffId}
-                />
-                <div className="col-span-2 flex justify-end">
+                {/* Employee Name */}
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Employee Name *
+                  </label>
+                  <input
+                    name="employee_name"
+                    value={formData.employee_name}
+                    onChange={handleChange}
+                    placeholder="Enter employee name"
+                    className="border p-2 rounded w-full"
+                    required
+                  />
+                </div>
+
+                {/* Designation */}
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Designation *
+                  </label>
+                  <input
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleChange}
+                    placeholder="Enter designation"
+                    className="border p-2 rounded w-full"
+                    required
+                  />
+                </div>
+
+                {/* Joining Date */}
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Joining Date *
+                  </label>
+                  <input
+                    name="joining_date"
+                    value={formData.joining_date}
+                    onChange={handleChange}
+                    type="date"
+                    className="border p-2 rounded w-full"
+                    required
+                  />
+                </div>
+
+                {/* Monthly Salary */}
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Monthly Salary *
+                  </label>
+                  <input
+                    name="monthly_salary"
+                    value={formData.monthly_salary}
+                    onChange={handleChange}
+                    placeholder="Enter monthly salary"
+                    className="border p-2 rounded w-full"
+                    required
+                    type="number"
+                  />
+                </div>
+
+                {/* Contact Number */}
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Number *
+                  </label>
+                  <input
+                    name="contact_number"
+                    value={formData.contact_number}
+                    onChange={handleChange}
+                    placeholder="Enter 10-digit contact number"
+                    className="border p-2 rounded w-full"
+                    type="tel"
+                    maxLength="10"
+                    pattern="[0-9]{10}"
+                    title="Please enter exactly 10 digits"
+                    required
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email *
+                  </label>
+                  <input
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter email address"
+                    type="email"
+                    className="border p-2 rounded w-full"
+                    required
+                  />
+                </div>
+
+                {/* Department */}
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Department *
+                  </label>
+                  <input
+                    name="department"
+                    value={formData.department}
+                    onChange={handleChange}
+                    placeholder="Enter department"
+                    className="border p-2 rounded w-full"
+                    required
+                  />
+                </div>
+
+                {/* Status */}
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status *
+                  </label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className="border p-2 rounded w-full"
+                    required
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+
+                {/* Staff Create Name */}
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Staff Create Name *
+                  </label>
+                  <input
+                    name="staffcreate_name"
+                    value={formData.staffcreate_name}
+                    onChange={handleChange}
+                    placeholder="Enter staff create name"
+                    className="border p-2 rounded w-full"
+                    required
+                  />
+                </div>
+
+                {/* Staff Create Email */}
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Staff Create Email *
+                  </label>
+                  <input
+                    name="staffcreate_email"
+                    value={formData.staffcreate_email}
+                    onChange={handleChange}
+                    placeholder="Enter staff create email"
+                    type="email"
+                    className="border p-2 rounded w-full"
+                    required
+                  />
+                </div>
+
+                {/* Staff Create Password */}
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Staff Create Password {!editingStaffId && "*"}
+                  </label>
+                  <input
+                    name="staffcreate_password"
+                    value={formData.staffcreate_password}
+                    onChange={handleChange}
+                    placeholder="Enter staff create password"
+                    type="password"
+                    className="border p-2 rounded w-full"
+                    required={!editingStaffId}
+                  />
+                  {editingStaffId && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Leave blank to keep current password
+                    </p>
+                  )}
+                </div>
+
+                <div className="col-span-2 flex justify-end mt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setEditingStaffId(null);
+                      resetForm();
+                    }}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded mr-2"
+                  >
+                    Cancel
+                  </button>
                   <button
                     type="submit"
                     disabled={loading}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
                   >
-                    {loading ? "Saving..." : "Save Staff"}
+                    {loading ? "Saving..." : editingStaffId ? "Update Staff" : "Create Staff"}
                   </button>
                 </div>
               </form>
