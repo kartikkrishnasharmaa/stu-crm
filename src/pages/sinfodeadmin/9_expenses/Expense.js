@@ -30,7 +30,7 @@ export default function TabReport() {
                 : "hover:bg-blue-100 text-black"
             }`}
           >
-            📋 Create Category
+            📋 Create Exp. Category
           </button>
           <button
             onClick={() => setActiveTab("allcategory")}
