@@ -56,7 +56,11 @@ const Accheader = ({ toggleSidebar }) => {
           {/* Dropdown Menu */}
           {isOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg overflow-hidden animate-fadeIn">
-       
+           <Link to="/account/profile">
+                <button className="w-full text-left px-4 py-2 hover:bg-gray-100">
+                  Profile
+                </button>
+              </Link>
               <button
                 className="w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
                 onClick={() => {
