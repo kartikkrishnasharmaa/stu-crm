@@ -391,64 +391,6 @@ export default function Branch() {
                         </div>
                       </div>
 
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">MANAGER INFORMATION</h4>
-                        {branch.managers && branch.managers.length > 0 ? (
-                          branch.managers.filter(manager => manager.role === "branch_manager").map(manager => (
-                            <div key={manager.id} className="space-y-3">
-                              <div className="flex items-center">
-                                <FaUser className="h-5 w-5 text-gray-400 mr-2" />
-                                <div>
-                                  <p className="text-sm  mb-2 font-medium text-gray-700">Manager Name</p>
-                                  <p className="text-sm  mb-2  text-gray-600">{manager.name}</p>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center">
-                                <HiMail className="h-5 w-5 text-gray-400 mr-2" />
-                                <div>
-                                  <p className="text-sm mb-2  font-medium text-gray-700">Manager Email</p>
-                                  <p className="text-sm mb-2  text-gray-600">{manager.email}</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-sm text-gray-500">No manager assigned</p>
-                        )}
-
-                        <h4 className="text-sm font-medium text-gray-500 mt-4 mb-2">STAFF INFORMATION</h4>
-                        {branch.managers && branch.managers.filter(manager => manager.role === "staff").length > 0 ? (
-                          <div>
-                            <p className="text-sm text-gray-600 mb-2">
-                              {branch.managers.filter(manager => manager.role === "staff").length} staff members
-                            </p>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-500">No staff members</p>
-                        )}
-
-                        <h4 className="text-sm font-medium text-gray-500 mt-4 mb-2">STATISTICS</h4>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center">
-                            <FaUsers className="h-5 w-5 text-gray-400 mr-2" />
-                            <div>
-                              <p className="text-sm mb-2  font-medium text-gray-700">Total Students</p>
-                              <p className="text-sm  mb-2  text-gray-600">{branch.students?.length || 0}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center">
-                            <FaUser className="h-5 w-5 text-gray-400 mr-2" />
-                            <div>
-                              <p className="text-sm mb-2  font-medium text-gray-700">Total Staff</p>
-                              <p className="text-sm  mb-2  text-gray-600">
-                                {branch.managers ? branch.managers.filter(manager => manager.role === "staff").length : 0}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
                     <div className="mt-4 pt-4 border-t border-gray-200">
