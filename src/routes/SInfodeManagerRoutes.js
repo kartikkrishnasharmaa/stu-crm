@@ -14,6 +14,7 @@ import Invoice from "../pages/sinfodemanager/10_invoice/Invoice";
 // import AccessMgmt from "../pages/sinfodemanager/11_access-role/Roles";
 import Campaign from "../pages/sinfodemanager/12_campaign/campaign";
 import Communication from "../pages/sinfodemanager/12_campaign/branchcomm";
+import Profile from "../pages/sinfodemanager/1_dashboard/profile";
 
 import Reports from "../pages/sinfodemanager/13_report-analytics/reports";
 import Staff from "../pages/sinfodemanager/15_staff/allstaff";
@@ -27,6 +28,14 @@ const sinfodemanagerRoutes = () => {
         element={
           <ProtectedRoute>
             <Sinfodedashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sinfodemanager/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
