@@ -11,21 +11,32 @@ const Managerheader = ({ toggleSidebar }) => {
   const dropdownRef = useRef(null);
   const selectedBranch = useSelector((state) => state.branch.selectedBranch);
 
-  // Fetch notifications count
-  const fetchNotifications = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('/notifications', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (response.data.success) {
-        setNotificationCount(response.data.unread_count);
-      }
-    } catch (err) {
-      console.error('Error fetching notifications:', err);
+// Fetch notifications count (branch-specific)
+const fetchNotifications = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user")); // yaha se branch_id milega
+
+    if (!user || !user.branch_id) return; // agar branch id hi na ho toh return
+
+    const response = await axios.get("/notifications", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.data.success) {
+      // unread_communication filter karo sirf user wali branch ke liye
+    const branchUnread = response.data.unread_communication.filter(
+  (n) => Number(n.branch_id) === Number(user.branch_id) && n.is_read === 0
+);
+
+setNotificationCount(response.data.unread_count);
+
+
     }
-  };
+  } catch (err) {
+    console.error("Error fetching notifications:", err);
+  }
+};
 
   useEffect(() => {
     fetchNotifications();
