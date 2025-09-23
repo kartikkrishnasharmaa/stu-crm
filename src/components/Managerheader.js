@@ -1,13 +1,40 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { HiMenu, HiX, HiBell } from "react-icons/hi"; // Added Bell icon
+import { HiMenu, HiX, HiBell } from "react-icons/hi";
 import { Link } from "react-router-dom";
+import axios from "../api/axiosConfig"; // Adjust path as needed
 
 const Managerheader = ({ toggleSidebar }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const dropdownRef = useRef(null);
   const selectedBranch = useSelector((state) => state.branch.selectedBranch);
+
+  // Fetch notifications count
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/notifications', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setNotificationCount(response.data.unread_count);
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    
+    // Optional: Refresh notifications periodically (every 30 seconds)
+    const interval = setInterval(fetchNotifications, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const getBranchLink = (baseLink) => {
     return selectedBranch ? `${baseLink}?branchId=${selectedBranch}` : baseLink;
@@ -33,12 +60,20 @@ const Managerheader = ({ toggleSidebar }) => {
 
       {/* Desktop Navigation */}
       <nav className="hidden mr-10 mt-2 rounded-2xl text-black md:flex items-center space-x-6 text-lg font-semibold mx-auto">
-    <Link
+        {/* Notification Bell with Badge */}
+        <Link
           to={getBranchLink("/sinfodemanager/communication")}
-          className="hover:text-blue-500 bg-white p-3 rounded-lg"
+          className="hover:text-blue-500 bg-white p-3 rounded-lg relative"
         >
           <HiBell size={24} />
+          {/* Notification Badge */}
+          {notificationCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+              {notificationCount > 9 ? '9+' : notificationCount}
+            </span>
+          )}
         </Link>
+        
         {/* Account with Profile Image */}
         <div ref={dropdownRef} className="relative">
           <div
@@ -59,6 +94,11 @@ const Managerheader = ({ toggleSidebar }) => {
           {/* Dropdown Menu */}
           {isOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg overflow-hidden animate-fadeIn">
+                 <Link to="/sinfodemanager/profile">
+                <button className="w-full text-left px-4 py-2 hover:bg-gray-100">
+                  Profile
+                </button>
+              </Link>
               <button
                 className="w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
                 onClick={() => {
