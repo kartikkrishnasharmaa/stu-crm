@@ -28,7 +28,7 @@ export default function Accountant() {
   const navigate = useNavigate();
   const [openMenuId, setOpenMenuId] = useState(null);
 
-  // Handle click outside to close menu
+  // Handle click outside for menu close
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -39,7 +39,6 @@ export default function Accountant() {
         setOpenMenuId(null);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -61,6 +60,7 @@ export default function Accountant() {
     monthly_salary: "",
     status: "Active"
   });
+
   const fetchBranches = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -72,9 +72,8 @@ export default function Accountant() {
         branch_name: branch.branch_name,
       }));
       setBranches(branchList);
-      // Remove the code that sets the selectedBranch to the first branch
     } catch (error) {
-      console.error("Error fetching branches:", error);
+      toast.error("Failed to load branches");
     }
   };
 
@@ -86,7 +85,7 @@ export default function Accountant() {
       });
       setAccountantList(res.data || []);
     } catch (error) {
-      console.error("Error fetching accountants:", error);
+      toast.error("Failed to load accountants");
     }
   };
 
@@ -95,18 +94,10 @@ export default function Accountant() {
     fetchAccountants();
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
-    
-    // Validate phone number
-    if (name === "contact_number") {
-      // Only allow numbers and limit to 10 digits
-      if (!/^\d{0,10}$/.test(value)) return;
-    }
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "contact_number" && !/^\d{0,10}$/.test(value)) return;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const toggleStatus = async (id, currentStatus) => {
@@ -119,12 +110,13 @@ export default function Accountant() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setAccountantList(
-        accountantList.map((accountant) =>
-          accountant.id === id ? { ...accountant, status: newStatus } : accountant
+        accountantList.map(acc =>
+          acc.id === id ? { ...acc, status: newStatus } : acc
         )
       );
-    } catch (error) {
-      console.error("Error updating status:", error);
+      toast.success(`Accountant status changed to ${newStatus}`);
+    } catch {
+      toast.error("Failed to update status");
     }
   };
 
@@ -135,52 +127,26 @@ export default function Accountant() {
         await axios.delete(`/accountants/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        toast.success("Accountant deleted successfully");
         fetchAccountants();
-      } catch (error) {
-        console.error("Error deleting accountant:", error);
+      } catch {
+        toast.error("Failed to delete accountant");
       }
     }
   };
 
-  // Function to export data to Excel
-  const exportToExcel = () => {
-    const dataToExport = filteredAccountants.map(accountant => ({
-      "Accountant Name": accountant.accountant_name,
-      "Accountant Code": accountant.accountant_code,
-      "Joining Date": accountant.joining_date,
-      "Contact Number": accountant.contact_number,
-      "Email": accountant.email,
-      "Department": accountant.department,
-      "Attendance Status": accountant.attendance_status,
-      "Monthly Salary": accountant.monthly_salary,
-      "Status": accountant.status,
-      "Branch": branches.find(b => b.id === accountant.branch_id)?.branch_name || "N/A"
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Accountant Data");
-    XLSX.writeFile(wb, "accountant_data.xlsx");
-  };
-
   const filteredAccountants = accountantList.filter(
-    (accountant) =>
+    accountant =>
       (selectedBranch ? accountant.branch_id === parseInt(selectedBranch) : true) &&
-      ((accountant.accountant_name || "")
-        .toLowerCase()
-        .includes(search.toLowerCase()) ||
-        (accountant.accountant_code || "")
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        (accountant.email || "")
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        (accountant.department || "")
-          .toLowerCase()
-          .includes(search.toLowerCase()))
+      (
+        (accountant.accountant_name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (accountant.accountant_code || "").toLowerCase().includes(search.toLowerCase()) ||
+        (accountant.email || "").toLowerCase().includes(search.toLowerCase()) ||
+        (accountant.department || "").toLowerCase().includes(search.toLowerCase())
+      )
   );
 
- const handleEditClick = (accountant) => {
+  const handleEditClick = accountant => {
     setEditingAccountantId(accountant.id);
     setFormData({
       accountant_name: accountant.accountant_name,
@@ -191,11 +157,8 @@ export default function Accountant() {
       department: accountant.department,
       attendance_status: accountant.attendance_status,
       branch_id: accountant.branch_id,
-      // Get login name from user object if available, otherwise use accountant name
       acccreate_name: accountant.user?.email || accountant.email,
-      // Get login email from user object if available, otherwise use accountant email
       acccreate_email: accountant.user?.email || accountant.email,
-      // Get password from user object if available
       acccreate_password: accountant.user?.plain_password || "",
       monthly_salary: accountant.monthly_salary,
       status: accountant.status || "Active"
@@ -203,20 +166,17 @@ export default function Accountant() {
     setIsModalOpen(true);
   };
 
-  // Create/Update submit
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (editingAccountantId) {
-        // Update
         await axios.put(`/accountants/${editingAccountantId}`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
         toast.success("Accountant updated successfully!");
       } else {
-        // Create
         await axios.post("/accountants", formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -226,15 +186,13 @@ export default function Accountant() {
       setIsModalOpen(false);
       setEditingAccountantId(null);
       resetForm();
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error(editingAccountantId ? "Error updating accountant" : "Error creating accountant");
     } finally {
       setLoading(false);
     }
   };
 
-  // Reset form
   const resetForm = () => {
     setFormData({
       accountant_name: "",
@@ -253,79 +211,83 @@ export default function Accountant() {
     });
   };
 
-  return (
-    <div className="px-5 py-6">
-        <ToastContainer
-              position="top-right"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-        {/* Left: Heading */}
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-          Accountants{" "}
-          <span className="text-blue-600">
-            ({filteredAccountants.length})
-          </span>
-        </h1>
+  const exportToExcel = () => {
+    const dataToExport = filteredAccountants.map(acc => ({
+      "Accountant Name": acc.accountant_name,
+      "Accountant Code": acc.accountant_code,
+      "Joining Date": acc.joining_date,
+      "Contact Number": acc.contact_number,
+      "Email": acc.email,
+      "Department": acc.department,
+      "Attendance Status": acc.attendance_status,
+      "Monthly Salary": acc.monthly_salary,
+      "Status": acc.status,
+      "Branch": branches.find(b => b.id === acc.branch_id)?.branch_name || "N/A"
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Accountant Data");
+    XLSX.writeFile(workbook, "accountant_data.xlsx");
+    toast.success("Accountant data exported successfully!");
+  };
 
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex gap-2 bg-gray-200 p-1 rounded-full self-start">
+  return (
+    <div className="p-3 md:p-6">
+      <ToastContainer position="top-right" autoClose={3000} theme="light" />
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+          Accountants <span className="text-blue-600">({filteredAccountants.length})</span>
+        </h1>
+        <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-2 bg-gray-200 p-1 rounded-full">
             <button
               onClick={() => setViewMode("list")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === "list"
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                viewMode === "list"
                   ? "bg-blue-600 text-white"
                   : "bg-transparent text-gray-600 hover:bg-gray-300"
-                }`}
+              }`}
             >
               List View
             </button>
             <button
               onClick={() => setViewMode("card")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === "card"
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                viewMode === "card"
                   ? "bg-blue-600 text-white"
                   : "bg-transparent text-gray-600 hover:bg-gray-300"
-                }`}
+              }`}
             >
               Card View
             </button>
           </div>
 
-          {/* Right: Create Button and Export Button */}
-          <div className="flex gap-3">
-            <button
-              onClick={exportToExcel}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
-            >
-              <FaFileExport /> Export Excel
-            </button>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
-            >
-              <FaPlus /> Create Accountant
-            </button>
-          </div>
+          <button
+            onClick={exportToExcel}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+          >
+            <FaFileExport /> Export Excel
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+          >
+            <FaPlus /> Create Accountant
+          </button>
         </div>
       </div>
 
-      {/* Branch Filter and Search */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      {/* Filter and Search */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <select
           value={selectedBranch}
-          onChange={(e) => setSelectedBranch(e.target.value)}
-          className="border p-2 rounded md:w-1/4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={e => setSelectedBranch(e.target.value)}
+          className="border p-2 rounded w-full sm:w-60 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Branches</option>
-          {branches.map((branch) => (
+          {branches.map(branch => (
             <option key={branch.id} value={branch.id}>
               {branch.branch_name}
             </option>
@@ -336,82 +298,82 @@ export default function Accountant() {
           type="text"
           placeholder="Search by name, code, email or department..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border p-2 rounded md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={e => setSearch(e.target.value)}
+          className="border p-2 rounded w-full sm:w-96 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
-      {/* List View */}
       {viewMode === "list" ? (
-        <div className="rounded-xl">
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-5 py-3 bg-gray-100 font-semibold text-gray-700 border-b">
-            <div className="col-span-3">Accountant Name</div>
-            <div className="col-span-2">Department</div>
-            <div className="col-span-2">Contact</div>
-            <div className="col-span-3">Email</div>
-            <div className="col-span-1">Status</div>
-            <div className="col-span-1 text-right">Actions</div>
-          </div>
+        <div className="rounded-xl border border-gray-200">
+          <div className="min-w-[700px]">
+            {/* Table Header */}
+            <div className="grid grid-cols-12 gap-4 px-5 py-3 bg-gray-100 font-semibold text-gray-700 border-b text-sm whitespace-nowrap">
+              <div className="col-span-3">Accountant Name</div>
+              <div className="col-span-2 hidden sm:block sm:col-span-2">Department</div>
+              <div className="col-span-2">Contact</div>
+              <div className="col-span-3 hidden sm:block sm:col-span-2">Email</div>
+              <div className="col-span-1 hidden sm:block sm:col-span-2">Status</div>
+              <div className="col-span-1 text-right">Actions</div>
+            </div>
 
-          {/* Table Body */}
-          <div className="divide-y">
-            {filteredAccountants.map((accountant) => (
-              <div
-                key={accountant.id}
-                className="grid grid-cols-12 gap-4 px-5 py-4 hover:bg-gray-50 transition-colors"
-              >
-                {/* Accountant Name Column */}
-                <div className="col-span-3 flex items-center gap-3">
-                  <img
-                    src={
-                      accountant.profile_image ||
-                      "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"
-                    }
-                    alt={accountant.accountant_name}
-                    className="w-10 h-10 rounded-full object-cover border"
-                  />
-                  <div className="min-w-0">
-                    <h3 className="font-medium text-gray-800 truncate">
-                      {accountant.accountant_name}
-                    </h3>
-                    <p className="text-sm text-gray-500 truncate">{accountant.accountant_code}</p>
+            {/* Table Body */}
+            <div className="divide-y">
+              {filteredAccountants.map(accountant => (
+                <div
+                  key={accountant.id}
+                  className="grid grid-cols-12 gap-4 px-5 py-4 hover:bg-gray-50 transition-colors items-center text-sm"
+                >
+                  <div className="col-span-3 flex items-center gap-3 min-w-0">
+                    <img
+                      src={
+                        accountant.profile_image ||
+                        "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"
+                      }
+                      alt={accountant.accountant_name}
+                      className="w-10 h-10 rounded-full object-cover border"
+                    />
+                    <div className="min-w-0">
+                      <h3 className="font-medium text-gray-800 truncate">
+                        {accountant.accountant_name}
+                      </h3>
+                      <p className="text-gray-500 truncate text-xs">
+                        {accountant.accountant_code}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Department Column */}
-                <div className="col-span-2 flex items-center">
-                  <span className="text-gray-700 truncate">{accountant.department}</span>
-                </div>
+                  <div className="col-span-2 flex items-center truncate hidden sm:block sm:col-span-2">
+                    <span className="text-gray-700 truncate w-full">{accountant.department}</span>
+                  </div>
 
-                {/* Contact Column */}
-                <div className="col-span-2 flex items-center">
-                  <span className="text-gray-700 truncate">{accountant.contact_number || "N/A"}</span>
-                </div>
+                  <div className="col-span-2 flex items-center truncate">
+                    <span className="text-gray-700 truncate w-full">{accountant.contact_number || "N/A"}</span>
+                  </div>
 
-                {/* Email Column */}
-                <div className="col-span-3 flex items-center">
-                  <span className="text-gray-700 text-sm truncate">{accountant.email || "N/A"}</span>
-                </div>
+                  <div className="col-span-3 flex items-center truncate hidden sm:block sm:col-span-2">
+                    <span className="text-gray-700 text-sm truncate w-full">{accountant.email || "N/A"}</span>
+                  </div>
 
-                {/* Status Column */}
-                <div className="col-span-1 flex items-center">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${accountant.status === "Active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                    }`}>
-                    {accountant.status || "Active"}
-                  </span>
-                </div>
+                  <div className="col-span-1 flex items-center hidden sm:block sm:col-span-2">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        accountant.status === "Active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {accountant.status || "Active"}
+                    </span>
+                  </div>
 
-                {/* Actions Column */}
-                <div className="col-span-1 flex justify-end items-center">
-                  <div className="relative">
+                  <div className="col-span-1 flex justify-end items-center relative">
                     <button
                       onClick={() =>
                         setOpenMenuId(openMenuId === accountant.id ? null : accountant.id)
                       }
                       className="menu-toggle p-2 hover:bg-gray-100 rounded-full"
+                      aria-haspopup="true"
+                      aria-expanded={openMenuId === accountant.id}
                     >
                       <HiDotsVertical size={20} />
                     </button>
@@ -419,7 +381,7 @@ export default function Accountant() {
                     {openMenuId === accountant.id && (
                       <div
                         className="menu-container absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-48 py-2 z-50 border border-gray-200"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={e => e.stopPropagation()}
                       >
                         <button
                           onClick={() =>
@@ -436,9 +398,7 @@ export default function Accountant() {
                         </button>
 
                         <button
-                          onClick={() =>
-                            navigate(`/sinfodeadmin/accountant/${accountant.id}`)
-                          }
+                          onClick={() => navigate(`/sinfodeadmin/accountant/${accountant.id}`)}
                           className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-purple-600 text-sm"
                         >
                           <FaEye size={16} /> View Details
@@ -461,27 +421,23 @@ export default function Accountant() {
                     )}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Empty State */}
-          {filteredAccountants.length === 0 && (
-            <div className="py-10 text-center text-gray-500">
-              No accountants found. {search && `No results for "${search}"`}
+              ))}
             </div>
-          )}
+
+            {filteredAccountants.length === 0 && (
+              <div className="py-10 text-center text-gray-500">
+                No accountants found. {search && `No results for "${search}"`}
+              </div>
+            )}
+          </div>
         </div>
       ) : (
-        /* Card View */
         <div className="grid mt-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredAccountants.map((accountant) => (
+          {filteredAccountants.map(accountant => (
             <div
               key={accountant.id}
               className="bg-white rounded-xl shadow hover:shadow-lg transition p-6 flex flex-col items-center text-center relative"
             >
-
-              {/* Profile Image */}
               <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-md -mt-12 mb-3">
                 <img
                   src={
@@ -493,19 +449,16 @@ export default function Accountant() {
                 />
               </div>
 
-              {/* Name & Department */}
               <h3 className="text-lg font-semibold text-gray-800">{accountant.accountant_name}</h3>
               <p className="text-gray-500 mb-1">{accountant.department}</p>
               <p className="text-gray-400 text-sm mb-3">{accountant.accountant_code}</p>
 
-              {/* Contact Info */}
               <div className="w-full space-y-2 mt-2 text-sm">
                 <div className="bg-gray-50 rounded-lg py-2 px-3">
                   <p className="text-gray-700 font-medium truncate">
                     📞 {accountant.contact_number || "N/A"}
                   </p>
                 </div>
-                
                 <div className="bg-gray-50 rounded-lg py-2 px-3">
                   <p className="text-gray-700">
                     ₹{accountant.monthly_salary || "0"} / month
@@ -513,7 +466,6 @@ export default function Accountant() {
                 </div>
               </div>
 
-              {/* Joining Date Badge */}
               <div className="mt-4 text-xs text-gray-500">
                 Joined on: {accountant.joining_date}
               </div>
@@ -527,21 +479,26 @@ export default function Accountant() {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl relative max-h-[90vh] overflow-y-auto">
             <button
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingAccountantId(null);
+                resetForm();
+              }}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+              aria-label="Close modal"
             >
               <FaTimes size={20} />
             </button>
             <h2 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">
               {editingAccountantId ? "Update Accountant" : "Create Accountant"}
             </h2>
-            <form
-              onSubmit={handleSubmit}
-              className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"
-            >
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4" noValidate>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Accountant Name *</label>
+                <label htmlFor="accountant_name" className="block text-sm font-medium text-gray-700">
+                  Accountant Name *
+                </label>
                 <input
+                  id="accountant_name"
                   name="accountant_name"
                   value={formData.accountant_name}
                   onChange={handleChange}
@@ -550,21 +507,13 @@ export default function Accountant() {
                   required
                 />
               </div>
-{/* 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Accountant Code</label>
-                <input
-                  name="accountant_code"
-                  value={formData.accountant_code}
-                  onChange={handleChange}
-                  placeholder="Code (e.g., ACC-001)"
-                  className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div> */}
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Joining Date *</label>
+                <label htmlFor="joining_date" className="block text-sm font-medium text-gray-700">
+                  Joining Date *
+                </label>
                 <input
+                  id="joining_date"
                   name="joining_date"
                   value={formData.joining_date}
                   onChange={handleChange}
@@ -575,8 +524,11 @@ export default function Accountant() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Contact Number *</label>
+                <label htmlFor="contact_number" className="block text-sm font-medium text-gray-700">
+                  Contact Number *
+                </label>
                 <input
+                  id="contact_number"
                   name="contact_number"
                   value={formData.contact_number}
                   onChange={handleChange}
@@ -584,12 +536,16 @@ export default function Accountant() {
                   className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                   maxLength={10}
+                  inputMode="numeric"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Email *</label>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email *
+                </label>
                 <input
+                  id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
@@ -601,8 +557,11 @@ export default function Accountant() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Department *</label>
+                <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                  Department *
+                </label>
                 <input
+                  id="department"
                   name="department"
                   value={formData.department}
                   onChange={handleChange}
@@ -613,20 +572,26 @@ export default function Accountant() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Monthly Salary</label>
+                <label htmlFor="monthly_salary" className="block text-sm font-medium text-gray-700">
+                  Monthly Salary
+                </label>
                 <input
+                  id="monthly_salary"
                   name="monthly_salary"
                   value={formData.monthly_salary}
                   onChange={handleChange}
                   placeholder="Salary Amount"
-                  className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                   type="number"
+                  className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Branch *</label>
+                <label htmlFor="branch_id" className="block text-sm font-medium text-gray-700">
+                  Branch *
+                </label>
                 <select
+                  id="branch_id"
                   name="branch_id"
                   value={formData.branch_id}
                   onChange={handleChange}
@@ -634,7 +599,7 @@ export default function Accountant() {
                   required
                 >
                   <option value="">Select Branch</option>
-                  {branches.map((branch) => (
+                  {branches.map(branch => (
                     <option key={branch.id} value={branch.id}>
                       {branch.branch_name}
                     </option>
@@ -643,8 +608,11 @@ export default function Accountant() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Status *</label>
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                  Status *
+                </label>
                 <select
+                  id="status"
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
@@ -657,8 +625,11 @@ export default function Accountant() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Login Name *</label>
+                <label htmlFor="acccreate_name" className="block text-sm font-medium text-gray-700">
+                  Login Name *
+                </label>
                 <input
+                  id="acccreate_name"
                   name="acccreate_name"
                   value={formData.acccreate_name}
                   onChange={handleChange}
@@ -669,8 +640,11 @@ export default function Accountant() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Login Email *</label>
+                <label htmlFor="acccreate_email" className="block text-sm font-medium text-gray-700">
+                  Login Email *
+                </label>
                 <input
+                  id="acccreate_email"
                   name="acccreate_email"
                   value={formData.acccreate_email}
                   onChange={handleChange}
@@ -682,10 +656,13 @@ export default function Accountant() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  {editingAccountantId ? "New Password (leave blank to keep current)" : "Login Password *"}
+                <label htmlFor="acccreate_password" className="block text-sm font-medium text-gray-700">
+                  {editingAccountantId
+                    ? "New Password (leave blank to keep current)"
+                    : "Login Password *"}
                 </label>
                 <input
+                  id="acccreate_password"
                   name="acccreate_password"
                   value={formData.acccreate_password}
                   onChange={handleChange}
