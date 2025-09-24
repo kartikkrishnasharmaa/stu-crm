@@ -1,9 +1,8 @@
-import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
   FaTachometerAlt,
-  FaTools,
   FaChevronDown,
   FaChevronUp,
   FaGift,
@@ -16,11 +15,20 @@ import {
   FaFileAlt,
   FaUserFriends,
   FaLayerGroup,
+  FaTimes,
 } from "react-icons/fa";
 
-const Adminsidebar = ({ isSidebarOpen, toggleSidebar }) => {
+const Adminsidebar = ({ isSidebarOpen, toggleSidebar, isMobile }) => {
   const [openMenu, setOpenMenu] = useState(null);
+  const [activeItem, setActiveItem] = useState("");
   const selectedBranch = useSelector((state) => state.branch.selectedBranch);
+  const location = useLocation();
+
+  // Set active item based on current route
+  useEffect(() => {
+    const path = location.pathname;
+    setActiveItem(path);
+  }, [location]);
 
   const toggleSubCategory = (category) => {
     setOpenMenu(openMenu === category ? null : category);
@@ -32,193 +40,180 @@ const Adminsidebar = ({ isSidebarOpen, toggleSidebar }) => {
       alert("This page is under construction and will be available soon!");
       return;
     }
-    toggleSidebar();
+    
+    // Close sidebar on mobile after navigation
+    if (isMobile) {
+      toggleSidebar();
+    }
   };
 
   const menuItems = [
     {
       name: "Dashboard",
-      icon: <FaTachometerAlt />,
+      icon: <FaTachometerAlt className="flex-shrink-0" />,
       link: selectedBranch
         ? `/sinfodeadmin/dashboard?branchId=${selectedBranch}`
         : "/sinfodeadmin/dashboard",
     },
     {
       name: "Branch",
-      icon: <FaHome />,
+      icon: <FaHome className="flex-shrink-0" />,
       link: "/sinfodeadmin/branch",
     },
     {
       name: "Employee",
-      icon: <FaUserFriends />,
+      icon: <FaUserFriends className="flex-shrink-0" />,
       link: "/sinfodeadmin/staff"
     },
     {
       name: "Inventory",
-      icon: <FaLayerGroup />,
+      icon: <FaLayerGroup className="flex-shrink-0" />,
       link: "/sinfodeadmin/inventory",
     },
-
     {
       name: "Courses",
-      icon: <FaLayerGroup />,
+      icon: <FaLayerGroup className="flex-shrink-0" />,
       link: "/sinfodeadmin/courses",
     },
-     {
+    {
       name: "Batch",
-      icon: <FaLayerGroup />,
+      icon: <FaLayerGroup className="flex-shrink-0" />,
       link: "/sinfodeadmin/batch",
     },
     {
       name: "Student",
-      icon: <FaUsers />,
+      icon: <FaUsers className="flex-shrink-0" />,
       link: "/sinfodeadmin/students",
     },
     {
       name: "Fees",
-      icon: <FaMoneyBillWave />,
+      icon: <FaMoneyBillWave className="flex-shrink-0" />,
       link: "/sinfodeadmin/fees",
     },
     {
       name: "Attendance",
-      icon: <FaUserFriends />,
+      icon: <FaUserFriends className="flex-shrink-0" />,
       link: "/sinfodeadmin/attendance",
     },
     {
       name: "Leads",
-      icon: <FaUserTie />,
+      icon: <FaUserTie className="flex-shrink-0" />,
       link: "/sinfodeadmin/leads",
     },
     {
       name: "Expense",
-      icon: <FaReceipt />,
+      icon: <FaReceipt className="flex-shrink-0" />,
       link: "/sinfodeadmin/expenses",
     },
     {
       name: "Salary",
-      icon: <FaWallet />,
+      icon: <FaWallet className="flex-shrink-0" />,
       link: "/sinfodeadmin/salary",
     },
-    // {
-    //   name: "Invoice",
-    //   icon: <FaFileAlt />,
-    //   link: "/sinfodeadmin/invoice",
-    // },
-    // {
-    //   name: "Access",
-    //   icon: <FaWallet />,
-    //   link: "/sinfodeadmin/access",
-    // },
     {
       name: "Coupons",
-      icon: <FaGift />,
+      icon: <FaGift className="flex-shrink-0" />,
       link: "/sinfodeadmin/campaign",
     },
-     {
+    {
       name: "Communication",
-      icon: <FaFileAlt />,
+      icon: <FaFileAlt className="flex-shrink-0" />,
       link: "/sinfodeadmin/communication",
     },
     {
       name: "Reports",
-      icon: <FaFileAlt />,
+      icon: <FaFileAlt className="flex-shrink-0" />,
       link: "/sinfodeadmin/reports"
     },
-    // {
-    //   name: "Settings",
-    //   icon: <FaTools />,
-    //   link: "/sinfodeadmin/settings",
-    // },
   ];
 
   return (
-    <aside
-      className={`bg-white rounded-[24px] ml-3 inset-y-0 left-0 transform ${
-        isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } md:translate-x-0 transition-transform duration-300 ease-in-out w-[220px] p-4 z-30 shadow-lg md:relative overflow-y-auto max-h-screen`}
-    >
-      <div className="flex-1 flex justify-center md:justify-start">
-        <img
-          src={
-            "https://www.sinfode.com/wp-content/uploads/2022/12/digital-marketing-institute-in-sikar.webp"
-          }
-          alt="logo"
-          className="w-34 h-10"
+    <>
+      {/* Mobile Sidebar Overlay */}
+      {isMobile && isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={toggleSidebar}
         />
-      </div>
-      <nav>
-        <ul className="space-y-4 mt-4">
-          {menuItems.map((item, index) => (
-            <li key={index}>
-              {item.subMenu ? (
-                <>
-                  <div
-                    className="flex items-center text-gray-500 justify-between py-3 px-4 text-[15px] cursor-pointer rounded-4xl transition-all duration-200 ease-in-out"
-                    onClick={() => toggleSubCategory(item.name)}
-                  >
-                    <div className="flex items-center gap-4">
-                      {item.icon}
-                      <span className="text-[15px]">{item.name}</span>
-                    </div>
-                    {openMenu === item.name ? (
-                      <FaChevronUp />
-                    ) : (
-                      <FaChevronDown />
-                    )}
-                  </div>
+      )}
 
-                  {openMenu === item.name && (
-                    <ul className="pl-8 space-y-2">
-                      {item.subMenu.map((subItem, subIndex) => (
-                        <li key={subIndex}>
-                          <NavLink
-                            to={subItem.link || "#"}
-                            className={({ isActive }) =>
-                              `flex items-center mt-3 gap-4 py-2 px-4 rounded-lg transition-all duration-200 ease-in-out text-[15px] ${
-                                isActive
-                                  ? "bg-sky-100 text-blue-600 shadow-lg"
-                                  : subItem.link && subItem.link !== "/"
-                                  ? "bg-white text-gray-500"
-                                  : "opacity-50 cursor-not-allowed"
-                              }`
-                            }
-                            onClick={(e) => handleNavigation(subItem.link, e)}
-                          >
-                            <span className="text-[15px]">{subItem.name}</span>
-                          </NavLink>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              ) : (
-                <NavLink
-                  to={item.link || "#"}
-                  className={({ isActive }) =>
-                    `flex items-center gap-4 py-3 px-4 text-[15px] rounded-lg transition-all duration-200 ease-in-out ${
-                      isActive
-                        ? "bg-sky-100 text-blue-600 border-1 border-white"
-                        : item.link && item.link !== "/"
-                        ? "text-gray-500"
-                        : "opacity-50 cursor-not-allowed"
-                    }`
-                  }
-                  onClick={(e) => handleNavigation(item.link, e)}
-                >
-                  {item.icon}
-                  <span className="text-[15px]">{item.name}</span>
-                  {(!item.link || item.link === "/") && (
-                    <span className="text-xs ml-auto bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                      Coming Soon
+      {/* Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 w-64 bg-white transform transition-transform duration-300 ease-in-out z-30 lg:relative lg:translate-x-0 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <div className="flex items-center space-x-3">
+              <img
+                src="https://www.sinfode.com/wp-content/uploads/2022/12/digital-marketing-institute-in-sikar.webp"
+                alt="Sinfode Logo"
+                className="h-8 mt-4"
+              />
+            
+            </div>
+            
+            {/* Close button for mobile */}
+            {isMobile && (
+              <button
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden"
+              >
+                <FaTimes size={16} />
+              </button>
+            )}
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto">
+            <ul className="space-y-1 p-2">
+              {menuItems.map((item, index) => (
+                <li key={index}>
+                  <NavLink
+                    to={item.link || "#"}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 group ${
+                        isActive
+                          ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600 shadow-sm"
+                          : item.link && item.link !== "/"
+                          ? "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          : "opacity-50 cursor-not-allowed"
+                      }`
+                    }
+                    onClick={(e) => handleNavigation(item.link, e)}
+                  >
+                    <span className={`${activeItem === item.link ? 'text-blue-600' : 'text-gray-400'} group-hover:text-current`}>
+                      {item.icon}
                     </span>
-                  )}
-                </NavLink>
-              )}
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </aside>
+                    <span className="text-sm font-medium flex-1">{item.name}</span>
+                    
+                    {(!item.link || item.link === "/") && (
+                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                        Soon
+                      </span>
+                    )}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Footer - Branch Info */}
+          {selectedBranch && (
+            <div className="p-4 border-t border-gray-200 bg-gray-50">
+              <div className="text-xs text-gray-500">
+                Current Branch: 
+                <span className="font-medium text-gray-700 ml-1">
+                  {selectedBranch}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </aside>
+    </>
   );
 };
 
