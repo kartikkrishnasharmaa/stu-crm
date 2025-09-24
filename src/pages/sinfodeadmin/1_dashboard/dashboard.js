@@ -43,6 +43,7 @@ export default function Dashboard() {
     branchLeads: []
   });
   const [showYearPicker, setShowYearPicker] = useState(false);
+  const [customYear, setCustomYear] = useState("");
 
   // ✅ Branches API fetch - Filter only active branches
   const fetchBranches = async () => {
@@ -236,13 +237,6 @@ export default function Dashboard() {
     }
   }, [selectedBranch, selectedYear, activeBranches]);
 
-  // Generate year options (last 10 years and next 2 years)
-  const currentYear = new Date().getFullYear();
-  const yearOptions = [];
-  for (let i = currentYear - 2; i <= currentYear + 9; i++) {
-    yearOptions.push(i);
-  }
-
   // Prepare chart data - modified to handle "all" branches case and empty data
   let chartLabels = [];
   let chartDataValues = [];
@@ -425,13 +419,13 @@ export default function Dashboard() {
     maintainAspectRatio: false
   };
 
-  // Year Picker Component
+  // Year Picker Component - Updated to allow any year selection
   const YearPicker = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
     
-    // Generate years from currentYear-2 to currentYear+9
-    for (let i = currentYear - 2; i <= currentYear + 9; i++) {
+    // Generate years from currentYear-10 to currentYear+10 for quick selection
+    for (let i = currentYear - 1; i <= currentYear + 14; i++) {
       years.push(i);
     }
     
@@ -441,10 +435,21 @@ export default function Dashboard() {
       yearRows.push(years.slice(i, i + 4));
     }
 
+    const handleCustomYearSubmit = (e) => {
+      e.preventDefault();
+      if (customYear && !isNaN(customYear) && customYear > 0) {
+        setSelectedYear(parseInt(customYear));
+        setShowYearPicker(false);
+        setCustomYear("");
+      }
+    };
+
     return (
-      <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-10 w-64 p-4">
+      <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-10 w-72 p-4">
         <div className="text-center font-semibold mb-3 text-gray-700">Select Year</div>
-        <div className="space-y-3">
+        
+        {/* Quick Select Years */}
+        <div className="space-y-3 mb-4">
           {yearRows.map((row, rowIndex) => (
             <div key={rowIndex} className="flex justify-between">
               {row.map(year => (
@@ -465,6 +470,28 @@ export default function Dashboard() {
               ))}
             </div>
           ))}
+        </div>
+        
+        {/* Custom Year Input */}
+        <div className="border-t pt-3">
+          <p className="text-sm text-gray-600 mb-2">Or enter a custom year:</p>
+          <form onSubmit={handleCustomYearSubmit} className="flex">
+            <input
+              type="number"
+              min="1900"
+              max="2100"
+              value={customYear}
+              onChange={(e) => setCustomYear(e.target.value)}
+              placeholder="Enter year"
+              className="flex-1 border rounded-l-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-3 py-2 rounded-r-md text-sm hover:bg-blue-600 transition-colors"
+            >
+              Go
+            </button>
+          </form>
         </div>
       </div>
     );
@@ -588,7 +615,41 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-       
+          <div className="grid grid-cols-1 gap-6">
+          {/* Left column - Full width for revenue chart */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Revenue Chart Section */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+                <h2 className="font-semibold text-xl font-nunito text-gray-800 mb-4 md:mb-0">Revenue Analytics</h2>
+               
+                <div className="text-sm text-gray-500">
+                  Showing data for: {selectedBranch === "all"
+                    ? "All Active Branches"
+                    : activeBranches.find(b => b.id == selectedBranch)?.branchName || 'Selected Branch'} - {selectedYear}
+                </div>
+              </div>
+             
+              {/* Chart Display */}
+              {loading ? (
+                <div className="flex justify-center items-center h-80">
+                  <div className="animate-pulse flex flex-col items-center">
+                    <div className="rounded-full bg-gray-200 h-12 w-12 mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-32"></div>
+                  </div>
+                </div>
+              ) : revenueData ? (
+                <div className="h-80">
+                  <Bar data={chartData} options={chartOptions} />
+                </div>
+              ) : (
+                <div className="flex justify-center items-center h-80 text-gray-500">
+                  <p>Select a branch and year to view revenue data</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
         {/* Leads Summary Section */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
@@ -674,41 +735,7 @@ export default function Dashboard() {
           </div>
         </div>
        
-        <div className="grid grid-cols-1 gap-6">
-          {/* Left column - Full width for revenue chart */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Revenue Chart Section */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
-                <h2 className="font-semibold text-xl font-nunito text-gray-800 mb-4 md:mb-0">Revenue Analytics</h2>
-               
-                <div className="text-sm text-gray-500">
-                  Showing data for: {selectedBranch === "all"
-                    ? "All Active Branches"
-                    : activeBranches.find(b => b.id == selectedBranch)?.branchName || 'Selected Branch'} - {selectedYear}
-                </div>
-              </div>
-             
-              {/* Chart Display */}
-              {loading ? (
-                <div className="flex justify-center items-center h-80">
-                  <div className="animate-pulse flex flex-col items-center">
-                    <div className="rounded-full bg-gray-200 h-12 w-12 mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-32"></div>
-                  </div>
-                </div>
-              ) : revenueData ? (
-                <div className="h-80">
-                  <Bar data={chartData} options={chartOptions} />
-                </div>
-              ) : (
-                <div className="flex justify-center items-center h-80 text-gray-500">
-                  <p>Select a branch and year to view revenue data</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+     
       </div>
     </SAAdminLayout>
   );
