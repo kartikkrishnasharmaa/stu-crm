@@ -651,7 +651,7 @@ const StudentFees = () => {
                         {getCourseDetails(selectedStudent.course_id)}
                         {selectedCourse && (
                           <div className="sf-course-price-info">
-                            <p>Course Price: ₹{parseFloat(selectedCourse.actual_price || 0).toLocaleString()}</p>
+                            <p>Course Price: ₹{parseFloat(selectedCourse.discounted_price	 || 0).toLocaleString()}</p>
                           </div>
                         )}
                       </div>
