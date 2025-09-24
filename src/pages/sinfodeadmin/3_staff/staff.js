@@ -385,95 +385,111 @@ export default function Staff() {
 
       {/* List and Card Views */}
       {viewMode === "list" ? (
-        <div className="overflow-x-auto">
-          <div className="bg-white rounded-xl">
-            <div className="grid grid-cols-12 gap-4 px-2 md:px-5 py-3 bg-gray-100 font-semibold text-gray-700 text-xs md:text-sm">
-              <div className="col-span-4 sm:col-span-3">Employee</div>
-              <div className="col-span-2 text-center hidden sm:block sm:col-span-2">Position</div>
-              <div className="col-span-2 text-center">Phone no.</div>
-              <div className="col-span-2 text-center hidden sm:block sm:col-span-2">Status</div>
-              <div className="col-span-2 sm:col-span-3 text-right">Actions</div>
+       <div>
+  <div className="bg-white rounded-xl">
+    <div className="grid grid-cols-12 gap-5 px-4 md:px-5 py-3 bg-gray-100 font-semibold text-gray-700 text-xs md:text-sm">
+      <div className="col-span-4 sm:col-span-3">Employee</div>
+      <div className="hidden sm:block sm:col-span-2 text-center">Position</div>
+      <div className="col-span-4 sm:col-span-2 text-center">Phone no.</div>
+      <div className="hidden sm:block sm:col-span-2 text-center">Status</div>
+      <div className="col-span-4 sm:col-span-3 text-right">Actions</div>
+    </div>
+    <div className="divide-y">
+      {filteredStaff.map((staff) => (
+        <div
+          key={staff.id}
+          className="grid grid-cols-12 gap-5 px-2 md:px-5 py-4 items-center hover:bg-gray-50 text-xs md:text-base"
+        >
+          {/* Employee Name - visible on all screens */}
+          <div className="col-span-4 sm:col-span-3 flex items-center gap-3 min-w-0">
+            <img
+              src={staff.profile_image || "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"}
+              alt={staff.employee_name}
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border"
+            />
+            <div className="min-w-0">
+              <h3 className="font-semibold text-gray-800 ">{staff.employee_name}</h3>
+              {/* <p className="text-gray-500 text-xs truncate">{staff.email}</p> */}
             </div>
-            <div className="divide-y">
-            {filteredStaff.map((staff) => (
-              <div
-                key={staff.id}
-                className="grid grid-cols-12 gap-4 px-2 md:px-5 py-4 items-center hover:bg-gray-50 text-xs md:text-base"
-              >
-                <div className="col-span-4 sm:col-span-3 flex items-center gap-3">
-                  <img
-                    src={staff.profile_image || "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"}
-                    alt={staff.employee_name}
-                    className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border"
-                  />
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{staff.employee_name}</h3>
-                    <p className="text-gray-500 text-xs">{staff.email}</p>
-                  </div>
-                </div>
-                <div className="col-span-2 text-center text-gray-600 hidden sm:block sm:col-span-2">{staff.designation}</div>
-                <div className="col-span-2 text-center text-gray-600">{staff.contact_number}</div>
-                <div className="col-span-2 text-center hidden sm:block sm:col-span-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium  ${
-                    staff.status === "Active" 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {staff.status}
-                  </span>
-                </div>
-                <div className="col-span-2 sm:col-span-3 flex justify-end">
-                  <div className="relative">
-                    <button
-                      onClick={() => setOpenMenuId(openMenuId === staff.id ? null : staff.id)}
-                      className="menu-toggle p-2 hover:bg-gray-100 rounded-full"
-                      aria-haspopup="true"
-                      aria-expanded={openMenuId === staff.id}
-                    >
-                      <HiDotsVertical size={20} />
-                    </button>
+          </div>
 
-                    {openMenuId === staff.id && (
-                      <div
-                        className="menu-container absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-40 py-2 z-50"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={() => toggleStatus(staff.id, staff.status)}
-                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
-                        >
-                          {staff.status === "Active"
-                            ? <FaToggleOn size={18} className="text-green-600" />
-                            : <FaToggleOff size={18} className="text-red-600" />}
-                          {staff.status === "Active" ? "Deactivate" : "Activate"}
-                        </button>
-                        <button
-                          onClick={() => navigate(`/sinfodeadmin/staff/${staff.id}`)}
-                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-purple-600"
-                        >
-                          <FaEye size={16} /> View
-                        </button>
-                        <button
-                          onClick={() => handleEditClick(staff)}
-                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-blue-600"
-                        >
-                          <FaEdit size={16} /> Edit
-                        </button>
-                        <button
-                          onClick={() => deleteStaff(staff.id)}
-                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600"
-                        >
-                          <FaTrash size={16} /> Delete
-                        </button>
-                      </div>
+          {/* Position - hidden on mobile */}
+          <div className="hidden sm:block sm:col-span-2 text-center text-gray-600 truncate">
+            {staff.designation}
+          </div>
+
+          {/* Phone No. - visible on all screens */}
+          <div className="col-span-4 sm:col-span-2 text-center text-gray-600 truncate">
+            {staff.contact_number}
+          </div>
+
+          {/* Status - hidden on mobile */}
+          <div className="hidden sm:block sm:col-span-2 text-center">
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                staff.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+              }`}
+            >
+              {staff.status}
+            </span>
+          </div>
+
+          {/* Actions - visible on all screens */}
+          <div className="col-span-4 sm:col-span-3 flex justify-end">
+            <div className="relative">
+              <button
+                onClick={() => setOpenMenuId(openMenuId === staff.id ? null : staff.id)}
+                className="menu-toggle p-2 hover:bg-gray-100 rounded-full"
+                aria-haspopup="true"
+                aria-expanded={openMenuId === staff.id}
+              >
+                <HiDotsVertical size={20} />
+              </button>
+
+              {openMenuId === staff.id && (
+                <div
+                  className="menu-container absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-40 py-2 z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => toggleStatus(staff.id, staff.status)}
+                    className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                  >
+                    {staff.status === "Active" ? (
+                      <FaToggleOn size={18} className="text-green-600" />
+                    ) : (
+                      <FaToggleOff size={18} className="text-red-600" />
                     )}
-                  </div>
+                    {staff.status === "Active" ? "Deactivate" : "Activate"}
+                  </button>
+                  <button
+                    onClick={() => navigate(`/sinfodeadmin/staff/${staff.id}`)}
+                    className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-purple-600"
+                  >
+                    <FaEye size={16} /> View
+                  </button>
+                  <button
+                    onClick={() => handleEditClick(staff)}
+                    className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-blue-600"
+                  >
+                    <FaEdit size={16} /> Edit
+                  </button>
+                  <button
+                    onClick={() => deleteStaff(staff.id)}
+                    className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600"
+                  >
+                    <FaTrash size={16} /> Delete
+                  </button>
                 </div>
-              </div>
-            ))}
+              )}
             </div>
           </div>
         </div>
+      ))}
+    </div>
+  </div>
+</div>
+
       ) : (
         <div className="grid mt-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredStaff.map((staff) => (
