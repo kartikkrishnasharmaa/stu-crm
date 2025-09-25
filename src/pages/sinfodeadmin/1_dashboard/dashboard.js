@@ -651,7 +651,7 @@ export default function Dashboard() {
           </div>
         </div>
         {/* Leads Summary Section */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white rounded-xl mt-9 shadow-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-semibold text-xl font-nunito">Leads Overview</h2>
             <a href="/sinfodeadmin/leads" className="text-blue-500 text-sm flex items-center">
