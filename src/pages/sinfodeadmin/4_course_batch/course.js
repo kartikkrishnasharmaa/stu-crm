@@ -883,7 +883,7 @@ export default function Course() {
           >
             {/* Close button for mobile */}
             <div className="flex justify-between items-center mb-2 md:hidden">
-              <span className="font-bold text-lg text-blue-700">Menu</span>
+          
               <button
                 className="text-gray-600 bg-gray-100 rounded-full p-2"
                 onClick={() => setSidebarOpen(false)}
