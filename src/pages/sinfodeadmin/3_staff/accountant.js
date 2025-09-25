@@ -234,7 +234,7 @@ export default function Accountant() {
   return (
     <div className="p-3 md:p-6">
       <ToastContainer position="top-right" autoClose={3000} theme="light" />
-      
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
@@ -244,21 +244,19 @@ export default function Accountant() {
           <div className="flex gap-2 bg-gray-200 p-1 rounded-full">
             <button
               onClick={() => setViewMode("list")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                viewMode === "list"
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${viewMode === "list"
                   ? "bg-blue-600 text-white"
                   : "bg-transparent text-gray-600 hover:bg-gray-300"
-              }`}
+                }`}
             >
               List View
             </button>
             <button
               onClick={() => setViewMode("card")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                viewMode === "card"
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${viewMode === "card"
                   ? "bg-blue-600 text-white"
                   : "bg-transparent text-gray-600 hover:bg-gray-300"
-              }`}
+                }`}
             >
               Card View
             </button>
@@ -304,133 +302,141 @@ export default function Accountant() {
       </div>
 
       {viewMode === "list" ? (
-        <div className="rounded-xl border border-gray-200">
-          <div className="min-w-[700px]">
-            {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 px-5 py-3 bg-gray-100 font-semibold text-gray-700 border-b text-sm whitespace-nowrap">
-              <div className="col-span-3">Accountant Name</div>
-              <div className="col-span-2 hidden sm:block sm:col-span-2">Department</div>
-              <div className="col-span-2">Contact</div>
-              <div className="col-span-3 hidden sm:block sm:col-span-2">Email</div>
-              <div className="col-span-1 hidden sm:block sm:col-span-2">Status</div>
-              <div className="col-span-1 text-right">Actions</div>
-            </div>
+      <div className="bg-white rounded-xl">
+  {/* Table Header */}
+  <div className="grid grid-cols-12 gap-4 px-4 md:px-5 py-3 bg-gray-100 font-semibold text-gray-700 text-xs md:text-sm">
+    <div className="col-span-4 sm:col-span-3">Accountant</div>
+    <div className="hidden sm:block sm:col-span-2 text-center">Department</div>
+    <div className="col-span-4 sm:col-span-2 text-center">Contact</div>
+    <div className="hidden lg:block sm:col-span-3 text-center">Email</div>
+    <div className="hidden lg:block sm:col-span-1 text-center">Status</div>
+    <div className="col-span-4 sm:col-span-3 text-right">Actions</div>
+  </div>
 
-            {/* Table Body */}
-            <div className="divide-y">
-              {filteredAccountants.map(accountant => (
-                <div
-                  key={accountant.id}
-                  className="grid grid-cols-12 gap-4 px-5 py-4 hover:bg-gray-50 transition-colors items-center text-sm"
+  {/* Table Body */}
+  <div className="divide-y">
+    {filteredAccountants.map((accountant) => (
+      <div
+        key={accountant.id}
+        className="grid grid-cols-12 gap-4 px-2 md:px-5 py-4 items-center hover:bg-gray-50 text-xs md:text-base"
+      >
+        {/* Accountant Name */}
+        <div className="col-span-4 sm:col-span-3 flex items-center gap-3 min-w-0">
+          <img
+            src={
+              accountant.profile_image ||
+              "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"
+            }
+            alt={accountant.accountant_name}
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border"
+          />
+          <div className="min-w-0">
+            <h3 className="font-semibold text-gray-800 truncate">
+              {accountant.accountant_name}
+            </h3>
+            <p className="hidden sm:block text-gray-500 text-xs truncate">
+              {accountant.accountant_code}
+            </p>
+          </div>
+        </div>
+
+        {/* Department - md se upar */}
+        <div className="hidden sm:block sm:col-span-2 text-center text-gray-600 truncate">
+          {accountant.department}
+        </div>
+
+        {/* Contact - sab me visible */}
+        <div className="col-span-4 sm:col-span-2 text-center text-gray-600 truncate">
+          {accountant.contact_number || "N/A"}
+        </div>
+
+        {/* Email - lg se upar */}
+        <div className="hidden lg:block sm:col-span-3 text-center text-gray-600 truncate">
+          {accountant.email || "N/A"}
+        </div>
+
+        {/* Status - lg se upar */}
+        <div className="hidden lg:block sm:col-span-1 text-center">
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${
+              accountant.status === "Active"
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {accountant.status || "Active"}
+          </span>
+        </div>
+
+        {/* Actions - sab me visible */}
+        <div className="col-span-4 sm:col-span-3 flex justify-end">
+          <div className="relative">
+            <button
+              onClick={() =>
+                setOpenMenuId(openMenuId === accountant.id ? null : accountant.id)
+              }
+              className="menu-toggle p-2 hover:bg-gray-100 rounded-full"
+              aria-haspopup="true"
+              aria-expanded={openMenuId === accountant.id}
+            >
+              <HiDotsVertical size={20} />
+            </button>
+
+            {openMenuId === accountant.id && (
+              <div
+                className="menu-container absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-40 py-2 z-50 border"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() =>
+                    toggleStatus(accountant.id, accountant.status || "Active")
+                  }
+                  className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
                 >
-                  <div className="col-span-3 flex items-center gap-3 min-w-0">
-                    <img
-                      src={
-                        accountant.profile_image ||
-                        "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"
-                      }
-                      alt={accountant.accountant_name}
-                      className="w-10 h-10 rounded-full object-cover border"
-                    />
-                    <div className="min-w-0">
-                      <h3 className="font-medium text-gray-800 truncate">
-                        {accountant.accountant_name}
-                      </h3>
-                      <p className="text-gray-500 truncate text-xs">
-                        {accountant.accountant_code}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="col-span-2 flex items-center truncate hidden sm:block sm:col-span-2">
-                    <span className="text-gray-700 truncate w-full">{accountant.department}</span>
-                  </div>
-
-                  <div className="col-span-2 flex items-center truncate">
-                    <span className="text-gray-700 truncate w-full">{accountant.contact_number || "N/A"}</span>
-                  </div>
-
-                  <div className="col-span-3 flex items-center truncate hidden sm:block sm:col-span-2">
-                    <span className="text-gray-700 text-sm truncate w-full">{accountant.email || "N/A"}</span>
-                  </div>
-
-                  <div className="col-span-1 flex items-center hidden sm:block sm:col-span-2">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        accountant.status === "Active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {accountant.status || "Active"}
-                    </span>
-                  </div>
-
-                  <div className="col-span-1 flex justify-end items-center relative">
-                    <button
-                      onClick={() =>
-                        setOpenMenuId(openMenuId === accountant.id ? null : accountant.id)
-                      }
-                      className="menu-toggle p-2 hover:bg-gray-100 rounded-full"
-                      aria-haspopup="true"
-                      aria-expanded={openMenuId === accountant.id}
-                    >
-                      <HiDotsVertical size={20} />
-                    </button>
-
-                    {openMenuId === accountant.id && (
-                      <div
-                        className="menu-container absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-48 py-2 z-50 border border-gray-200"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={() =>
-                            toggleStatus(accountant.id, accountant.status || "Active")
-                          }
-                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-sm"
-                        >
-                          {accountant.status === "Active" ? (
-                            <FaToggleOn size={18} className="text-green-600" />
-                          ) : (
-                            <FaToggleOff size={18} className="text-red-600" />
-                          )}
-                          {accountant.status === "Active" ? "Deactivate" : "Activate"}
-                        </button>
-
-                        <button
-                          onClick={() => navigate(`/sinfodeadmin/accountant/${accountant.id}`)}
-                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-purple-600 text-sm"
-                        >
-                          <FaEye size={16} /> View Details
-                        </button>
-
-                        <button
-                          onClick={() => handleEditClick(accountant)}
-                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-blue-600 text-sm"
-                        >
-                          <FaEdit size={16} /> Edit
-                        </button>
-
-                        <button
-                          onClick={() => deleteAccountant(accountant.id)}
-                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600 text-sm"
-                        >
-                          <FaTrash size={16} /> Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {filteredAccountants.length === 0 && (
-              <div className="py-10 text-center text-gray-500">
-                No accountants found. {search && `No results for "${search}"`}
+                  {accountant.status === "Active" ? (
+                    <FaToggleOn size={18} className="text-green-600" />
+                  ) : (
+                    <FaToggleOff size={18} className="text-red-600" />
+                  )}
+                  {accountant.status === "Active" ? "Deactivate" : "Activate"}
+                </button>
+                <button
+                  onClick={() =>
+                    navigate(`/sinfodeadmin/accountant/${accountant.id}`)
+                  }
+                  className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-purple-600"
+                >
+                  <FaEye size={16} /> View
+                </button>
+                <button
+                  onClick={() => handleEditClick(accountant)}
+                  className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-blue-600"
+                >
+                  <FaEdit size={16} /> Edit
+                </button>
+                <button
+                  onClick={() => deleteAccountant(accountant.id)}
+                  className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600"
+                >
+                  <FaTrash size={16} /> Delete
+                </button>
               </div>
             )}
           </div>
         </div>
+      </div>
+    ))}
+  </div>
+
+  {filteredAccountants.length === 0 && (
+    <div className="py-10 text-center text-gray-500">
+      No accountants found. {search && `No results for "${search}"`}
+    </div>
+  )}
+</div>
+
+
+
       ) : (
         <div className="grid mt-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredAccountants.map(accountant => (
