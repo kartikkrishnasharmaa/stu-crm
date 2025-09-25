@@ -5,7 +5,7 @@ import { Editor } from "react-draft-wysiwyg";
 import { EditorState, convertToRaw,ContentState } from "draft-js";
 import draftToHtml from "draftjs-to-html";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { FaEdit, FaTrash, FaEye,FaClock,FaMapMarkerAlt,FaUserTie,FaRupeeSign } from "react-icons/fa";
+import { FaEdit, FaTrash, FaEye,FaClock,FaMapMarkerAlt,FaUserTie,FaRupeeSign,FaBars } from "react-icons/fa";
 import Batch from "./batch";
 import Allbatch from "./allbatch";
 import htmlToDraft from "html-to-draftjs";
@@ -266,17 +266,7 @@ function AddCourse() {
                 className="w-full border rounded-lg px-3 py-2"
               />
             </div>
-            {/* <div>
-              <label className="block text-sm font-medium mb-1">
-                Course Discount Price (₹)
-              </label>
-              <input
-                type="number"
-                value={discountprice}
-                onChange={(e) => setDprice(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2"
-              />
-            </div> */}
+    
           </div>
         </div>
 
@@ -739,16 +729,6 @@ function AllCourse() {
                   />
                 </div>
 
-                {/* <div>
-                  <label className="block text-sm font-medium mb-1">Discounted Price (₹)</label>
-                  <input
-                    type="number"
-                    name="discounted_price"
-                    value={formData.discounted_price || ""}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300"
-                  />
-                </div> */}
 
                 <div>
                   <label className="block text-sm font-medium mb-1">Assign Branch</label>
@@ -862,53 +842,84 @@ function AllCourse() {
 
 export default function Course() {
   const [activeTab, setActiveTab] = useState("addCourse");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const handleTabSelection = (tab) => {
+    setActiveTab(tab);
+    setSidebarOpen(false);
+  };
   return (
-    <SAAdminLayout>
-      <div className="flex h-full">
-        {/* ✅ Left Sidebar */}
-        <div className="w-60 bg-white rounded-xl shadow-md p-4 space-y-3">
-          <button
-            onClick={() => setActiveTab("addCourse")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "addCourse"
-              ? "bg-blue-100 text-black"
-              : "hover:bg-blue-100 text-black"
-              }`}
-          >
-            ➕ Add Course
-          </button>
+   <SAAdminLayout>
+      <div className="flex h-full relative">
+        {/* Mobile: Menu Button */}
+        <button
+          className="md:hidden fixed z-4 top-[90px] left-4 bg-white text-black p-3 rounded-full shadow-lg"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open Menu"
+        >
+          <FaBars size={22} />
+        </button>
 
-          <button
-            onClick={() => setActiveTab("courseList")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "courseList"
-              ? "bg-blue-100 text-black"
-              : "hover:bg-blue-100 text-black"
-              }`}
+        {/* Sidebar: desktop static, mobile drawer */}
+        <div>
+          {/* Backdrop for mobile drawer */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black bg-opacity-40 z-30"
+              onClick={() => setSidebarOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+          <aside
+            className={`fixed z-40 top-0 left-0 h-full transition-transform 
+              ${
+                sidebarOpen
+                  ? "translate-x-0"
+                  : "-translate-x-full"
+              } md:translate-x-0 md:static md:h-auto
+            w-64 bg-white rounded-xl shadow-md p-4 space-y-3
+            flex flex-col`}
+            style={{ minWidth: "240px" }}
           >
-            📋 All Courses
-          </button>
-          {/* <button
-            onClick={() => setActiveTab("batchManagement")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "batchManagement"
-              ? "bg-blue-100 text-black"
-              : "hover:bg-blue-100 text-black"
+            {/* Close button for mobile */}
+            <div className="flex justify-between items-center mb-2 md:hidden">
+              <span className="font-bold text-lg text-blue-700">Menu</span>
+              <button
+                className="text-gray-600 bg-gray-100 rounded-full p-2"
+                onClick={() => setSidebarOpen(false)}
+                aria-label="Close Menu"
+              >
+                ✕
+              </button>
+            </div>
+            {/* Nav Buttons */}
+            <button
+              onClick={() => handleTabSelection("addCourse")}
+              className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${
+                activeTab === "addCourse"
+                  ? "bg-blue-100 text-black font-semibold"
+                  : "hover:bg-blue-100 text-black"
               }`}
-          >
-            ➕ Add Batches
-          </button>
-          <button
-            onClick={() => setActiveTab("allBatches")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "allBatches"
-              ? "bg-blue-100 text-black"
-              : "hover:bg-blue-100 text-black"
+            >
+              ➕ Add Course
+            </button>
+            <button
+              onClick={() => handleTabSelection("courseList")}
+              className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${
+                activeTab === "courseList"
+                  ? "bg-blue-100 text-black font-semibold"
+                  : "hover:bg-blue-100 text-black"
               }`}
-          >
-            📋 All Batches
-          </button> */}
+            >
+              📋 All Courses
+            </button>
+            {/* Add more navs if needed */}
+          </aside>
         </div>
-
-        {/* ✅ Right Content Area */}
-        <div className="flex-1 rounded-lg p-6 overflow-y-auto">
+        {/* Right Content Area */}
+        <div className="flex-1 rounded-lg p-6 overflow-y-auto md:ml-64">
+          {/* Add top spacing for mobile if sidebar button present */}
+          <div className="md:hidden h-14" />
           {activeTab === "addCourse" && <AddCourse />}
           {activeTab === "courseList" && <AllCourse />}
           {activeTab === "batchManagement" && <Batch />}
