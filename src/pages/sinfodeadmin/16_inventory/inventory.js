@@ -205,40 +205,35 @@ export default function Assets() {
           {/* Hamburger lines */}
           <div className="space-y-1.5">
             <span
-              className={`block h-0.5 w-4 bg-gray-800 transform transition duration-300 ${
-                isSidebarOpen ? "rotate-45 translate-y-2" : ""
-              }`}
+              className={`block h-0.5 w-4 bg-gray-800 transform transition duration-300 ${isSidebarOpen ? "rotate-45 translate-y-2" : ""
+                }`}
             />
             <span
-              className={`block h-0.5 w-4 bg-gray-800 transition duration-300 ${
-                isSidebarOpen ? "opacity-0" : ""
-              }`}
+              className={`block h-0.5 w-4 bg-gray-800 transition duration-300 ${isSidebarOpen ? "opacity-0" : ""
+                }`}
             />
             <span
-              className={`block h-0.5 w-4 bg-gray-800 transform transition duration-300 ${
-                isSidebarOpen ? "-rotate-45 -translate-y-2" : ""
-              }`}
+              className={`block h-0.5 w-4 bg-gray-800 transform transition duration-300 ${isSidebarOpen ? "-rotate-45 -translate-y-2" : ""
+                }`}
             />
           </div>
         </button>
 
         {/* Sidebar */}
         <div
-          className={`fixed top-0 left-0 h-full w-60 bg-white rounded-r-xl shadow-lg p-4 space-y-3 z-20 transform transition-transform duration-300 md:relative md:translate-x-0 md:flex flex-col ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed top-0 left-0 h-full w-60 bg-white rounded-r-xl shadow-lg p-4 space-y-3 z-20 transform transition-transform duration-300 md:relative md:translate-x-0 md:flex flex-col ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
         >
-         <div style={{marginTop: '140px'}}></div>
+          <div className="mt-[140px] md:mt-4"></div>
           <button
             onClick={() => {
               setActiveTab("addAssets");
               setSidebarOpen(false);
             }}
-            className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${
-              activeTab === "addAssets"
+            className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${activeTab === "addAssets"
                 ? "bg-blue-100 text-black font-semibold"
                 : "hover:bg-blue-100 text-black"
-            }`}
+              }`}
           >
             ➕ Add Assets
           </button>
@@ -247,11 +242,10 @@ export default function Assets() {
               setActiveTab("assetsList");
               setSidebarOpen(false);
             }}
-            className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${
-              activeTab === "assetsList"
+            className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${activeTab === "assetsList"
                 ? "bg-blue-100 text-black font-semibold"
                 : "hover:bg-blue-100 text-black"
-            }`}
+              }`}
           >
             📋 All Assets
           </button>
@@ -260,11 +254,10 @@ export default function Assets() {
               setActiveTab("transferAssets");
               setSidebarOpen(false);
             }}
-            className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${
-              activeTab === "transferAssets"
+            className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${activeTab === "transferAssets"
                 ? "bg-blue-100 text-black font-semibold"
                 : "hover:bg-blue-100 text-black"
-            }`}
+              }`}
           >
             📋 Transfer Assets
           </button>
@@ -273,11 +266,10 @@ export default function Assets() {
               setActiveTab("transferhistory");
               setSidebarOpen(false);
             }}
-            className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${
-              activeTab === "transferhistory"
+            className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${activeTab === "transferhistory"
                 ? "bg-blue-100 text-black font-semibold"
                 : "hover:bg-blue-100 text-black"
-            }`}
+              }`}
           >
             📋 Transfer History
           </button>
@@ -293,9 +285,8 @@ export default function Assets() {
 
         {/* Content */}
         <main
-          className={`flex-1 p-6 overflow-auto transition-margin duration-300 ${
-            isSidebarOpen ? "md:ml-60" : ""
-          } max-w-full`}
+          className={`flex-1 p-6 overflow-auto transition-margin duration-300 ${isSidebarOpen ? "md:ml-60" : ""
+            } max-w-full`}
         >
           {activeTab === "addAssets" && <AddAssets />}
           {activeTab === "assetsList" && <AllInv />}
