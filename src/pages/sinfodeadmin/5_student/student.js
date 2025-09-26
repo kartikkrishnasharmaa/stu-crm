@@ -1,10 +1,11 @@
+
 import SAAdminLayout from "../../../layouts/Sinfodeadmin";
 import { useState, useEffect } from "react";
 import axios from "../../../api/axiosConfig";
 import Allstudents from "./allstudents";
 import Idcard from "./idcard";
 import AcademicProgress from "./academic";
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 function AddStudent() {
@@ -100,14 +101,14 @@ function AddStudent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       if (contactNumber.length !== 10) {
         toast.error("Contact number must be exactly 10 digits");
         setLoading(false);
         return;
       }
-      
+
       if (guardianContact && guardianContact.length !== 10) {
         toast.error("Guardian contact must be exactly 10 digits if provided");
         setLoading(false);
@@ -142,8 +143,7 @@ function AddStudent() {
       });
 
       toast.success("Student created successfully!");
-      
-      // Reset form
+
       setFullName("");
       setDob("");
       setGender("");
@@ -161,16 +161,14 @@ function AddStudent() {
       setCourseFee(0);
       setFinalFee(0);
       setSelectedCoupon("");
-      
     } catch (error) {
       console.error("Error creating student:", error.response?.data || error);
-      
+
       if (error.response?.data?.message) {
         toast.error(`❌ ${error.response.data.message}`);
       } else if (error.response?.data?.errors) {
-        // Handle validation errors
         const errorMessages = Object.values(error.response.data.errors).flat();
-        errorMessages.forEach(msg => toast.error(`❌ ${msg}`));
+        errorMessages.forEach((msg) => toast.error(`❌ ${msg}`));
       } else {
         toast.error("❌ Failed to create student");
       }
@@ -182,7 +180,7 @@ function AddStudent() {
   return (
     <div className="p-6 w-full bg-[#F4F9FD]">
       <ToastContainer
-        position="top-center"
+        position="bottom-center"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
@@ -193,16 +191,13 @@ function AddStudent() {
         pauseOnHover
         theme="light"
       />
-      
+
       <h1 className="text-[30px] mb-4 font-semibold">Add Student</h1>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
-        {/* Basic Info */}
         <div className="bg-white shadow-md rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Full Name *
-            </label>
+            <label className="block text-sm font-medium mb-1">Full Name *</label>
             <input
               type="text"
               value={fullName}
@@ -213,9 +208,7 @@ function AddStudent() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Date of Birth *
-            </label>
+            <label className="block text-sm font-medium mb-1">Date of Birth *</label>
             <input
               type="date"
               value={dob}
@@ -239,13 +232,11 @@ function AddStudent() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Contact Number *
-            </label>
+            <label className="block text-sm font-medium mb-1">Contact Number *</label>
             <input
               value={contactNumber}
               onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                const value = e.target.value.replace(/\D/g, "").slice(0, 10);
                 setContactNumber(value);
               }}
               className="w-full border rounded-lg px-3 py-2"
@@ -256,9 +247,7 @@ function AddStudent() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Email Address *
-            </label>
+            <label className="block text-sm font-medium mb-1">Email Address *</label>
             <input
               type="email"
               value={email}
@@ -278,9 +267,7 @@ function AddStudent() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Photo Upload
-            </label>
+            <label className="block text-sm font-medium mb-1">Photo Upload</label>
             <input
               type="file"
               onChange={(e) => setPhoto(e.target.files[0])}
@@ -290,12 +277,9 @@ function AddStudent() {
           </div>
         </div>
 
-        {/* Parent/Guardian */}
         <div className="bg-white shadow-md rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Parent/Guardian Name
-            </label>
+            <label className="block text-sm font-medium mb-1">Parent/Guardian Name</label>
             <input
               type="text"
               value={guardianName}
@@ -305,13 +289,11 @@ function AddStudent() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Parent/Guardian Contact
-            </label>
+            <label className="block text-sm font-medium mb-1">Parent/Guardian Contact</label>
             <input
               value={guardianContact}
               onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                const value = e.target.value.replace(/\D/g, "").slice(0, 10);
                 setGuardianContact(value);
               }}
               className="w-full border rounded-lg px-3 py-2"
@@ -322,12 +304,9 @@ function AddStudent() {
           </div>
         </div>
 
-        {/* Admission Details */}
         <div className="bg-white shadow-md rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Admission Date *
-            </label>
+            <label className="block text-sm font-medium mb-1">Admission Date *</label>
             <input
               type="date"
               value={admissionDate}
@@ -347,15 +326,13 @@ function AddStudent() {
               <option value="">Select</option>
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
-                  {course.course_name} 
+                  {course.course_name}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Select Batch *
-            </label>
+            <label className="block text-sm font-medium mb-1">Select Batch *</label>
             <select
               value={batchId}
               onChange={(e) => setBatchId(e.target.value)}
@@ -404,53 +381,75 @@ function AddStudent() {
 
 export default function Student() {
   const [activeTab, setActiveTab] = useState("addStudent");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <SAAdminLayout>
-      <div className="flex h-full">
-        {/* Sidebar */}
-        <div className="w-60 bg-white rounded-xl shadow-md p-4 space-y-3">
+      <div className="flex h-full relative">
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="md:hidden fixed top-[90px] left-4 z-20 text-gray p-3 rounded-full shadow-lg focus:outline-none"
+          aria-label="Toggle sidebar"
+        >
+          {sidebarOpen ? "✕" : "☰"}
+        </button>
+
+        <div
+          className={`fixed top-0 left-0 h-full w-60 bg-white rounded-xl shadow-md p-4 space-y-3 z-50 transform transition-transform duration-300 ease-in-out
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            md:translate-x-0 md:static md:shadow-none`}
+          style={{ boxShadow: sidebarOpen ? "0 0 20px rgba(0,0,0,0.3)" : "none" }}
+        >
           <button
             onClick={() => setActiveTab("addStudent")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "addStudent"
-              ? "bg-blue-100 text-black"
-              : "hover:bg-blue-100 text-black"
-              }`}
+            className={`block w-full text-left px-4 py-5 rounded-lg ${
+              activeTab === "addStudent"
+                ? "bg-blue-100 text-black"
+                : "hover:bg-blue-100 text-black"
+            }`}
           >
             ➕ Add Student
           </button>
 
           <button
             onClick={() => setActiveTab("studentList")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "studentList"
-              ? "bg-blue-100 text-black"
-              : "hover:bg-blue-100 text-black"
-              }`}
+            className={`block w-full text-left px-4 py-5 rounded-lg ${
+              activeTab === "studentList"
+                ? "bg-blue-100 text-black"
+                : "hover:bg-blue-100 text-black"
+            }`}
           >
             📋 All Students
           </button>
           <button
             onClick={() => setActiveTab("idCard")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "idCard"
-              ? "bg-blue-100 text-black"
-              : "hover:bg-blue-100 text-black"
-              }`}
+            className={`block w-full text-left px-4 py-5 rounded-lg ${
+              activeTab === "idCard"
+                ? "bg-blue-100 text-black"
+                : "hover:bg-blue-100 text-black"
+            }`}
           >
             📋 ID Card
           </button>
           <button
             onClick={() => setActiveTab("academic")}
-            className={`block w-full text-left px-4 py-5 rounded-lg ${activeTab === "academic"
-              ? "bg-blue-100 text-black"
-              : "hover:bg-blue-100 text-black"
-              }`}
+            className={`block w-full text-left px-4 py-5 rounded-lg ${
+              activeTab === "academic"
+                ? "bg-blue-100 text-black"
+                : "hover:bg-blue-100 text-black"
+            }`}
           >
             📊 Student Progress
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 rounded-lg p-6 overflow-y-auto">
+        <div
+          className="flex-1 rounded-lg p-6 overflow-y-auto"
+          onClick={() => {
+            if (sidebarOpen) setSidebarOpen(false);
+          }}
+          style={{ position: "relative", zIndex: 10 }}
+        >
           {activeTab === "addStudent" && <AddStudent />}
           {activeTab === "studentList" && <Allstudents />}
           {activeTab === "idCard" && <Idcard />}
