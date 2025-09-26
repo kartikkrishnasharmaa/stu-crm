@@ -57,33 +57,45 @@ function Batch() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post("/batches/create", formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert("Batch created successfully!");
-      // Reset form including time fields
-      setFormData({
-        batch_name: "",
-        course_id: "",
-        branch_id: "",
-        start_date: "",
-        end_date: "",
-        student_limit: "",
-        batch_start_time: "",  // Reset
-        batch_end_time: "",    // Reset
-      });
-    } catch (error) {
-      console.error(error);
-      alert("Error creating batch");
-    } finally {
-      setLoading(false);
-    }
-  };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // Time validation
+  if (formData.batch_start_time === formData.batch_end_time) {
+    alert("Start and end time cannot be the same!");
+    return;
+  }
+
+  if (formData.batch_start_time > formData.batch_end_time) {
+    alert("Start time cannot be after end time!");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post("/batches/create", formData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    alert("Batch created successfully!");
+    setFormData({
+      batch_name: "",
+      course_id: "",
+      branch_id: "",
+      start_date: "",
+      end_date: "",
+      student_limit: "",
+      batch_start_time: "",  
+      batch_end_time: "",
+    });
+  } catch (error) {
+    console.error(error);
+    alert("Error creating batch");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="p-6">
