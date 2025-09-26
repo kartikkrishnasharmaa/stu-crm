@@ -16,11 +16,11 @@ import {
   FaSchool,
   FaClock,
   FaChalkboardTeacher,
-  FaFileExport
+  FaFileExport,
 } from "react-icons/fa";
 import { HiDotsVertical } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function Allstudents() {
@@ -40,7 +40,6 @@ export default function Allstudents() {
   const [photoPreview, setPhotoPreview] = useState("");
   const navigate = useNavigate();
 
-  // Close menu on outside click
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -57,7 +56,6 @@ export default function Allstudents() {
     };
   }, [openMenuId]);
 
-  // Fetch Students
   const fetchStudents = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -70,7 +68,6 @@ export default function Allstudents() {
     }
   };
 
-  // Fetch Branches
   const fetchBranches = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -88,7 +85,6 @@ export default function Allstudents() {
     fetchBranches();
   }, []);
 
-  // Fetch single student data
   const fetchStudent = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -102,7 +98,6 @@ export default function Allstudents() {
     }
   };
 
-  // Handle View Student
   const handleViewStudent = async (id) => {
     setIsLoading(true);
     const studentData = await fetchStudent(id);
@@ -114,7 +109,6 @@ export default function Allstudents() {
     setOpenMenuId(null);
   };
 
-  // Handle Edit Student
   const handleEditStudent = async (id) => {
     setIsLoading(true);
     const studentData = await fetchStudent(id);
@@ -128,8 +122,6 @@ export default function Allstudents() {
     setOpenMenuId(null);
   };
 
-  // Handle Update Student
-// Handle Update Student
   const handleUpdateStudent = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -139,7 +131,7 @@ export default function Allstudents() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setShowEditModal(false);
-      fetchStudents(); // Refresh the list
+      fetchStudents();
       alert("Student updated successfully!");
     } catch (error) {
       console.error("Error updating student:", error);
@@ -148,13 +140,11 @@ export default function Allstudents() {
     setIsLoading(false);
   };
 
-  // Handle photo change
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setEditPhoto(file);
-      
-      // Create preview
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setPhotoPreview(e.target.result);
@@ -163,21 +153,17 @@ export default function Allstudents() {
     }
   };
 
-  // Handle input change with number validation for contact fields
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // For contact fields, only allow numbers and limit to 10 digits
-    if (name === 'contact_number' || name === 'guardian_contact') {
-      // Remove non-numeric characters and limit to 10 digits
-      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+
+    if (name === "contact_number" || name === "guardian_contact") {
+      const numericValue = value.replace(/\D/g, "").slice(0, 10);
       setEditFormData({ ...editFormData, [name]: numericValue });
     } else {
       setEditFormData({ ...editFormData, [name]: value });
     }
   };
 
-  // Handle Delete Student
   const handleDeleteStudent = async () => {
     setIsLoading(true);
     try {
@@ -186,7 +172,7 @@ export default function Allstudents() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setShowDeleteModal(false);
-      fetchStudents(); // Refresh the list
+      fetchStudents();
       toast.success("Student deleted successfully!");
     } catch (error) {
       console.error("Error deleting student:", error);
@@ -195,55 +181,47 @@ export default function Allstudents() {
     setIsLoading(false);
   };
 
-  // Export to Excel function
   const exportToExcel = () => {
-    // Prepare data for export
-    const dataForExport = filteredStudents.map(student => ({
+    const dataForExport = filteredStudents.map((student) => ({
       "Admission No": student.admission_number,
       "Full Name": student.full_name,
-      "Email": student.email,
-      "Contact": student.contact_number,
-      "Gender": student.gender,
-      "DOB": formatDate(student.dob),
+      Email: student.email,
+      Contact: student.contact_number,
+      Gender: student.gender,
+      DOB: formatDate(student.dob),
       "Admission Date": formatDate(student.admission_date),
       "Guardian Name": student.guardian_name,
       "Guardian Contact": student.guardian_contact,
-      "Address": student.address,
-      "Branch": student.branch?.branch_name,
-      "Course": student.course?.course_name,
-      "Batch": student.batch?.batch_name
+      Address: student.address,
+      Branch: student.branch?.branch_name,
+      Course: student.course?.course_name,
+      Batch: student.batch?.batch_name,
     }));
 
-    // Create workbook and worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(dataForExport);
 
-    // Set column widths
     const columnWidths = [
-      { wch: 15 }, // Admission No
-      { wch: 25 }, // Full Name
-      { wch: 30 }, // Email
-      { wch: 15 }, // Contact
-      { wch: 10 }, // Gender
-      { wch: 15 }, // DOB
-      { wch: 15 }, // Admission Date
-      { wch: 20 }, // Guardian Name
-      { wch: 15 }, // Guardian Contact
-      { wch: 40 }, // Address
-      { wch: 35 }, // Branch
-      { wch: 20 }, // Course
-      { wch: 20 }  // Batch
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 30 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 40 },
+      { wch: 35 },
+      { wch: 20 },
+      { wch: 20 },
     ];
-    worksheet['!cols'] = columnWidths;
+    worksheet["!cols"] = columnWidths;
 
-    // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-
-    // Generate Excel file and trigger download
     XLSX.writeFile(workbook, "students.xlsx");
   };
 
-  // Filter students by branch + search
   const filteredStudents = students.filter((s) => {
     const matchesBranch =
       selectedBranch === "" || s.branch_id === parseInt(selectedBranch);
@@ -256,20 +234,19 @@ export default function Allstudents() {
     return matchesBranch && matchesSearch;
   });
 
-  // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   return (
-    <div className="px-5">
+    <div className="px-4 md:px-6 lg:px-8">
       <ToastContainer
-        position="top-center"
+        position="bottom-center"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
@@ -282,11 +259,8 @@ export default function Allstudents() {
       />
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
-        <h1 className="text-[34px] font-nunito">
-          Students{" "}
-          <span className="text-[34px] font-nunito">
-            ({filteredStudents.length})
-          </span>
+        <h1 className="text-2xl md:text-3xl font-nunito font-semibold">
+          Students <span className="text-gray-600">({filteredStudents.length})</span>
         </h1>
 
         <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
@@ -294,7 +268,7 @@ export default function Allstudents() {
           <select
             value={selectedBranch}
             onChange={(e) => setSelectedBranch(e.target.value)}
-            className="border p-2 rounded w-full md:w-60"
+            className="border border-gray-300 p-2 rounded-md w-full md:w-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="">All Branches</option>
             {branches.map((branch) => (
@@ -305,7 +279,7 @@ export default function Allstudents() {
           </select>
 
           {/* View Mode Toggle */}
-          <div className="flex gap-2 bg-gray-200 p-1 rounded-full">
+          <div className="flex gap-2 bg-gray-200 p-1 rounded-full shrink-0">
             <button
               onClick={() => setViewMode("list")}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === "list"
@@ -329,7 +303,8 @@ export default function Allstudents() {
           {/* Export Button */}
           <button
             onClick={exportToExcel}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition-colors"
+            className="flex items-center gap-2 bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 transition-colors shrink-0 text-sm md:px-4 md:py-2 md:text-base"
+            type="button"
           >
             <FaFileExport /> Export Excel
           </button>
@@ -337,21 +312,21 @@ export default function Allstudents() {
       </div>
 
       {/* Search */}
-      <div className="mb-4">
+      <div className="mb-4 max-w-md">
         <input
           type="text"
           placeholder="Search by name, email, or admission number..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border p-2 rounded w-full md:w-1/3"
+          className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
 
       {/* Loading Indicator */}
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-5 rounded-lg flex items-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mr-3"></div>
+          <div className="bg-white p-5 rounded-lg flex items-center space-x-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
             <span>Loading...</span>
           </div>
         </div>
@@ -359,15 +334,15 @@ export default function Allstudents() {
 
       {/* List View */}
       {viewMode === "list" ? (
-        <div>
-          <div className="min-w-[1000px]">
+        <div className="overflow-x-auto">
+          <div className="min-w-[700px] md:min-w-[900px]">
             {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 bg-gray-100 p-4 rounded-t-lg font-semibold">
-              <div className="col-span-3">Student</div>
-              <div className="col-span-2">Email</div>
-              <div className="col-span-2">Contact</div>
-              {/* <div className="col-span-2">Admission No</div> */}
-              <div className="col-span-2">Branch</div>
+            <div className="grid grid-cols-12 gap-4 bg-gray-100 p-4 rounded-t-lg font-semibold text-sm md:text-base">
+              <div className="col-span-3 flex items-center">Student</div>
+              {/* Hide on small */}
+              <div className="col-span-2 text-gray-600 truncate hidden sm:block">Email</div>
+              <div className="col-span-2 text-gray-600 hidden md:flex items-center">Contact</div>
+              <div className="col-span-2 text-gray-600 hidden md:flex items-center">Branch</div>
               <div className="col-span-1 text-center">Actions</div>
             </div>
 
@@ -376,7 +351,7 @@ export default function Allstudents() {
               {filteredStudents.map((student) => (
                 <div
                   key={student.id}
-                  className="bg-white shadow-sm hover:shadow-md transition rounded-xl p-4 grid grid-cols-12 gap-4 items-center"
+                  className="bg-white shadow-sm hover:shadow-md transition rounded-xl p-4 grid grid-cols-12 gap-4 items-center text-sm md:text-base"
                 >
                   {/* Student Info */}
                   <div className="col-span-3 flex items-center gap-4">
@@ -386,79 +361,69 @@ export default function Allstudents() {
                       className="w-12 h-12 rounded-full object-cover border"
                     />
                     <div>
-                      <h3 className="font-semibold text-gray-800 text-lg truncate">
-                        {student.full_name}
-                      </h3>
-                      <p className="text-gray-500 text-sm">
+                      <h3 className="font-semibold text-gray-800 truncate">{student.full_name}</h3>
+                      <p className="text-gray-500 text-xs md:text-sm">
                         {student.gender} • {formatDate(student.dob)}
                       </p>
                     </div>
                   </div>
 
-                  {/* Email */}
-                  <div className="col-span-2 text-gray-600 truncate">
+                  {/* Email - hide on mobile */}
+                  <div className="col-span-2 text-gray-600 truncate hidden sm:block">
                     {student.email || "N/A"}
                   </div>
 
-                  {/* Contact */}
-                  <div className="col-span-2 text-gray-600">
+                  {/* Contact - hide on small, show on md */}
+                  <div className="col-span-2 text-gray-600 hidden md:block">
                     {student.contact_number || "N/A"}
                   </div>
 
-                  {/* Admission Number */}
-                  {/* <div className="col-span-2 text-gray-600 font-medium">
-                    {student.admission_number || "N/A"}
-                  </div> */}
-
-                  {/* Branch */}
-                  <div className="col-span-2 text-gray-600">
+                  {/* Branch - hide on small, show on md */}
+                  <div className="col-span-2 text-gray-600 hidden md:block">
                     {student.branch?.branch_name || "N/A"}
                   </div>
 
                   {/* Actions */}
-                  <div className="col-span-1 flex justify-center">
-                    <div className="relative">
-                      <button
-                        onClick={() =>
-                          setOpenMenuId(openMenuId === student.id ? null : student.id)
-                        }
-                        className="menu-toggle p-2 hover:bg-gray-100 rounded-full"
+                  <div className="col-span-1 flex justify-center relative">
+                    <button
+                      onClick={() =>
+                        setOpenMenuId(openMenuId === student.id ? null : student.id)
+                      }
+                      className="menu-toggle p-2 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      aria-label="Open Actions Menu"
+                    >
+                      <HiDotsVertical size={20} />
+                    </button>
+
+                    {openMenuId === student.id && (
+                      <div
+                        className="menu-container absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-44 py-2 z-50"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <HiDotsVertical size={20} />
-                      </button>
-
-                      {openMenuId === student.id && (
-                        <div
-                          className="menu-container absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-40 py-2 z-50"
-                          onClick={(e) => e.stopPropagation()}
+                        <button
+                          onClick={() => handleViewStudent(student.id)}
+                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-purple-600 text-left text-sm"
                         >
-                          <button
-                            onClick={() => handleViewStudent(student.id)}
-                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-purple-600"
-                          >
-                            <FaEye size={16} /> View
-                          </button>
-
-                          <button
-                            onClick={() => handleEditStudent(student.id)}
-                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-blue-600"
-                          >
-                            <FaEdit size={16} /> Edit
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setSelectedStudent(student);
-                              setShowDeleteModal(true);
-                              setOpenMenuId(null);
-                            }}
-                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600"
-                          >
-                            <FaTrash size={16} /> Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                          <FaEye size={16} /> View
+                        </button>
+                        <button
+                          onClick={() => handleEditStudent(student.id)}
+                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-blue-600 text-left text-sm"
+                        >
+                          <FaEdit size={16} /> Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedStudent(student);
+                            setShowDeleteModal(true);
+                            setOpenMenuId(null);
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600 text-left text-sm"
+                        >
+                          <FaTrash size={16} /> Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -467,45 +432,48 @@ export default function Allstudents() {
         </div>
       ) : (
         // Card View
-        <div className="grid mt-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="grid mt-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredStudents.map((student) => (
             <div
               key={student.id}
-              className="bg-white mt-6 rounded-2xl shadow hover:shadow-lg transition p-6 flex flex-col items-center text-center"
+              className="bg-white rounded-2xl shadow hover:shadow-lg transition p-6 flex flex-col items-center text-center"
             >
-              <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white shadow-md -mt-10 mb-3">
+              <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-md -mt-12 mb-3">
                 <img
                   src={student.photo_url}
                   alt={student.full_name}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h3 className="text-lg font-semibold">{student.full_name}</h3>
-              <p className="text-gray-500">{student.email}</p>
-              <div className="grid gap-3 mt-4 w-full text-sm">
-                <div className="bg-gray-50 rounded-lg py-2">
-                  <p className="text-gray-800 font-bold">
-                    Admission No: {student.admission_number}
-                  </p>
-                </div>
+              <h3 className="text-lg font-semibold truncate w-full">{student.full_name}</h3>
+              {/* Mobile & small devices hide email & phone */}
+              <p className="text-gray-500 truncate w-full hidden sm:block">{student.email}</p>
+              <p className="text-gray-500 truncate w-full hidden md:block">{student.contact_number}</p>
+              <div className="bg-gray-50 rounded-lg py-2 px-4 mt-4 w-full text-sm">
+                <p className="text-gray-800 font-semibold truncate">
+                  Admission No: {student.admission_number}
+                </p>
               </div>
-              <span className="mt-4 px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+              {/* Hide branch on mobile */}
+              <span className="mt-3 px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700 hidden md:inline-block w-fit truncate max-w-full">
                 Admission Date: {formatDate(student.admission_date)}
               </span>
 
               {/* Card View Actions */}
-              <div className="flex mt-4 space-x-2">
+              <div className="flex mt-4 space-x-3">
                 <button
                   onClick={() => handleViewStudent(student.id)}
-                  className="p-2 text-purple-600 hover:bg-purple-100 rounded-full"
+                  className="p-2 text-purple-600 hover:bg-purple-100 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-400"
                   title="View"
+                  type="button"
                 >
                   <FaEye />
                 </button>
                 <button
                   onClick={() => handleEditStudent(student.id)}
-                  className="p-2 text-blue-600 hover:bg-blue-100 rounded-full"
+                  className="p-2 text-blue-600 hover:bg-blue-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                   title="Edit"
+                  type="button"
                 >
                   <FaEdit />
                 </button>
@@ -514,8 +482,9 @@ export default function Allstudents() {
                     setSelectedStudent(student);
                     setShowDeleteModal(true);
                   }}
-                  className="p-2 text-red-600 hover:bg-red-100 rounded-full"
+                  className="p-2 text-red-600 hover:bg-red-100 rounded-full focus:outline-none focus:ring-2 focus:ring-red-400"
                   title="Delete"
+                  type="button"
                 >
                   <FaTrash />
                 </button>
@@ -527,13 +496,14 @@ export default function Allstudents() {
 
       {/* View Student Modal */}
       {showViewModal && selectedStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex mt-[100px] items-center justify-center z-[400px] p-4">
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
               <h2 className="text-2xl font-bold">Student Details</h2>
               <button
                 onClick={() => setShowViewModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                aria-label="Close View Modal"
               >
                 <FaTimes size={24} />
               </button>
@@ -581,7 +551,6 @@ export default function Allstudents() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {/* Address Section */}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold mb-3 flex items-center">
                     <FaMapMarkerAlt className="mr-2 text-blue-500" />
@@ -590,7 +559,6 @@ export default function Allstudents() {
                   <p className="text-gray-700">{selectedStudent.address}</p>
                 </div>
 
-                {/* Guardian Info */}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold mb-3 flex items-center">
                     <FaUser className="mr-2 text-blue-500" />
@@ -606,7 +574,6 @@ export default function Allstudents() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Branch Info */}
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold mb-3 flex items-center">
                     <FaSchool className="mr-2 text-blue-500" />
@@ -614,10 +581,11 @@ export default function Allstudents() {
                   </h3>
                   <p className="text-gray-700 font-medium">{selectedStudent.branch?.branch_name}</p>
                   <p className="text-gray-600 text-sm">{selectedStudent.branch?.address}</p>
-                  <p className="text-gray-600 text-sm">{selectedStudent.branch?.city}, {selectedStudent.branch?.state}</p>
+                  <p className="text-gray-600 text-sm">
+                    {selectedStudent.branch?.city}, {selectedStudent.branch?.state}
+                  </p>
                 </div>
 
-                {/* Course Info */}
                 <div className="bg-green-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold mb-3 flex items-center">
                     <FaChalkboardTeacher className="mr-2 text-green-500" />
@@ -627,7 +595,6 @@ export default function Allstudents() {
                   <p className="text-gray-600 text-sm"> {selectedStudent.course?.duration} months</p>
                   <p className="text-gray-600 text-sm">Mode: {selectedStudent.course?.mode}</p>
                 </div>
-
               </div>
             </div>
           </div>
@@ -646,15 +613,15 @@ export default function Allstudents() {
                   setEditPhoto(null);
                   setPhotoPreview("");
                 }}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                aria-label="Close Edit Modal"
               >
                 <FaTimes size={24} />
               </button>
             </div>
 
             <form onSubmit={handleUpdateStudent} className="p-6">
-              {/* Photo Upload */}
-             
+              {/* Add photo upload section here if needed */}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
@@ -662,9 +629,9 @@ export default function Allstudents() {
                   <input
                     type="text"
                     name="full_name"
-                    value={editFormData.full_name || ''}
+                    value={editFormData.full_name || ""}
                     onChange={handleInputChange}
-                    className="w-full border rounded-lg p-2"
+                    className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     required
                   />
                 </div>
@@ -673,9 +640,9 @@ export default function Allstudents() {
                   <input
                     type="email"
                     name="email"
-                    value={editFormData.email || ''}
+                    value={editFormData.email || ""}
                     onChange={handleInputChange}
-                    className="w-full border rounded-lg p-2"
+                    className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     required
                   />
                 </div>
@@ -684,9 +651,9 @@ export default function Allstudents() {
                   <input
                     type="tel"
                     name="contact_number"
-                    value={editFormData.contact_number || ''}
+                    value={editFormData.contact_number || ""}
                     onChange={handleInputChange}
-                    className="w-full border rounded-lg p-2"
+                    className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     pattern="[0-9]{10}"
                     maxLength="10"
                     required
@@ -700,9 +667,9 @@ export default function Allstudents() {
                   <input
                     type="date"
                     name="dob"
-                    value={editFormData.dob || ''}
+                    value={editFormData.dob || ""}
                     onChange={handleInputChange}
-                    className="w-full border rounded-lg p-2"
+                    className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     required
                   />
                 </div>
@@ -710,9 +677,9 @@ export default function Allstudents() {
                   <label className="block text-sm font-medium mb-1">Gender *</label>
                   <select
                     name="gender"
-                    value={editFormData.gender || ''}
+                    value={editFormData.gender || ""}
                     onChange={handleInputChange}
-                    className="w-full border rounded-lg p-2"
+                    className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     required
                   >
                     <option value="">Select Gender</option>
@@ -726,9 +693,9 @@ export default function Allstudents() {
                   <input
                     type="text"
                     name="admission_number"
-                    value={editFormData.admission_number || ''}
+                    value={editFormData.admission_number || ""}
                     onChange={handleInputChange}
-                    className="w-full border rounded-lg p-2"
+                    className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     required
                   />
                 </div>
@@ -738,9 +705,9 @@ export default function Allstudents() {
                 <label className="block text-sm font-medium mb-1">Address</label>
                 <textarea
                   name="address"
-                  value={editFormData.address || ''}
+                  value={editFormData.address || ""}
                   onChange={handleInputChange}
-                  className="w-full border rounded-lg p-2"
+                  className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   rows="3"
                 />
               </div>
@@ -751,9 +718,9 @@ export default function Allstudents() {
                   <input
                     type="text"
                     name="guardian_name"
-                    value={editFormData.guardian_name || ''}
+                    value={editFormData.guardian_name || ""}
                     onChange={handleInputChange}
-                    className="w-full border rounded-lg p-2"
+                    className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
                 <div>
@@ -761,9 +728,9 @@ export default function Allstudents() {
                   <input
                     type="tel"
                     name="guardian_contact"
-                    value={editFormData.guardian_contact || ''}
+                    value={editFormData.guardian_contact || ""}
                     onChange={handleInputChange}
-                    className="w-full border rounded-lg p-2"
+                    className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     pattern="[0-9]{10}"
                     maxLength="10"
                   />
@@ -781,13 +748,13 @@ export default function Allstudents() {
                     setEditPhoto(null);
                     setPhotoPreview("");
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-600"
                   disabled={isLoading}
                 >
                   {isLoading ? "Updating..." : "Update Student"}
@@ -806,7 +773,8 @@ export default function Allstudents() {
               <h2 className="text-xl font-bold">Confirm Deletion</h2>
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                aria-label="Close Delete Modal"
               >
                 <FaTimes size={24} />
               </button>
@@ -814,18 +782,20 @@ export default function Allstudents() {
 
             <div className="p-6">
               <p className="text-gray-700 mb-4">
-                Are you sure you want to delete student <strong>{selectedStudent.full_name}</strong>? This action cannot be undone.
+                Are you sure you want to delete student{" "}
+                <strong>{selectedStudent.full_name}</strong>? This action cannot be undone.
               </p>
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setShowDeleteModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteStudent}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600"
+                  disabled={isLoading}
                 >
                   Delete Student
                 </button>
