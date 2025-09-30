@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "../../../api/axiosConfig";
+import SAAdminLayout from "../../../layouts/AccountLayout";
+
 
 function MyAttendance() {
   const [month, setMonth] = useState(new Date().getMonth() + 1); // Current month (1-12)
@@ -130,6 +132,7 @@ function MyAttendance() {
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
 
   return (
+    <SAAdminLayout>
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -312,6 +315,7 @@ function MyAttendance() {
         </div>
       </div>
     </div>
+    </SAAdminLayout>
   );
 }
 
