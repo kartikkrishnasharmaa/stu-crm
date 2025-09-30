@@ -63,7 +63,7 @@ export default function Fees() {
         {/* Content */}
         <div
           className={`flex-1 rounded-lg p-6 overflow-y-auto transition-all duration-300 ${
-            sidebarOpen ? "md:ml-60" : "md:ml-0"
+            sidebarOpen ? "md:ml-60 lg:ml-4" : "md:ml-0"
           }`}
         >
           {activeTab === "fees" && <FeesStructure />}
