@@ -85,7 +85,7 @@ export default function Course() {
           </aside>
         </div>
         {/* Right Content Area */}
-        <div className="flex-1 rounded-lg p-6 overflow-y-auto md:ml-64">
+        <div className="flex-1 rounded-lg p-6 overflow-y-auto md:ml-64 lg:m-4">
           {/* Add top spacing for mobile if sidebar button present */}
           <div className="md:hidden h-14" />
           {activeTab === "batchManagement" && <Batch />}
