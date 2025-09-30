@@ -2,6 +2,7 @@ import SAAdminLayout from "../../../layouts/StaffLayout";
 import { useState, useEffect } from "react";
 import axios from "../../../api/axiosConfig";
 import AllView from "./view";
+import MyAttendance from "./myattendence";
 
 function AddAttendance() {
   const [branches, setBranches] = useState([])
@@ -252,7 +253,17 @@ export default function Attendance() {
                 : "hover:bg-blue-100 text-black"
             }`}
           >
-            📋 Attendance Report
+            📋Student Attendance Report
+          </button>
+              <button
+            onClick={() => setActiveTab("myAttendance")}
+            className={`block w-full text-left px-4 py-5 rounded-lg ${
+              activeTab === "myAttendance"
+                ? "bg-blue-100 text-black"
+                : "hover:bg-blue-100 text-black"
+            }`}
+          >
+            📋My Attendance
           </button>
       
         </div>
@@ -260,6 +271,7 @@ export default function Attendance() {
         <div className="flex-1 rounded-lg p-6 overflow-y-auto">
           {activeTab === "addAttendance" && <AddAttendance />}
           {activeTab === "attendanceList" && <AllView />}
+          {activeTab === "myAttendance" && <MyAttendance />}
         </div>
       </div>
     </SAAdminLayout>
