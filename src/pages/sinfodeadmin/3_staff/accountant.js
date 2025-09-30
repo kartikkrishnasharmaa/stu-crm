@@ -308,7 +308,7 @@ export default function Accountant() {
     <div className="col-span-4 sm:col-span-3">Accountant</div>
     <div className="hidden sm:block sm:col-span-2 text-center">Department</div>
     <div className="col-span-4 sm:col-span-2 text-center">Contact</div>
-    <div className="hidden lg:block sm:col-span-3 text-center">Email</div>
+    // <div className="hidden lg:block sm:col-span-3 text-center">Email</div>
     <div className="hidden lg:block sm:col-span-1 text-center">Status</div>
     <div className="col-span-4 sm:col-span-3 text-right">Actions</div>
   </div>
@@ -351,9 +351,9 @@ export default function Accountant() {
         </div>
 
         {/* Email - lg se upar */}
-        <div className="hidden lg:block sm:col-span-3 text-center text-gray-600 truncate">
-          {accountant.email || "N/A"}
-        </div>
+        // <div className="hidden lg:block sm:col-span-3 text-center text-gray-600 truncate">
+        //   {accountant.email || "N/A"}
+        // </div>
 
         {/* Status - lg se upar */}
         <div className="hidden lg:block sm:col-span-1 text-center">
