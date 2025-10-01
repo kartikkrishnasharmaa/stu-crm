@@ -44,13 +44,13 @@ const AccSidebar = ({ isSidebarOpen, toggleSidebar }) => {
         ? `/account/dashboard?branchId=${selectedBranch}`
         : "/account/dashboard",
     },
-      {
-      name: "Attendance",
-      icon: <FaUserTie />,
-      link: selectedBranch
-        ? `/account/attendence?branchId=${selectedBranch}`
-        : "/account/attendence",
-    },
+    //   {
+    //   name: "Attendance",
+    //   icon: <FaUserTie />,
+    //   link: selectedBranch
+    //     ? `/account/attendence?branchId=${selectedBranch}`
+    //     : "/account/attendence",
+    // },
     {
       name: "Fees",
       icon: <FaWallet />,
