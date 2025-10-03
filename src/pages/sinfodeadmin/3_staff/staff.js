@@ -33,6 +33,10 @@ export default function Staff() {
   const [viewMode, setViewMode] = useState("list");
   const navigate = useNavigate();
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [sortField, setSortField] = useState("created_at");
+const [sortOrder, setSortOrder] = useState("desc"); // "asc" or "desc"
+const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
+
   
   // Accessibility: focus trap
   const modalRef = useRef(null);
@@ -63,6 +67,31 @@ export default function Staff() {
       return () => document.removeEventListener("keydown", handleKeyDown);
     }
   }, [isModalOpen]);
+
+  const filteredStaff = staffList
+  .filter(
+    staff =>
+      (selectedBranch ? staff.branch_id === parseInt(selectedBranch) : true) &&
+      (
+        (staff.employee_name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (staff.designation || "").toLowerCase().includes(search.toLowerCase()) ||
+        (staff.employee_code || "").toLowerCase().includes(search.toLowerCase())
+      )
+  )
+  .filter(staff => {
+    // Date filter
+    if (dateFilter.from && new Date(staff.created_at) < new Date(dateFilter.from)) return false;
+    if (dateFilter.to && new Date(staff.created_at) > new Date(dateFilter.to)) return false;
+    return true;
+  })
+  .sort((a, b) => {
+    // Choose field
+    const valueA = sortField === "joining_date" ? a.joining_date : a.created_at;
+    const valueB = sortField === "joining_date" ? b.joining_date : b.created_at;
+    if (sortOrder === "asc") return valueA.localeCompare(valueB);
+    if (sortOrder === "desc") return valueB.localeCompare(valueA);
+    return 0;
+  });
 
   // Form state and errors
   const [formData, setFormData] = useState({
@@ -164,15 +193,15 @@ export default function Staff() {
     }
   };
 
-  const filteredStaff = staffList.filter(
-    (staff) =>
-      (selectedBranch ? staff.branch_id === parseInt(selectedBranch) : true) &&
-      (
-        (staff.employee_name || "").toLowerCase().includes(search.toLowerCase()) ||
-        (staff.designation || "").toLowerCase().includes(search.toLowerCase()) ||
-        (staff.employee_code || "").toLowerCase().includes(search.toLowerCase())
-      )
-  );
+  // const filteredStaff = staffList.filter(
+  //   (staff) =>
+  //     (selectedBranch ? staff.branch_id === parseInt(selectedBranch) : true) &&
+  //     (
+  //       (staff.employee_name || "").toLowerCase().includes(search.toLowerCase()) ||
+  //       (staff.designation || "").toLowerCase().includes(search.toLowerCase()) ||
+  //       (staff.employee_code || "").toLowerCase().includes(search.toLowerCase())
+  //     )
+  // );
 
   const handleEditClick = (staff) => {
     setEditingStaffId(staff.id);
@@ -382,6 +411,45 @@ export default function Staff() {
           </button>
         </div>
       </div>
+      <div className="flex flex-wrap gap-2 mb-2">
+  <select
+    value={sortField}
+    onChange={e => setSortField(e.target.value)}
+    className="border p-2 rounded"
+  >
+    <option value="created_at">Sort by Created Date</option>
+    <option value="joining_date">Sort by Joining Date</option>
+  </select>
+  <select
+    value={sortOrder}
+    onChange={e => setSortOrder(e.target.value)}
+    className="border p-2 rounded"
+  >
+    <option value="desc">Newest First</option>
+    <option value="asc">Oldest First</option>
+  </select>
+  <input
+    type="date"
+    value={dateFilter.from}
+    onChange={e => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+    placeholder="From"
+    className="border p-2 rounded"
+  />
+  <input
+    type="date"
+    value={dateFilter.to}
+    onChange={e => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+    placeholder="To"
+    className="border p-2 rounded"
+  />
+  <button
+    onClick={() => setDateFilter({ from: "", to: "" })}
+    className="bg-gray-200 px-2 py-1 rounded"
+  >
+    Reset Dates
+  </button>
+</div>
+
 
       {/* List and Card Views */}
       {viewMode === "list" ? (
