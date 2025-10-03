@@ -14,6 +14,10 @@ const StudentFees = () => {
   const [currentEditId, setCurrentEditId] = useState(null);
   const [viewFee, setViewFee] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [sortField, setSortField] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState("desc"); // "asc" or "desc"
+  const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
+
   const [formData, setFormData] = useState({
     student_id: '',
     course_id: '',
@@ -36,7 +40,7 @@ const StudentFees = () => {
   const [studentSearch, setStudentSearch] = useState('');
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [showStudentDropdown, setShowStudentDropdown] = useState(false);
-  
+
   // Table search state
   const [tableSearch, setTableSearch] = useState('');
   const [filteredFees, setFilteredFees] = useState([]);
@@ -44,6 +48,28 @@ const StudentFees = () => {
   // Fee Structures table search state
   const [feeStructureSearch, setFeeStructureSearch] = useState('');
   const [filteredFeeStructures, setFilteredFeeStructures] = useState([]);
+  const filteredAndSortedFees = (tableSearch ? studentFees.filter(fee => {
+    const student = studentsMap[fee.student_id];
+    if (!student) return false;
+    return (
+      student.full_name.toLowerCase().includes(tableSearch.toLowerCase()) ||
+      student.admission_number.toLowerCase().includes(tableSearch.toLowerCase()) ||
+      getCourseName(fee.course_id).toLowerCase().includes(tableSearch.toLowerCase())
+    );
+  }) : studentFees)
+    .filter(fee => {
+      if (!dateFilter.from && !dateFilter.to) return true;
+      const createdDate = new Date(fee.created_at);
+      if (dateFilter.from && createdDate < new Date(dateFilter.from)) return false;
+      if (dateFilter.to && createdDate > new Date(dateFilter.to)) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const valA = a[sortField] || "";
+      const valB = b[sortField] || "";
+      if (sortOrder === "asc") return new Date(valA) - new Date(valB);
+      return new Date(valB) - new Date(valA);
+    });
 
   // Create maps for quick lookups
   const studentsMap = useMemo(() => {
@@ -147,7 +173,7 @@ const StudentFees = () => {
         setLoading(false);
       }
     };
-    
+
     initData();
   }, []);
 
@@ -172,7 +198,7 @@ const StudentFees = () => {
       const filtered = studentFees.filter(fee => {
         const student = studentsMap[fee.student_id];
         if (!student) return false;
-        
+
         return (
           student.full_name.toLowerCase().includes(tableSearch.toLowerCase()) ||
           student.admission_number.toLowerCase().includes(tableSearch.toLowerCase()) ||
@@ -191,7 +217,7 @@ const StudentFees = () => {
       const filtered = feeStructures.filter(structure => {
         const student = studentsMap[structure.student_id];
         const course = coursesMap[structure.course_id];
-        
+
         return (
           (student && student.full_name.toLowerCase().includes(feeStructureSearch.toLowerCase())) ||
           (student && student.admission_number.toLowerCase().includes(feeStructureSearch.toLowerCase())) ||
@@ -334,18 +360,18 @@ const StudentFees = () => {
   };
 
   // Stats calculation
-  const totalFees = useMemo(() => 
-    studentFees.reduce((sum, fee) => sum + parseFloat(fee.total_fee || 0), 0), 
+  const totalFees = useMemo(() =>
+    studentFees.reduce((sum, fee) => sum + parseFloat(fee.total_fee || 0), 0),
     [studentFees]
   );
-  
-  const totalPaid = useMemo(() => 
-    studentFees.reduce((sum, fee) => sum + parseFloat(fee.paid_amount || 0), 0), 
+
+  const totalPaid = useMemo(() =>
+    studentFees.reduce((sum, fee) => sum + parseFloat(fee.paid_amount || 0), 0),
     [studentFees]
   );
-  
-  const totalPending = useMemo(() => 
-    studentFees.reduce((sum, fee) => sum + parseFloat(fee.pending_amount || 0), 0), 
+
+  const totalPending = useMemo(() =>
+    studentFees.reduce((sum, fee) => sum + parseFloat(fee.pending_amount || 0), 0),
     [studentFees]
   );
 
@@ -358,7 +384,7 @@ const StudentFees = () => {
       number_of_installments: '',
       coupon_id: '',
       branch_discount_percent: '',
-    }); 
+    });
     setStudentSearch('');
     setSelectedStudent(null);
     setSelectedCourse(null);
@@ -397,7 +423,7 @@ const StudentFees = () => {
       console.error("Error fetching student fee details:", error);
     }
   };
-  
+
   const closeViewModal = () => {
     setShowViewModal(false);
     setViewFee(null);
@@ -465,10 +491,10 @@ const StudentFees = () => {
       });
 
       // Update state with the new fee
-     setTimeout(async () => {
-      await fetchStudentFees(); // Refresh the fees list
-      setFeeStructures(prevStructures => [...prevStructures, structureRes.data]);
-    }, 500);
+      setTimeout(async () => {
+        await fetchStudentFees(); // Refresh the fees list
+        setFeeStructures(prevStructures => [...prevStructures, structureRes.data]);
+      }, 500);
 
 
       closeModal();
@@ -494,7 +520,7 @@ const StudentFees = () => {
       // Update the specific fee in the state
       setStudentFees(prevFees => prevFees.map(f => f.id === currentEditId ? res.data : f));
       setFilteredFees(prevFees => prevFees.map(f => f.id === currentEditId ? res.data : f));
-      
+
       closePaymentModal();
     } catch (error) {
       console.error("Error updating payment:", error);
@@ -594,6 +620,42 @@ const StudentFees = () => {
             </div>
           </div>
         </div>
+        <div className="sf-filter-controls" style={{ display: 'flex', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap' }}>
+          <select
+            value={sortField}
+            onChange={e => setSortField(e.target.value)}
+            className="sf-select"
+          >
+            <option value="created_at">Sort by Created Date</option>
+            <option value="total_fee">Sort by Total Fee</option>
+            <option value="paid_amount">Sort by Paid Amount</option>
+          </select>
+          <select
+            value={sortOrder}
+            onChange={e => setSortOrder(e.target.value)}
+            className="sf-select"
+          >
+            <option value="desc">Descending</option>
+            <option value="asc">Ascending</option>
+          </select>
+          <input
+            type="date"
+            value={dateFilter.from}
+            onChange={e => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+            className="sf-date-input"
+            placeholder="From"
+          />
+          <input
+            type="date"
+            value={dateFilter.to}
+            onChange={e => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+            className="sf-date-input"
+            placeholder="To"
+          />
+          <button onClick={() => setDateFilter({ from: '', to: '' })} className="sf-reset-btn">
+            Reset Dates
+          </button>
+        </div>
 
         {/* Student Fees Table */}
         <div className="sf-table-container">
@@ -624,7 +686,7 @@ const StudentFees = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredFees.map(fee => (
+                {filteredAndSortedFees.map(fee => (
                   <tr key={fee.id}>
                     <td>
                       <div className="sf-student-info">
@@ -673,7 +735,7 @@ const StudentFees = () => {
                     </td>
                   </tr>
                 ))}
-                {filteredFees.length === 0 && (
+                {filteredAndSortedFees.length === 0 && (
                   <tr>
                     <td colSpan="7" className="sf-no-data">
                       <i className="fas fa-info-circle"></i>
@@ -686,7 +748,7 @@ const StudentFees = () => {
           </div>
         </div>
 
-  
+
       </main>
 
       {/* Generate Fee Modal */}
@@ -950,7 +1012,7 @@ const StudentFees = () => {
                               <td>₹{parseFloat(payment.amount_paid || 0).toLocaleString()}</td>
                               <td>{new Date(payment.payment_date).toLocaleDateString()}</td>
                               <td>{payment.payment_mode || 'N/A'}</td>
-                            
+
                             </tr>
                           ))}
                         </tbody>
