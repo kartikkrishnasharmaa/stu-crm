@@ -39,6 +39,9 @@ export default function Allstudents() {
   const [editPhoto, setEditPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState("");
   const navigate = useNavigate();
+const [sortField, setSortField] = useState("created_at");
+const [sortOrder, setSortOrder] = useState("desc"); // "asc" or "desc"
+const [dateFilter, setDateFilter] = useState({ from: "", to: "" }); 
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -222,17 +225,28 @@ export default function Allstudents() {
     XLSX.writeFile(workbook, "students.xlsx");
   };
 
-  const filteredStudents = students.filter((s) => {
-    const matchesBranch =
-      selectedBranch === "" || s.branch_id === parseInt(selectedBranch);
+ const filteredStudents = students
+  .filter(s => 
+    (selectedBranch === "" || s.branch_id === parseInt(selectedBranch)) &&
+    (
+      (s.full_name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.email || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.admission_number || "").toLowerCase().includes(search.toLowerCase())
+    )
+  )
+  .filter(s => {
+    if (dateFilter.from && new Date(s.created_at) < new Date(dateFilter.from)) return false;
+    if (dateFilter.to && new Date(s.created_at) > new Date(dateFilter.to)) return false;
+    return true;
+  })
+  .sort((a, b) => {
+    const valA = a[sortField] || ""; // fallback in case missing
+    const valB = b[sortField] || "";
+    // Date strings comparison
+    if (sortOrder === "asc") return new Date(valA) - new Date(valB);
+    return new Date(valB) - new Date(valA);
+  });
 
-    const matchesSearch =
-      (s.full_name || "").toLowerCase().includes(search.toLowerCase()) ||
-      (s.email || "").toLowerCase().includes(search.toLowerCase()) ||
-      (s.admission_number || "").toLowerCase().includes(search.toLowerCase());
-
-    return matchesBranch && matchesSearch;
-  });
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -321,6 +335,45 @@ export default function Allstudents() {
           className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
+<div className="flex flex-wrap gap-2 mb-4 items-center">
+  <select
+    value={sortField}
+    onChange={e => setSortField(e.target.value)}
+    className="border p-2 rounded"
+  >
+    <option value="created_at">Sort by Created Date</option>
+    <option value="admission_date">Sort by Admission Date</option>
+    <option value="dob">Sort by Date of Birth</option>
+  </select>
+  <select
+    value={sortOrder}
+    onChange={e => setSortOrder(e.target.value)}
+    className="border p-2 rounded"
+  >
+    <option value="desc">Newest First</option>
+    <option value="asc">Oldest First</option>
+  </select>
+  <input
+    type="date"
+    value={dateFilter.from}
+    onChange={e => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+    className="border p-2 rounded"
+    placeholder="From"
+  />
+  <input
+    type="date"
+    value={dateFilter.to}
+    onChange={e => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+    className="border p-2 rounded"
+    placeholder="To"
+  />
+  <button
+    onClick={() => setDateFilter({ from: "", to: "" })}
+    className="bg-gray-200 px-2 py-1 rounded"
+  >
+    Reset Dates
+  </button>
+</div>
 
       {/* Loading Indicator */}
       {isLoading && (
