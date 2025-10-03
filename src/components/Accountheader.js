@@ -8,6 +8,7 @@ const Accheader = ({ toggleSidebar }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
   const selectedBranch = useSelector((state) => state.branch.selectedBranch);
+  const [user, setUser] = useState(null); // 👈 state for user
 
   const getBranchLink = (baseLink) => {
     return selectedBranch ? `${baseLink}?branchId=${selectedBranch}` : baseLink;
@@ -28,13 +29,19 @@ const Accheader = ({ toggleSidebar }) => {
     return () => document.removeEventListener("click", handleOutsideClick);
   }, [isOpen]);
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
   return (
     <header className="bg-[#F4F9FD] flex items-center justify-between relative z-50">
 
       {/* Desktop Navigation */}
       <nav className="hidden mr-10 mt-2 rounded-2xl text-black md:flex items-center space-x-6 text-lg font-semibold mx-auto">
         {/* Bell Icon Instead of Dashboard */}
-    
+
 
         {/* Account with Profile Image */}
         <div ref={dropdownRef} className="relative">
@@ -50,13 +57,20 @@ const Accheader = ({ toggleSidebar }) => {
                 className="w-full h-full object-cover"
               />
             </div>
-            <span>Accountant</span>
+            <div className="hidden sm:flex flex-col text-left">
+              <span className="text-gray-700 font-medium">
+                Name :  {user?.name || "Admin"}
+              </span>
+              <span className="text-xs text-gray-500">
+                Role : {user?.role || "Role"}
+              </span>
+            </div>
           </div>
 
           {/* Dropdown Menu */}
           {isOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg overflow-hidden animate-fadeIn">
-           <Link to="/account/profile">
+              <Link to="/account/profile">
                 <button className="w-full text-left px-4 py-2 hover:bg-gray-100">
                   Profile
                 </button>
