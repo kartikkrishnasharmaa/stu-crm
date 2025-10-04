@@ -17,6 +17,7 @@ const StudentFees = () => {
   const [sortField, setSortField] = useState("created_at");
   const [sortOrder, setSortOrder] = useState("desc"); // "asc" or "desc"
   const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
+  const [branches, setBranches] = useState([]);
 
   const [formData, setFormData] = useState({
     student_id: '',
@@ -88,6 +89,15 @@ const StudentFees = () => {
     return map;
   }, [courses]);
 
+  // Create branches map for quick lookup
+  const branchesMap = useMemo(() => {
+    const map = {};
+    branches.forEach(branch => {
+      map[branch.id] = branch;
+    });
+    return map;
+  }, [branches]);
+
   // Fetch all student fees
   const fetchStudentFees = async () => {
     try {
@@ -102,6 +112,44 @@ const StudentFees = () => {
     }
   };
 
+  const fetchBranches = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        // toast.error("No token found! Please login again.");
+        return;
+      }
+      const res = await axios.get("branches", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("All Branches", res.data)
+      const branchData = res.data.map((branch) => ({
+        id: branch.id,
+        branchName: branch.branch_name,
+        branch_code: branch.branch_code || "BR-" + branch.id,
+        city: branch.city,
+        state: branch.state,
+        contact: branch.contact_number,
+        email: branch.email,
+        status: branch.status,
+        opening_date: branch.opening_date,
+        discount_range: branch.discount_range || "",
+        pin_code: branch.pin_code || "",
+        address: branch.address || "",
+        branch_type: branch.branch_type || "Main",
+      }));
+
+      setBranches(branchData);
+    } catch (error) {
+      console.error("Error fetching branches:", error);
+      // toast.error("Failed to load branches");
+    }
+  };
+
+  useEffect(() => {
+    fetchBranches();
+  }, []);
+
   // Fetch all courses
   const fetchCourses = async () => {
     try {
@@ -114,7 +162,22 @@ const StudentFees = () => {
       console.error("Error fetching courses:", error);
     }
   };
+  // Helper function to format discount range for display
+  const formatDiscountRange = (discountRange) => {
+    if (!discountRange) return '0-0';
 
+    if (typeof discountRange === 'string') {
+      return discountRange;
+    } else if (Array.isArray(discountRange)) {
+      return discountRange.join('-');
+    } else if (typeof discountRange === 'object' && discountRange !== null) {
+      const min = discountRange.min || discountRange.min_discount || 0;
+      const max = discountRange.max || discountRange.max_discount || 0;
+      return `${min}-${max}`;
+    } else {
+      return `0-${discountRange}`;
+    }
+  };
   // Fetch all students
   const fetchStudents = async () => {
     try {
@@ -136,6 +199,7 @@ const StudentFees = () => {
       const res = await axios.get("/fee-structures", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log(res.data)
       setFeeStructures(res.data || []);
       setFilteredFeeStructures(res.data || []);
     } catch (error) {
@@ -257,30 +321,124 @@ const StudentFees = () => {
     }));
     setStudentSearch(`${student.full_name} (${student.admission_number})`);
     setShowStudentDropdown(false);
+
+    // Validate if branch discount is already entered for the selected student
+    if (formData.branch_discount_percent) {
+      validateBranchDiscountForStudent(formData.branch_discount_percent, student.id);
+    }
   };
 
-  // Handle coupon application
-  const handleApplyCoupon = () => {
-    if (!selectedCoupon) return;
+  const validateBranchDiscountForStudent = (discountPercent, studentId) => {
+    if (!studentId || !discountPercent) return true;
 
-    const coupon = coupons.find(c => c.id == selectedCoupon);
-    if (!coupon) return;
+    const student = studentsMap[studentId];
+    if (!student || !student.branch_id) return true;
 
-    let newFee = parseFloat(selectedCourse?.discounted_price_price || 0);
+    const branch = branchesMap[student.branch_id];
+    if (!branch || !branch.discount_range) return true;
 
-    if (coupon.discount_type === "percentage") {
-      newFee = newFee - (newFee * parseFloat(coupon.discount_value)) / 100;
-    } else if (coupon.discount_type === "fixed") {
-      newFee = newFee - parseFloat(coupon.discount_value);
+    const branchDiscountRange = branch.discount_range;
+
+    // Handle different types of discount_range
+    let minDiscount, maxDiscount;
+
+    if (typeof branchDiscountRange === 'string') {
+      const rangeParts = branchDiscountRange.split('-').map(Number);
+      minDiscount = rangeParts[0];
+      maxDiscount = rangeParts[1];
+    } else if (Array.isArray(branchDiscountRange)) {
+      minDiscount = Number(branchDiscountRange[0]);
+      maxDiscount = Number(branchDiscountRange[1]);
+    } else if (typeof branchDiscountRange === 'object' && branchDiscountRange !== null) {
+      minDiscount = Number(branchDiscountRange.min || branchDiscountRange.min_discount || 0);
+      maxDiscount = Number(branchDiscountRange.max || branchDiscountRange.max_discount || 0);
+    } else {
+      minDiscount = 0;
+      maxDiscount = Number(branchDiscountRange);
     }
 
-    if (newFee < 0) newFee = 0;
-    setFinalFee(newFee);
+    if (isNaN(minDiscount) || isNaN(maxDiscount)) {
+      console.warn('Invalid discount range format:', branchDiscountRange);
+      return true;
+    }
 
-    // Update form data with coupon ID
+    const enteredDiscount = parseFloat(discountPercent);
+
+    if (enteredDiscount < minDiscount || enteredDiscount > maxDiscount) {
+      alert(`Branch discount must be between ${minDiscount}% and ${maxDiscount}% for ${student.full_name}'s branch (${branch.branchName}).`);
+      return false;
+    }
+
+    return true;
+  };
+
+  const validateBranchDiscount = (discountPercent, branchId) => {
+    if (!branchId || !discountPercent) return true; // No validation needed if no branch or discount
+
+    const branch = branchesMap[branchId];
+    if (!branch || !branch.discount_range) return true; // No validation if branch not found or no discount range
+
+    const branchDiscountRange = branch.discount_range;
+
+    // Handle different types of discount_range
+    let minDiscount, maxDiscount;
+
+    if (typeof branchDiscountRange === 'string') {
+      // If it's a string like "0-10" or "5-15"
+      const rangeParts = branchDiscountRange.split('-').map(Number);
+      minDiscount = rangeParts[0];
+      maxDiscount = rangeParts[1];
+    } else if (Array.isArray(branchDiscountRange)) {
+      // If it's an array like [0, 10] or [5, 15]
+      minDiscount = Number(branchDiscountRange[0]);
+      maxDiscount = Number(branchDiscountRange[1]);
+    } else if (typeof branchDiscountRange === 'object' && branchDiscountRange !== null) {
+      // If it's an object like {min: 0, max: 10}
+      minDiscount = Number(branchDiscountRange.min || branchDiscountRange.min_discount || 0);
+      maxDiscount = Number(branchDiscountRange.max || branchDiscountRange.max_discount || 0);
+    } else {
+      // If it's a number or other type, assume it's the max discount with min 0
+      minDiscount = 0;
+      maxDiscount = Number(branchDiscountRange);
+    }
+
+    // Validate the numbers
+    if (isNaN(minDiscount) || isNaN(maxDiscount)) {
+      console.warn('Invalid discount range format:', branchDiscountRange);
+      return true; // Skip validation if range is invalid
+    }
+
+    const enteredDiscount = parseFloat(discountPercent);
+
+    if (enteredDiscount < minDiscount || enteredDiscount > maxDiscount) {
+      alert(`Branch discount must be between ${minDiscount}% and ${maxDiscount}% for this branch.`);
+      return false;
+    }
+
+    return true;
+  };
+
+  // Handle branch discount input change with validation
+  const handleBranchDiscountChange = (e) => {
+    const { name, value } = e.target;
+
+    // If there's a value and a selected student with branch, validate immediately
+    if (value && selectedStudent && selectedStudent.branch_id) {
+      const isValid = validateBranchDiscount(value, selectedStudent.branch_id);
+      if (!isValid) {
+        // Clear the invalid input
+        setFormData(prev => ({
+          ...prev,
+          [name]: ''
+        }));
+        return;
+      }
+    }
+
+    // If validation passes or no branch selected, update normally
     setFormData(prev => ({
       ...prev,
-      coupon_id: selectedCoupon
+      [name]: value
     }));
   };
 
@@ -443,66 +601,98 @@ const StudentFees = () => {
     setPaymentAmount('');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!selectedStudent || !selectedStudent.course_id) {
-      alert("Selected student doesn't have a course assigned");
+  if (!selectedStudent || !selectedStudent.course_id) {
+    alert("Selected student doesn't have a course assigned");
+    return;
+  }
+
+  // Validate branch discount before submission
+  if (formData.branch_discount_percent && selectedStudent.branch_id) {
+    const isValidDiscount = validateBranchDiscount(formData.branch_discount_percent, selectedStudent.branch_id);
+    if (!isValidDiscount) {
+      return; // Stop submission if discount is invalid
+    }
+  }
+
+  // Check if student already has a fee structure for this course
+  if (hasExistingFeeStructure(formData.student_id, selectedStudent.course_id)) {
+    if (!window.confirm("This student already has a fee structure for this course. Do you want to proceed anyway?")) {
       return;
     }
+  }
 
-    // Check if student already has a fee structure for this course
-    if (hasExistingFeeStructure(formData.student_id, selectedStudent.course_id)) {
-      if (!window.confirm("This student already has a fee structure for this course. Do you want to proceed anyway?")) {
-        return;
-      }
+  try {
+    const token = localStorage.getItem("token");
+
+    // First create the fee structure
+    const feeStructureData = {
+      student_id: parseInt(formData.student_id),
+      course_id: parseInt(selectedStudent.course_id),
+      fee_type: formData.fee_type,
+      amount: finalFee > 0 ? finalFee : parseFloat(selectedCourse?.discounted_price_price || 0),
+      payment_mode: formData.payment_mode,
+      number_of_installments: formData.payment_mode === 'installments' ? parseInt(formData.number_of_installments) : 0,
+      coupon_id: formData.coupon_id ? parseInt(formData.coupon_id) : null,
+      branch_id: selectedStudent.branch_id,
+      branch_discount_percent: formData.branch_discount_percent ? parseFloat(formData.branch_discount_percent) : 0
+    };
+
+    console.log('Sending fee structure data:', feeStructureData);
+
+    // Create fee structure
+    const structureRes = await axios.post('/fee-structures', feeStructureData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log('Fee structure created:', structureRes.data);
+
+    // Then generate the student fee based on the structure
+    const feeData = {
+      student_id: parseInt(formData.student_id),
+      course_id: parseInt(selectedStudent.course_id),
+      fee_structure_id: structureRes.data.id
+    };
+
+    console.log('Sending student fee data:', feeData);
+
+    const feeRes = await axios.post('/studentfee', feeData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log('Student fee created:', feeRes.data);
+
+    // Update state with the new fee
+    setTimeout(async () => {
+      await fetchStudentFees(); // Refresh the fees list
+      await fetchFeeStructures(); // Refresh fee structures
+      setFeeStructures(prevStructures => [...prevStructures, structureRes.data]);
+    }, 500);
+
+    closeModal();
+  } catch (error) {
+    console.error("Error creating fee structure and student fee:", error);
+    
+    // More detailed error message
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error response data:', error.response.data);
+      console.error('Error response status:', error.response.status);
+      alert(`Error creating fee structure: ${error.response.data.message || 'Please try again.'}`);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error request:', error.request);
+      alert('Network error. Please check your connection and try again.');
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error message:', error.message);
+      alert('Error creating fee structure. Please try again.');
     }
-
-    try {
-      const token = localStorage.getItem("token");
-
-      // First create the fee structure
-      const feeStructureData = {
-        student_id: parseInt(formData.student_id),
-        course_id: parseInt(selectedStudent.course_id),
-        fee_type: formData.fee_type,
-        amount: finalFee > 0 ? finalFee : parseFloat(selectedCourse?.discounted_price_price || 0),
-        payment_mode: formData.payment_mode,
-        number_of_installments: formData.payment_mode === 'installments' ? parseInt(formData.number_of_installments) : 0,
-        coupon_id: formData.coupon_id ? parseInt(formData.coupon_id) : null,
-        branch_id: selectedStudent.branch_id,
-        branch_discount_percent: formData.branch_discount_percent ? parseFloat(formData.branch_discount_percent) : 0
-      };
-
-      // Create fee structure
-      const structureRes = await axios.post('/fee-structures', feeStructureData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // Then generate the student fee based on the structure
-      const feeData = {
-        student_id: parseInt(formData.student_id),
-        course_id: parseInt(selectedStudent.course_id),
-        fee_structure_id: structureRes.data.id
-      };
-
-      const feeRes = await axios.post('/studentfee', feeData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // Update state with the new fee
-      setTimeout(async () => {
-        await fetchStudentFees(); // Refresh the fees list
-        setFeeStructures(prevStructures => [...prevStructures, structureRes.data]);
-      }, 500);
-
-
-      closeModal();
-    } catch (error) {
-      console.error("Error creating fee structure and student fee:", error);
-      alert("Error creating fee structure. Please try again.");
-    }
-  };
+  }
+};
 
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
@@ -530,10 +720,41 @@ const StudentFees = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+
+    // Special handling for branch discount field
+    if (name === 'branch_discount_percent') {
+      handleBranchDiscountChange(e);
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+  };
+
+  // Handle coupon application
+  const handleApplyCoupon = () => {
+    if (!selectedCoupon) return;
+
+    const coupon = coupons.find(c => c.id == selectedCoupon);
+    if (!coupon) return;
+
+    let newFee = parseFloat(selectedCourse?.discounted_price_price || 0);
+
+    if (coupon.discount_type === "percentage") {
+      newFee = newFee - (newFee * parseFloat(coupon.discount_value)) / 100;
+    } else if (coupon.discount_type === "fixed") {
+      newFee = newFee - parseFloat(coupon.discount_value);
+    }
+
+    if (newFee < 0) newFee = 0;
+    setFinalFee(newFee);
+
+    // Update form data with coupon ID
+    setFormData(prev => ({
+      ...prev,
+      coupon_id: selectedCoupon
+    }));
   };
 
   if (loading) {
@@ -785,6 +1006,13 @@ const StudentFees = () => {
                           >
                             <div className="sf-student-dropdown-info">
                               <div className="sf-student-dropdown-name">{student.full_name}</div>
+                              <div className="sf-student-dropdown-details">
+                                {student.admission_number}
+                                {student.branch_id && branchesMap[student.branch_id] && (
+                                  <span> • Branch: {branchesMap[student.branch_id].branchName}
+                                    (Discount: {formatDiscountRange(branchesMap[student.branch_id].discount_range)}%)</span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -823,6 +1051,13 @@ const StudentFees = () => {
                     step="0.01"
                     placeholder="Enter discount percentage"
                   />
+                  {selectedStudent && selectedStudent.branch_id && branchesMap[selectedStudent.branch_id] && (
+                    <div className="sf-branch-discount-info">
+                      <small>
+                        Discount Allowed range for this branch: {formatDiscountRange(branchesMap[selectedStudent.branch_id].discount_range) || '0-0'}%
+                      </small>
+                    </div>
+                  )}
                 </div>
                 <div className="sf-form-group">
                   <label>Fee Type</label>
