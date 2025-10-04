@@ -18,6 +18,39 @@
   max-width: 1200px;
   margin: 0 auto;
 }
+.sf-branch-discount-info {
+  margin-top: 4px;
+  padding: 6px 8px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  font-size: 12px;
+  color: red;
+}
+
+.sf-branch-discount-info small {
+  font-size: 14px;
+  color: red;
+}
+
+/* Optional: Add different styles based on validation state */
+.sf-branch-discount-info.valid {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.sf-branch-discount-info.invalid {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+.sf-branch-discount-info.warning {
+  background-color: #fff3cd;
+  border-color: #ffeaa7;
+  color: #856404;
+}
 
 .sf-header-left {
   display: flex;
