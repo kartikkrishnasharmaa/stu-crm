@@ -478,7 +478,7 @@ function AllCourse() {
           <option value="">All Branches</option>
           {branches.map((b) => (
             <option key={b.id} value={b.id}>
-              {b.branch_name} ({b.city})
+              {b.branch_name}
             </option>
           ))}
         </select>
