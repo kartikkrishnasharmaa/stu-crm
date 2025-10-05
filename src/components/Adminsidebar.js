@@ -3,8 +3,6 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
   FaTachometerAlt,
-  FaChevronDown,
-  FaChevronUp,
   FaGift,
   FaUsers,
   FaWallet,
@@ -19,20 +17,14 @@ import {
 } from "react-icons/fa";
 
 const Adminsidebar = ({ isSidebarOpen, toggleSidebar, isMobile }) => {
-  const [openMenu, setOpenMenu] = useState(null);
   const [activeItem, setActiveItem] = useState("");
   const selectedBranch = useSelector((state) => state.branch.selectedBranch);
   const location = useLocation();
 
-  // Set active item based on current route
   useEffect(() => {
     const path = location.pathname;
     setActiveItem(path);
   }, [location]);
-
-  const toggleSubCategory = (category) => {
-    setOpenMenu(openMenu === category ? null : category);
-  };
 
   const handleNavigation = (link, e) => {
     if (!link || link === "/") {
@@ -41,7 +33,6 @@ const Adminsidebar = ({ isSidebarOpen, toggleSidebar, isMobile }) => {
       return;
     }
     
-    // Close sidebar on mobile after navigation
     if (isMobile) {
       toggleSidebar();
     }
@@ -132,30 +123,35 @@ const Adminsidebar = ({ isSidebarOpen, toggleSidebar, isMobile }) => {
       {/* Mobile Sidebar Overlay */}
       {isMobile && isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={toggleSidebar}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-64 bg-white transform transition-transform duration-300 ease-in-out z-30 lg:relative lg:translate-x-0 ${
+        className={`fixed top-0 left-0 h-screen w-64 bg-white transform transition-transform duration-300 ease-in-out z-50 lg:relative lg:translate-x-0 lg:z-auto ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{
+          height: '100vh',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          bottom: 0
+        }}
       >
         <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          {/* Header - Fixed Height */}
+          <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white h-16">
             <div className="flex items-center space-x-3">
               <img
                 src="https://www.sinfode.com/wp-content/uploads/2022/12/digital-marketing-institute-in-sikar.webp"
                 alt="Sinfode Logo"
-                className="h-8 mt-4"
+                className="h-8"
               />
-            
             </div>
             
-            {/* Close button for mobile */}
             {isMobile && (
               <button
                 onClick={toggleSidebar}
@@ -166,43 +162,45 @@ const Adminsidebar = ({ isSidebarOpen, toggleSidebar, isMobile }) => {
             )}
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto">
-            <ul className="space-y-1 p-2">
-              {menuItems.map((item, index) => (
-                <li key={index}>
-                  <NavLink
-                    to={item.link || "#"}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 group ${
-                        isActive
-                          ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600 shadow-sm"
-                          : item.link && item.link !== "/"
-                          ? "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                          : "opacity-50 cursor-not-allowed"
-                      }`
-                    }
-                    onClick={(e) => handleNavigation(item.link, e)}
-                  >
-                    <span className={`${activeItem === item.link ? 'text-blue-600' : 'text-gray-400'} group-hover:text-current`}>
-                      {item.icon}
-                    </span>
-                    <span className="text-sm font-medium flex-1">{item.name}</span>
-                    
-                    {(!item.link || item.link === "/") && (
-                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                        Soon
+          {/* Navigation - Scrollable Area */}
+          <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
+            <nav>
+              <ul className="space-y-1 p-2">
+                {menuItems.map((item, index) => (
+                  <li key={index}>
+                    <NavLink
+                      to={item.link || "#"}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 group ${
+                          isActive
+                            ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600 shadow-sm"
+                            : item.link && item.link !== "/"
+                            ? "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                            : "opacity-50 cursor-not-allowed"
+                        }`
+                      }
+                      onClick={(e) => handleNavigation(item.link, e)}
+                    >
+                      <span className={`${activeItem === item.link ? 'text-blue-600' : 'text-gray-400'} group-hover:text-current`}>
+                        {item.icon}
                       </span>
-                    )}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </nav>
+                      <span className="text-sm font-medium flex-1">{item.name}</span>
+                      
+                      {(!item.link || item.link === "/") && (
+                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                          Soon
+                        </span>
+                      )}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
 
-          {/* Footer - Branch Info */}
+          {/* Footer - Fixed Height */}
           {selectedBranch && (
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-gray-50 h-16">
               <div className="text-xs text-gray-500">
                 Current Branch: 
                 <span className="font-medium text-gray-700 ml-1">
