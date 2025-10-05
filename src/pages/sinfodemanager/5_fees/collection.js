@@ -3,11 +3,13 @@ import axios from "../../../api/axiosConfig";
 import './Collection.css';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+
 const Collection = () => {
   const [showModal, setShowModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPaymentHistoryModal, setShowPaymentHistoryModal] = useState(false);
   const [feeRecords, setFeeRecords] = useState([]);
+  const [filteredFeeRecords, setFilteredFeeRecords] = useState([]);
   const [branches, setBranches] = useState([]);
   const [courses, setCourses] = useState([]);
   const [students, setStudents] = useState([]);
@@ -21,8 +23,20 @@ const Collection = () => {
   const [feeStructures, setFeeStructures] = useState([]);
   const [pendingInstallments, setPendingInstallments] = useState([]);
   const [selectedStudentForReminder, setSelectedStudentForReminder] = useState(null);
-  const [reminderTiming, setReminderTiming] = useState('before_7_days'); // Default: 7 days before
+  const [reminderTiming, setReminderTiming] = useState('before_7_days');
   
+  // New state for filtering and sorting
+  const [filters, setFilters] = useState({
+    studentName: '',
+    dateFrom: '',
+    dateTo: '',
+    status: 'all'
+  });
+  const [sortConfig, setSortConfig] = useState({
+    key: '',
+    direction: 'asc'
+  });
+
   const [formData, setFormData] = useState({
     total_fee: '',
     due_date: '',
@@ -37,11 +51,11 @@ const Collection = () => {
     note: ''
   });
 
-   // Get user data from localStorage
+  // Get user data from localStorage
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userBranchId = userData.branch_id;
 
-useEffect(() => {
+  useEffect(() => {
     const fetchFeeStructures = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -86,7 +100,7 @@ useEffect(() => {
   };
 
   // Fetch all fee records
-   useEffect(() => {
+  useEffect(() => {
     const fetchFeeRecords = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -100,6 +114,7 @@ useEffect(() => {
         );
         
         setFeeRecords(filteredRecords || []);
+        setFilteredFeeRecords(filteredRecords || []);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching fee records:", error);
@@ -131,7 +146,6 @@ useEffect(() => {
     fetchCourses();
   }, [userBranchId]);
 
-
   useEffect(() => {
     const fetchStudents = async () => {
       if (!selectedCourse) return;
@@ -155,12 +169,120 @@ useEffect(() => {
 
     fetchStudents();
   }, [selectedCourse, userBranchId]);
-   // Filter students by branch
-  // const filteredStudents = students.filter(
-  //   (s) => !selectedBranch || s.branch_id?.toString() === selectedBranch
-  // );
 
-const generateReceipt = (payment, feeRecord) => {
+  // Apply filters and sorting whenever filters, sortConfig, or feeRecords change
+  useEffect(() => {
+    let result = [...feeRecords];
+
+    // Apply name filter
+    if (filters.studentName) {
+      result = result.filter(record =>
+        record.student?.full_name?.toLowerCase().includes(filters.studentName.toLowerCase())
+      );
+    }
+
+    // Apply date range filter
+    if (filters.dateFrom) {
+      result = result.filter(record => {
+        const recordDate = new Date(record.created_at || record.due_date);
+        const fromDate = new Date(filters.dateFrom);
+        return recordDate >= fromDate;
+      });
+    }
+
+    if (filters.dateTo) {
+      result = result.filter(record => {
+        const recordDate = new Date(record.created_at || record.due_date);
+        const toDate = new Date(filters.dateTo);
+        toDate.setHours(23, 59, 59, 999); // Include entire end date
+        return recordDate <= toDate;
+      });
+    }
+
+    // Apply status filter
+    if (filters.status !== 'all') {
+      result = result.filter(record => {
+        if (filters.status === 'paid') return record.pending_amount === 0;
+        if (filters.status === 'pending') return record.pending_amount > 0;
+        if (filters.status === 'advance') return record.pending_amount < 0;
+        return true;
+      });
+    }
+
+    // Apply sorting
+    if (sortConfig.key) {
+      result.sort((a, b) => {
+        let aValue, bValue;
+
+        switch (sortConfig.key) {
+          case 'student_name':
+            aValue = a.student?.full_name?.toLowerCase() || '';
+            bValue = b.student?.full_name?.toLowerCase() || '';
+            break;
+          case 'total_fee':
+            aValue = parseFloat(a.total_fee) || 0;
+            bValue = parseFloat(b.total_fee) || 0;
+            break;
+          case 'paid_amount':
+            aValue = parseFloat(a.paid_amount) || 0;
+            bValue = parseFloat(b.paid_amount) || 0;
+            break;
+          case 'pending_amount':
+            aValue = parseFloat(a.pending_amount) || 0;
+            bValue = parseFloat(b.pending_amount) || 0;
+            break;
+          case 'due_date':
+            aValue = new Date(a.due_date || a.created_at);
+            bValue = new Date(b.due_date || b.created_at);
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    setFilteredFeeRecords(result);
+  }, [filters, sortConfig, feeRecords]);
+
+  // Handle filter changes
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  // Handle sort requests
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setFilters({
+      studentName: '',
+      dateFrom: '',
+      dateTo: '',
+      status: 'all'
+    });
+    setSortConfig({
+      key: '',
+      direction: 'asc'
+    });
+  };
+
+  const generateReceipt = (payment, feeRecord) => {
     const doc = new jsPDF();
     
     // Constants for layout
@@ -221,12 +343,10 @@ const generateReceipt = (payment, feeRecord) => {
     // Student details - left column
     doc.text(`Name: ${feeRecord.student.full_name}`, margin + 10, studentInfoY + 15);
     doc.text(`Admission No: ${feeRecord.student.admission_number}`, margin + 10, studentInfoY + 25);
-    // doc.text(`Course: ${feeRecord.course_name}`, margin + 10, studentInfoY + 35);
     
     // Student details - right column
     doc.text(`Contact: ${feeRecord.student.contact_number}`, margin + contentWidth/2, studentInfoY + 15);
     doc.text(`Email: ${feeRecord.student.email}`, margin + contentWidth/2, studentInfoY + 25);
-    // doc.text(`Branch: ${getBranchName(feeRecord.student.branch_id)}`, margin + contentWidth/2, studentInfoY + 35);
     
     // Payment details section
     const paymentInfoY = studentInfoY + 55;
@@ -401,7 +521,13 @@ const generateReceipt = (payment, feeRecord) => {
       const feeRes = await axios.get("/studentfee", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFeeRecords(feeRes.data || []);
+      
+      const filteredRecords = feeRes.data.filter(record => 
+        record.student && record.student.branch_id === userBranchId
+      );
+      
+      setFeeRecords(filteredRecords || []);
+      setFilteredFeeRecords(filteredRecords || []);
       
       alert("Fee record saved successfully!");
       closeModal();
@@ -410,47 +536,49 @@ const generateReceipt = (payment, feeRecord) => {
       alert("Error saving fee data. Please try again.");
     }
   };
-const handlePaymentSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!selectedFeeRecord) {
-    alert("No fee record selected");
-    return;
-  }
 
-  try {
-    const token = localStorage.getItem("token");
-    const dataToSubmit = {
-      student_fee_id: selectedFeeRecord.id,
-      payment_date: paymentForm.payment_date,
-      payment_mode: paymentForm.payment_mode,
-      amount_paid: paymentForm.amount_paid,
-      note: paymentForm.note
-    };
+  const handlePaymentSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedFeeRecord) {
+      alert("No fee record selected");
+      return;
+    }
 
-    await axios.post('/student-fee-payments', dataToSubmit, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const token = localStorage.getItem("token");
+      const dataToSubmit = {
+        student_fee_id: selectedFeeRecord.id,
+        payment_date: paymentForm.payment_date,
+        payment_mode: paymentForm.payment_mode,
+        amount_paid: paymentForm.amount_paid,
+        note: paymentForm.note
+      };
 
-    // Refresh the fee records with branch filtering
-    const feeRes = await axios.get("/studentfee", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    
-    // Filter fee records by user's branch ID
-    const filteredRecords = feeRes.data.filter(record => 
-      record.student && record.student.branch_id === userBranchId
-    );
-    
-    setFeeRecords(filteredRecords || []);
-    
-    alert("Payment recorded successfully!");
-    closePaymentModal();
-  } catch (error) {
-    console.error("Error saving payment:", error);
-    alert("Error saving payment. Please try again.");
-  }
-};
+      await axios.post('/student-fee-payments', dataToSubmit, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Refresh the fee records with branch filtering
+      const feeRes = await axios.get("/studentfee", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      // Filter fee records by user's branch ID
+      const filteredRecords = feeRes.data.filter(record => 
+        record.student && record.student.branch_id === userBranchId
+      );
+      
+      setFeeRecords(filteredRecords || []);
+      setFilteredFeeRecords(filteredRecords || []);
+      
+      alert("Payment recorded successfully!");
+      closePaymentModal();
+    } catch (error) {
+      console.error("Error saving payment:", error);
+      alert("Error saving payment. Please try again.");
+    }
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -476,6 +604,12 @@ const handlePaymentSubmit = async (e) => {
     }
   };
 
+  // Get sort indicator
+  const getSortIndicator = (key) => {
+    if (sortConfig.key !== key) return '↕️';
+    return sortConfig.direction === 'asc' ? '↑' : '↓';
+  };
+
   if (loading) {
     return <div className="loading">Loading fee records...</div>;
   }
@@ -484,7 +618,6 @@ const handlePaymentSubmit = async (e) => {
     <div className="collection-container">
       <div className="collection-header">
         <h1>Fee Collection Management</h1>
-        
       </div>
 
       <div className="stats-cards">
@@ -529,40 +662,102 @@ const handlePaymentSubmit = async (e) => {
         </div>
       </div>
 
+      {/* Filter Section */}
+      <div className="filter-section">
+        <h3>Filters & Sorting</h3>
+        <div className="filter-row">
+          <div className="filter-group">
+            <label>Student Name:</label>
+            <input
+              type="text"
+              placeholder="Search by student name..."
+              value={filters.studentName}
+              onChange={(e) => handleFilterChange('studentName', e.target.value)}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label>Date From:</label>
+            <input
+              type="date"
+              value={filters.dateFrom}
+              onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label>Date To:</label>
+            <input
+              type="date"
+              value={filters.dateTo}
+              onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label>Status:</label>
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+            >
+              <option value="all">All Status</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="advance">Advance</option>
+            </select>
+          </div>
+
+          <button className="btn btn-secondary clear-filters" onClick={clearFilters}>
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
       <div className="table-container">
-        <h2>Fee Records</h2>
+        <h2>Fee Records ({filteredFeeRecords.length} records found)</h2>
         <div className="table-responsive">
           <table className="fee-table">
             <thead>
               <tr>
-                <th>Student Name</th>
-                {/* <th>Course</th> */}
-                <th>Total Fee</th>
-                <th>Paid Amount</th>
-                <th>Pending Amount</th>
-        
-                {/* <th>Due Date</th> */}
+                <th>#</th>
+                <th 
+                  className="sortable" 
+                >
+                  Student Name
+                </th>
+                <th 
+                  className="sortable" 
+                >
+                  Total Fee                </th>
+                <th 
+                  className="sortable" 
+                >
+                  Paid Amount
+                </th>
+                <th 
+                  className="sortable" 
+                >
+                  Pending Amount
+                </th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {feeRecords.length === 0 ? (
+              {filteredFeeRecords.length === 0 ? (
                 <tr>
-                  <td colSpan="10" className="no-data">No fee records found</td>
+                  <td colSpan="8" className="no-data">No fee records found</td>
                 </tr>
               ) : (
-                feeRecords.map(record => (
+                filteredFeeRecords.map((record, index) => (
                   <tr key={record.id}>
-                    <td className="student-info">
-                      <div className="student-name">{record.student?.full_name}</div>
-                      {/* <div className="student-id">{record.student?.admission_number}</div> */}
+                    <td className="serial-number">{index + 1}</td>
+                    <td className='text-bold'>
+                      {record.student?.full_name}
                     </td>
-                    {/* <td>Course ID: {record.course_name}</td> */}
                     <td>{formatCurrency(record.total_fee)}</td>
                     <td>{formatCurrency(record.paid_amount)}</td>
                     <td>{formatCurrency(record.pending_amount)}</td>
-                    {/* <td>{formatDate(record.due_date)}</td> */}
                     <td>{getStatusBadge(record.pending_amount)}</td>
                     <td>
                       <div className="action-buttons">
@@ -592,7 +787,7 @@ const handlePaymentSubmit = async (e) => {
         </div>
       </div>
 
-
+      {/* Rest of the modal code remains the same */}
       {showModal && (
         <div className="modal-backdrop">
           <div className="modal">
@@ -731,6 +926,8 @@ const handlePaymentSubmit = async (e) => {
           </div>
         </div>
       )}
+
+      {/* Other modals (Payment, Payment History, Reminder) remain exactly the same */}
       {showReminderModal && selectedStudentForReminder && (
         <div className="modal-backdrop">
           <div className="modal reminder-modal">
@@ -811,7 +1008,6 @@ const handlePaymentSubmit = async (e) => {
                             </span>
                           </div>
                         </div>
-                        
                       </div>
                     ))}
                   </div>
@@ -939,7 +1135,6 @@ const handlePaymentSubmit = async (e) => {
                     <label>Pending Amount:</label>
                     <span>{formatCurrency(selectedFeeRecord.pending_amount)}</span>
                   </div>
-                
                 </div>
               </div>
 
@@ -952,16 +1147,17 @@ const handlePaymentSubmit = async (e) => {
                     <table className="payment-table">
                       <thead>
                         <tr>
+                          <th>#</th>
                           <th>Date</th>
                           <th>Amount</th>
                           <th>Mode</th>
                           <th>Receipt</th>
-
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedPaymentHistory.map(payment => (
+                        {selectedPaymentHistory.map((payment, index) => (
                           <tr key={payment.id}>
+                            <td className="serial-number">{index + 1}</td>
                             <td>{formatDate(payment.payment_date)}</td>
                             <td>{formatCurrency(payment.amount_paid)}</td>
                             <td>
