@@ -6,12 +6,12 @@ const SinfodeAdminLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect screen size
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 1024);
-      // Auto-close sidebar on mobile when resizing to desktop
-      if (window.innerWidth >= 1024) {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      
+      if (!mobile) {
         setIsSidebarOpen(false);
       }
     };
@@ -34,10 +34,13 @@ const SinfodeAdminLayout = ({ children }) => {
 
   return (
     <div className="flex bg-[#F4F9FD] min-h-screen">
-      {/* Sidebar - Hidden on mobile, shown on desktop */}
-      <div className={`fixed inset-y-0 left-0 z-30 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      {/* Sidebar - Always fixed position */}
+      <div className={`
+        ${isMobile ? 'fixed inset-y-0 left-0 z-50' : 'fixed inset-y-0 left-0 z-30'}
+        transform transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0
+      `}>
         <SASidebar 
           isSidebarOpen={isSidebarOpen} 
           toggleSidebar={toggleSidebar}
@@ -45,10 +48,12 @@ const SinfodeAdminLayout = ({ children }) => {
         />
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <div className="sticky top-0 z-20 bg-[#F4F9FD]">
+      {/* Main Content Area - Adjusted for sidebar on desktop */}
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
+        !isMobile ? 'lg:ml-64' : ''
+      }`}>
+        {/* Header - Sticky */}
+        <div className="sticky top-0 z-40 bg-[#F4F9FD]">
           <SAHeader 
             toggleSidebar={toggleSidebar} 
             isSidebarOpen={isSidebarOpen}
@@ -61,14 +66,16 @@ const SinfodeAdminLayout = ({ children }) => {
           className="flex-1 overflow-auto p-4 lg:p-6 bg-[#F4F9FD]"
           onClick={closeSidebar}
         >
-          {children}
+          <div className="max-w-full">
+            {children}
+          </div>
         </main>
       </div>
 
-      {/* Overlay for mobile sidebar */}
+      {/* Mobile Overlay */}
       {isMobile && isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={closeSidebar}
         />
       )}
