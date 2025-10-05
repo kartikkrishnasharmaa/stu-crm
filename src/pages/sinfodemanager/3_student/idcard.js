@@ -129,10 +129,11 @@ function StudentIDCardGenerator() {
                 <tr key={s.id}>
                   <td className="p-2 border">
                     <img
-                      src={s.photo}
+                      src={s.photo_url}
                       alt={s.full_name}
                       width={50}
                       height={50}
+                      className="rounded-full"
                     />
                   </td>
                   <td className="p-2 border">{s.full_name}</td>
@@ -178,7 +179,7 @@ function StudentIDCardGenerator() {
                 <div className="card-body mb-2">
                   <div className="student-photo">
                     <img
-                      src={selectedStudent.photo}
+                      src={selectedStudent.photo_url}
                       alt={selectedStudent.full_name}
                       width={100}
                       height={120}
