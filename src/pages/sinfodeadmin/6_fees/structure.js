@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from "../../../api/axiosConfig";
 import './StudentFees.css';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const StudentFees = () => {
   const [studentFees, setStudentFees] = useState([]);
@@ -601,98 +604,98 @@ const StudentFees = () => {
     setPaymentAmount('');
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!selectedStudent || !selectedStudent.course_id) {
-    alert("Selected student doesn't have a course assigned");
-    return;
-  }
-
-  // Validate branch discount before submission
-  if (formData.branch_discount_percent && selectedStudent.branch_id) {
-    const isValidDiscount = validateBranchDiscount(formData.branch_discount_percent, selectedStudent.branch_id);
-    if (!isValidDiscount) {
-      return; // Stop submission if discount is invalid
-    }
-  }
-
-  // Check if student already has a fee structure for this course
-  if (hasExistingFeeStructure(formData.student_id, selectedStudent.course_id)) {
-    if (!window.confirm("This student already has a fee structure for this course. Do you want to proceed anyway?")) {
+    if (!selectedStudent || !selectedStudent.course_id) {
+      alert("Selected student doesn't have a course assigned");
       return;
     }
-  }
 
-  try {
-    const token = localStorage.getItem("token");
-
-    // First create the fee structure
-    const feeStructureData = {
-      student_id: parseInt(formData.student_id),
-      course_id: parseInt(selectedStudent.course_id),
-      fee_type: formData.fee_type,
-      amount: finalFee > 0 ? finalFee : parseFloat(selectedCourse?.discounted_price_price || 0),
-      payment_mode: formData.payment_mode,
-      number_of_installments: formData.payment_mode === 'installments' ? parseInt(formData.number_of_installments) : 0,
-      coupon_id: formData.coupon_id ? parseInt(formData.coupon_id) : null,
-      branch_id: selectedStudent.branch_id,
-      branch_discount_percent: formData.branch_discount_percent ? parseFloat(formData.branch_discount_percent) : 0
-    };
-
-    console.log('Sending fee structure data:', feeStructureData);
-
-    // Create fee structure
-    const structureRes = await axios.post('/fee-structures', feeStructureData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    console.log('Fee structure created:', structureRes.data);
-
-    // Then generate the student fee based on the structure
-    const feeData = {
-      student_id: parseInt(formData.student_id),
-      course_id: parseInt(selectedStudent.course_id),
-      fee_structure_id: structureRes.data.id
-    };
-
-    console.log('Sending student fee data:', feeData);
-
-    const feeRes = await axios.post('/studentfee', feeData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    console.log('Student fee created:', feeRes.data);
-
-    // Update state with the new fee
-    setTimeout(async () => {
-      await fetchStudentFees(); // Refresh the fees list
-      await fetchFeeStructures(); // Refresh fee structures
-      setFeeStructures(prevStructures => [...prevStructures, structureRes.data]);
-    }, 500);
-
-    closeModal();
-  } catch (error) {
-    console.error("Error creating fee structure and student fee:", error);
-    
-    // More detailed error message
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      console.error('Error response data:', error.response.data);
-      console.error('Error response status:', error.response.status);
-      alert(`Error creating fee structure: ${error.response.data.message || 'Please try again.'}`);
-    } else if (error.request) {
-      // The request was made but no response was received
-      console.error('Error request:', error.request);
-      alert('Network error. Please check your connection and try again.');
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.error('Error message:', error.message);
-      alert('Error creating fee structure. Please try again.');
+    // Validate branch discount before submission
+    if (formData.branch_discount_percent && selectedStudent.branch_id) {
+      const isValidDiscount = validateBranchDiscount(formData.branch_discount_percent, selectedStudent.branch_id);
+      if (!isValidDiscount) {
+        return; // Stop submission if discount is invalid
+      }
     }
-  }
-};
+
+    // Check if student already has a fee structure for this course
+    if (hasExistingFeeStructure(formData.student_id, selectedStudent.course_id)) {
+      if (!window.confirm("This student already has a fee structure for this course. Do you want to proceed anyway?")) {
+        return;
+      }
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      // First create the fee structure
+      const feeStructureData = {
+        student_id: parseInt(formData.student_id),
+        course_id: parseInt(selectedStudent.course_id),
+        fee_type: formData.fee_type,
+        amount: finalFee > 0 ? finalFee : parseFloat(selectedCourse?.discounted_price_price || 0),
+        payment_mode: formData.payment_mode,
+        number_of_installments: formData.payment_mode === 'installments' ? parseInt(formData.number_of_installments) : 0,
+        coupon_id: formData.coupon_id ? parseInt(formData.coupon_id) : null,
+        branch_id: selectedStudent.branch_id,
+        branch_discount_percent: formData.branch_discount_percent ? parseFloat(formData.branch_discount_percent) : 0
+      };
+
+      console.log('Sending fee structure data:', feeStructureData);
+
+      // Create fee structure
+      const structureRes = await axios.post('/fee-structures', feeStructureData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log('Fee structure created:', structureRes.data);
+
+      // Then generate the student fee based on the structure
+      const feeData = {
+        student_id: parseInt(formData.student_id),
+        course_id: parseInt(selectedStudent.course_id),
+        fee_structure_id: structureRes.data.id
+      };
+
+      console.log('Sending student fee data:', feeData);
+
+      const feeRes = await axios.post('/studentfee', feeData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log('Student fee created:', feeRes.data);
+
+      // Update state with the new fee
+      setTimeout(async () => {
+        await fetchStudentFees(); // Refresh the fees list
+        await fetchFeeStructures(); // Refresh fee structures
+        setFeeStructures(prevStructures => [...prevStructures, structureRes.data]);
+      }, 500);
+
+      closeModal();
+    } catch (error) {
+      console.error("Error creating fee structure and student fee:", error);
+
+      // More detailed error message
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        alert(`Error creating fee structure: ${error.response.data.message || 'Please try again.'}`);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Error request:', error.request);
+        alert('Network error. Please check your connection and try again.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error message:', error.message);
+        alert('Error creating fee structure. Please try again.');
+      }
+    }
+  };
 
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
@@ -732,29 +735,11 @@ const handleSubmit = async (e) => {
     }
   };
 
-  // Handle coupon application
   const handleApplyCoupon = () => {
     if (!selectedCoupon) return;
-
-    const coupon = coupons.find(c => c.id == selectedCoupon);
-    if (!coupon) return;
-
-    let newFee = parseFloat(selectedCourse?.discounted_price_price || 0);
-
-    if (coupon.discount_type === "percentage") {
-      newFee = newFee - (newFee * parseFloat(coupon.discount_value)) / 100;
-    } else if (coupon.discount_type === "fixed") {
-      newFee = newFee - parseFloat(coupon.discount_value);
-    }
-
-    if (newFee < 0) newFee = 0;
-    setFinalFee(newFee);
-
-    // Update form data with coupon ID
-    setFormData(prev => ({
-      ...prev,
-      coupon_id: selectedCoupon
-    }));
+    setFormData(prev => ({ ...prev, couponid: selectedCoupon }));
+    toast.success("Coupon applied !"); // Just show success message
+    // Math calculation hata do, koi discount calculation nahi hogi
   };
 
   if (loading) {
@@ -770,6 +755,8 @@ const handleSubmit = async (e) => {
 
   return (
     <div className="student-fees-container">
+      <ToastContainer />
+
       {/* Header */}
       <header className="sf-header">
         <div className="sf-header-content">
@@ -829,7 +816,7 @@ const handleSubmit = async (e) => {
             </div>
           </div>
 
-          <div className="sf-stat-card">
+          {/* <div className="sf-stat-card">
             <div className="sf-stat-content">
               <div className="sf-stat-icon bg-purple">
                 <i className="fas fa-users"></i>
@@ -839,44 +826,52 @@ const handleSubmit = async (e) => {
                 <h3>{studentFees.length}</h3>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
-        <div className="sf-filter-controls" style={{ display: 'flex', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap' }}>
+        <div className="flex flex-wrap items-center gap-3 mb-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
           <select
             value={sortField}
             onChange={e => setSortField(e.target.value)}
-            className="sf-select"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 bg-white shadow-sm hover:border-blue-400 transition-all"
           >
             <option value="created_at">Sort by Created Date</option>
             <option value="total_fee">Sort by Total Fee</option>
             <option value="paid_amount">Sort by Paid Amount</option>
           </select>
+
           <select
             value={sortOrder}
             onChange={e => setSortOrder(e.target.value)}
-            className="sf-select"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 bg-white shadow-sm hover:border-blue-400 transition-all"
           >
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
           </select>
+
           <input
             type="date"
             value={dateFilter.from}
             onChange={e => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
-            className="sf-date-input"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 bg-white shadow-sm hover:border-blue-400 transition-all"
             placeholder="From"
           />
+
           <input
             type="date"
             value={dateFilter.to}
             onChange={e => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
-            className="sf-date-input"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 bg-white shadow-sm hover:border-blue-400 transition-all"
             placeholder="To"
           />
-          <button onClick={() => setDateFilter({ from: '', to: '' })} className="sf-reset-btn">
+
+          <button
+            onClick={() => setDateFilter({ from: '', to: '' })}
+            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+          >
             Reset Dates
           </button>
         </div>
+
 
         {/* Student Fees Table */}
         <div className="sf-table-container">
@@ -1007,10 +1002,9 @@ const handleSubmit = async (e) => {
                             <div className="sf-student-dropdown-info">
                               <div className="sf-student-dropdown-name">{student.full_name}</div>
                               <div className="sf-student-dropdown-details">
-                                {student.admission_number}
                                 {student.branch_id && branchesMap[student.branch_id] && (
-                                  <span> • Branch: {branchesMap[student.branch_id].branchName}
-                                    (Discount: {formatDiscountRange(branchesMap[student.branch_id].discount_range)}%)</span>
+                                  <span> Branch: {branchesMap[student.branch_id].branchName}
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -1040,7 +1034,7 @@ const handleSubmit = async (e) => {
                   </div>
                 </div>
                 <div className="sf-form-group">
-                  <label>Branch Discount (%)</label>
+                  <label>Branch Intended Discount (Manual)</label>
                   <input
                     type="number"
                     name="branch_discount_percent"
@@ -1102,36 +1096,24 @@ const handleSubmit = async (e) => {
                   </div>
                 )}
 
-                <div className="sf-form-group">
-                  <label>Apply Coupon</label>
+                <div className="sf-form-group labelApply Coupon">
                   <div className="sf-coupon-section">
-                    <select
-                      value={selectedCoupon}
-                      onChange={(e) => setSelectedCoupon(e.target.value)}
-                      className="sf-coupon-select"
-                    >
+                    <select value={selectedCoupon}
+                      onChange={e => setSelectedCoupon(e.target.value)}
+                      className="sf-coupon-select">
                       <option value="">-- Select Coupon --</option>
                       {coupons
-                        .filter(c => !selectedStudent?.course_id || c.course_id == selectedStudent.course_id)
+                        .filter(c => !selectedStudent?.courseid || c.courseid === selectedStudent.courseid)
                         .map(coupon => (
                           <option key={coupon.id} value={coupon.id}>
-                            {coupon.code} ({coupon.discount_type} - {coupon.discount_value})
+                            {coupon.code} {coupon.discounttype} - {coupon.discountvalue}
                           </option>
                         ))}
                     </select>
-                    <button
-                      type="button"
-                      onClick={handleApplyCoupon}
-                      className="sf-apply-coupon-btn"
-                    >
+                    <button type="button" onClick={handleApplyCoupon} className="classNamesf-apply-coupon-btn">
                       Apply
                     </button>
                   </div>
-                  {finalFee > 0 && finalFee !== parseFloat(selectedCourse?.discounted_price_price || 0) && (
-                    <div className="sf-final-fee">
-                      Final Fee after discount: ₹{finalFee.toLocaleString()}
-                    </div>
-                  )}
                 </div>
               </div>
 
