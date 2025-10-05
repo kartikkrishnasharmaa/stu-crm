@@ -651,14 +651,14 @@ export default function Allstudents() {
         </div>
       ) : (
         // Card View
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {processedStudents.map((student) => (
             <div
               key={student.id}
               className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all border border-gray-100 overflow-hidden"
             >
               <div className="p-4 flex flex-col items-center text-center">
-                <div className="relative -mt-10 mb-3">
+                <div className="relative mt-5 mb-3">
                   <img
                     src={student.photo_url || "/default-avatar.png"}
                     alt={student.full_name}
