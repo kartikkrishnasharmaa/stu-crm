@@ -3,11 +3,21 @@ import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
   FaTachometerAlt,
-  FaTools,
-  FaChevronDown,
-  FaChevronUp,
   FaHome,
   FaUsers,
+  FaBook,
+  FaUserGraduate,
+  FaMoneyCheckAlt,
+  FaClipboardCheck,
+  FaUserFriends,
+  FaMoneyBillWave,
+  FaWallet,
+  FaFileInvoiceDollar,
+  FaTicketAlt,
+  FaComments,
+  FaChartBar,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
 
 const ManagerSidebar = ({ isSidebarOpen, toggleSidebar }) => {
@@ -49,61 +59,61 @@ const ManagerSidebar = ({ isSidebarOpen, toggleSidebar }) => {
         ? `/sinfodemanager/staff?branchId=${selectedBranch}`
         : "/sinfodemanager/staff",
     },
-    
     {
       name: "Courses",
-      icon: <FaUsers />,
+      icon: <FaBook />,
       link: "/sinfodemanager/courses",
     },
     {
       name: "Students",
-      icon: <FaUsers />,
+      icon: <FaUserGraduate />,
       link: "/sinfodemanager/students",
     },
-  
     {
       name: "Fees",
-      icon: <FaUsers />,
+      icon: <FaMoneyCheckAlt />,
       link: "/sinfodemanager/fees",
     },
     {
-      name: "Attendence",
-      icon: <FaUsers />,
+      name: "Attendance",
+      icon: <FaClipboardCheck />,
       link: "/sinfodemanager/attendance",
     },
     {
       name: "Lead",
-      icon: <FaUsers />,
+      icon: <FaUserFriends />,
       link: "/sinfodemanager/leads",
     },
     {
       name: "Expense",
-      icon: <FaUsers />,
+      icon: <FaMoneyBillWave />,
       link: "/sinfodemanager/expenses",
     },
     {
       name: "Salary",
-      icon: <FaUsers />,
+      icon: <FaWallet />,
       link: "/sinfodemanager/salary",
     },
-    // {
-    //   name: "Invoice",
-    //   icon: <FaUsers />,
-    //   link: "/sinfodemanager",
-    // },
+    /*
+    {
+      name: "Invoice",
+      icon: <FaFileInvoiceDollar />,
+      link: "/sinfodemanager",
+    },
+    */
     {
       name: "Coupans",
-      icon: <FaUsers />,
+      icon: <FaTicketAlt />,
       link: "/sinfodemanager/campaign",
     },
     {
       name: "Communication",
-      icon: <FaUsers />,
+      icon: <FaComments />,
       link: "/sinfodemanager/communication",
     },
     {
       name: "Reports",
-      icon: <FaUsers />,
+      icon: <FaChartBar />,
       link: "/sinfodemanager/reports",
     },
   ];
