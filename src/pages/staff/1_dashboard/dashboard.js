@@ -275,7 +275,7 @@ const fetchRevenueData = async () => {
               </div>
         {/* Quick Action Shortcuts */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <a 
+          {/* <a 
             href="/staff/students" 
             className="bg-white rounded-xl shadow p-4 flex items-center hover:shadow-md transition-shadow duration-200"
           >
@@ -286,7 +286,7 @@ const fetchRevenueData = async () => {
               <h3 className="font-semibold">Add Student</h3>
               <p className="text-sm text-gray-500">Register a new student</p>
             </div>
-          </a>
+          </a> */}
           
           <a 
             href="/staff/leads" 
