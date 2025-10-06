@@ -141,20 +141,28 @@ const Managerheader = ({ toggleSidebar }) => {
                     <p className="text-gray-500 italic">No unread notifications.</p>
                   ) : (
                     <ul className="divide-y divide-gray-200">
-                      {notifications.map((n) => (
-                        <li key={n.id} className="py-3">
-                          <h3 className="font-semibold text-gray-900">{n.title}</h3>
-                          <p className="text-sm text-gray-700">{n.description}</p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            Priority: <span className="font-medium">{n.priority}</span>{" "}
-                            | Type: <span className="font-medium">{n.type}</span>
-                          </p>
-                        </li>
-                      ))}
+                      <div
+                        onClick={() => {
+                          setModalOpen(false);
+                          navigate("/sinfodemanager/communication");
+                        }}
+                      >
+                        {/* Only take the first two notifications */}
+                        {notifications.slice(0, 2).map((n) => (
+                          <li key={n.id} className="py-3">
+                            <h3 className="font-semibold text-gray-900">{n.title}</h3>
+                            <p className="text-sm text-gray-700">{n.description}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Priority: <span className="font-medium">{n.priority}</span>{" "}
+                              | Type: <span className="font-medium">{n.type}</span>
+                            </p>
+                          </li>
+                        ))}
+                      </div>
                     </ul>
                   )}
                   <div className="flex justify-end mt-6 space-x-3">
-                
+
                     <button
                       className="px-3 py-1.5 text-sm font-medium bg-blue-600 rounded text-white hover:bg-blue-700 transition"
                       onClick={() => {
