@@ -26,11 +26,11 @@ const Login = () => {
     try {
       const response = await axios.post('/login', formData);
       const { token, user } = response.data;
-      // console.log('Login Successful:', response.data);
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-
       setSuccess(true);
+      toast.success("Login Successful"); // Show success notification
+
       if (user.role === "accountant") {
         navigate("/account/dashboard");
       } else {
@@ -39,7 +39,7 @@ const Login = () => {
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Invalid credentials';
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(errorMessage); // Show error notification
     }
   };
 
@@ -47,19 +47,11 @@ const Login = () => {
     <div className="flex min-h-screen">
       {/* Left Side */}
       <div className="hidden md:flex w-1/2 bg-indigo-600 text-white flex-col justify-center items-center p-8">
-        {/* <h1 className="text-4xl font-bold mb-2">Admin Login</h1> */}
-
-        {/* Logo */}
         <img
           src="/imag.png"
           alt="Logo"
           className="w-[490px] h-[300px] mb-4"
         />
-
-        {/* Heading */}
-
-        {/* Subtitle */}
-
       </div>
 
       {/* Right Side - Login Form */}
@@ -105,16 +97,8 @@ const Login = () => {
                   placeholder="Enter your password"
                   className="border-gray-300 rounded-md w-full p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
                 />
-                <button
-                  type="submit" className="absolute right-2 top-2 text-gray-500"
-
-                >
-
-                </button>
               </div>
             </div>
-
-
 
             {/* Submit */}
             <button
@@ -124,13 +108,10 @@ const Login = () => {
               Login
             </button>
           </form>
-
-
         </div>
       </div>
-
       {/* Toast */}
-      {/* <ToastContainer position="top-right" autoClose={3000} /> */}
+      <ToastContainer position="top-right" autoClose={3000} /> {/* Moved out of comment */}
     </div>
   );
 }
