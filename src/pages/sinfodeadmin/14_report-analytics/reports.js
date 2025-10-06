@@ -204,8 +204,9 @@ function Report() {
       const matchesBatch = !filters.batch || studentBatch === filters.batch;
 
       // Branch filter (handle both object and string formats)
-      const studentBranch = student.branch?.branch_name || student.branch_name || student.branch;
-      const matchesBranch = !filters.branch || studentBranch === filters.branch;
+// In the filterStudents function, update the branch comparison:
+const studentBranch = student.branch?.branch_name || student.branch_name || student.branch || '';
+const matchesBranch = !filters.branch || studentBranch === filters.branch;
 
       // Status filter
       const matchesStatus = !filters.status || student.enrollment_status === filters.status;
@@ -233,12 +234,12 @@ function Report() {
     return allBatches.map(batch => batch.batch_name || batch.name || batch).filter(Boolean);
   };
 
-  const getBranchOptions = () => {
-    return allBranches.map(branch => ({
-      id: branch.id || branch.branch_id,
-      name: branch.branch_name || branch.name || branch
-    })).filter(branch => branch.name);
-  };
+ const getBranchOptions = () => {
+  return allBranches.map(branch => ({
+    id: branch.id || branch.branch_id,
+    name: branch.branch_name || branch.name || branch
+  })).filter(branch => branch.name);
+};
 
   // Get unique status values from student data
   const getStatusValues = () => {
