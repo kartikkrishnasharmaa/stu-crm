@@ -436,53 +436,116 @@ function AllCourse() {
       )}
       
       {/* ... modals (same as before) */}
-      {modalType === "view" && selectedCourse && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white p-6 rounded-xl w-[600px] shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Course Details</h2>
-            <p>
-              <strong>Name:</strong> {selectedCourse.course_name}
-            </p>
-            <p>
-              <strong>Code:</strong> {selectedCourse.course_code}
-            </p>
-            <p>
-              <strong>Category:</strong> {selectedCourse.course_category}
-            </p>
-            <p>
-              <strong>Level:</strong> {selectedCourse.course_level}
-            </p>
-            <p>
-              <strong>Mode:</strong> {selectedCourse.mode}
-            </p>
-            <p>
-              <strong>Duration:</strong> {selectedCourse.duration} months
-            </p>
-            <p>
-              <strong>Price:</strong> ₹{selectedCourse.actual_price}
+  {modalType === "view" && selectedCourse && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="bg-white rounded-2xl shadow-2xl w-[800px] max-h-[90vh] overflow-y-auto relative">
+      {/* Header */}
+      <div className="flex justify-between items-center border-b px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-2xl">
+        <h2 className="text-2xl font-semibold">
+          📘 {selectedCourse.course_name}
+        </h2>
+        <button
+          className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-md transition"
+          onClick={() => setModalType("")}
+        >
+          ✖
+        </button>
+      </div>
 
+      {/* Content */}
+      <div className="p-6 space-y-6">
+        {/* Basic Info Section */}
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <p className="text-gray-600">
+              <strong className="font-medium text-gray-800">Course Code:</strong> {selectedCourse.course_code}
             </p>
-            <p>
-              <strong>Branch:</strong> {selectedCourse.branch?.branch_name}
+            <p className="text-gray-600">
+              <strong className="font-medium text-gray-800">Category:</strong> {selectedCourse.course_category}
             </p>
-            <p>
-              <strong>Trainer:</strong> {selectedCourse.trainer?.employee_name}
+            <p className="text-gray-600">
+              <strong className="font-medium text-gray-800">Level:</strong> {selectedCourse.course_level}
             </p>
-            <div
-              className="mt-3 text-gray-700"
-              dangerouslySetInnerHTML={{
-                __html: selectedCourse.course_description,
-              }}
-            />
-            <button
-              className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
-              onClick={() => setModalType("")}
-            >
-              Close
-            </button>
+            <p className="text-gray-600">
+              <strong className="font-medium text-gray-800">Mode:</strong> {selectedCourse.mode}
+            </p>
+          </div>
+          <div>
+            <p className="text-gray-600">
+              <strong className="font-medium text-gray-800">Duration:</strong> {selectedCourse.duration} months
+            </p>
+            <p className="text-gray-600">
+              <strong className="font-medium text-gray-800">Price:</strong>{" "}
+              {selectedCourse.discounted_price
+                ? `₹${selectedCourse.discounted_price}`
+                : "N/A"}
+            </p>
+            <p className="text-gray-600">
+              <strong className="font-medium text-gray-800">Branch:</strong>{" "}
+              {selectedCourse.branch?.branch_name} ({selectedCourse.branch?.city})
+            </p>
+            <p className="text-gray-600">
+              <strong className="font-medium text-gray-800">Trainer:</strong>{" "}
+              {selectedCourse.trainer?.employee_name}
+            </p>
           </div>
         </div>
-      )}
+
+        {/* Description */}
+        <div className="border-t pt-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">📝 Description</h3>
+          <div
+            className="prose prose-sm max-w-none text-gray-700"
+            dangerouslySetInnerHTML={{
+              __html: selectedCourse.course_description || "<p>No description provided.</p>",
+            }}
+          />
+        </div>
+
+        {/* Students Section */}
+        {selectedCourse.students && selectedCourse.students.length > 0 && (
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              👨‍🎓 Enrolled Students ({selectedCourse.students.length})
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {selectedCourse.students.map((student) => (
+                <div
+                  key={student.id}
+                  className="bg-gray-50 hover:bg-gray-100 border rounded-xl p-3 flex flex-col items-center shadow-sm transition"
+                >
+                  <img
+                    src={
+                      student.photo_url ||
+                      "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                    }
+                    alt={student.full_name}
+                    className="w-16 h-16 rounded-full object-cover border mb-2"
+                  />
+                  <h4 className="font-semibold text-gray-800 text-sm text-center">
+                    {student.full_name}
+                  </h4>
+                  <p className="text-xs text-gray-500">{student.email}</p>
+                  <p className="text-xs text-gray-500">📞 {student.contact_number}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="border-t p-4 text-right">
+        <button
+          onClick={() => setModalType("")}
+          className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-lg font-medium hover:shadow-md transition"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {modalType === "edit" && selectedCourse && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
