@@ -2,10 +2,10 @@ import SAAdminLayout from "../../../layouts/Sinfodeadmin";
 import { useState, useEffect } from "react";
 import axios from "../../../api/axiosConfig";
 import { Editor } from "react-draft-wysiwyg";
-import { EditorState, convertToRaw,ContentState } from "draft-js";
+import { EditorState, convertToRaw, ContentState } from "draft-js";
 import draftToHtml from "draftjs-to-html";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { FaEdit, FaTrash, FaEye,FaClock,FaMapMarkerAlt,FaUserTie,FaRupeeSign,FaBars } from "react-icons/fa";
+import { FaEdit, FaTrash, FaEye, FaClock, FaMapMarkerAlt, FaUserTie, FaRupeeSign, FaBars } from "react-icons/fa";
 import Batch from "./batch";
 import Allbatch from "./allbatch";
 import htmlToDraft from "html-to-draftjs";
@@ -115,18 +115,18 @@ function AddCourse() {
 
   return (
     <div className="p-6 w-full bg-[#F4F9FD]">
-       <ToastContainer
-              position="top-right"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <h1 className="text-[30px] mb-2 font-semibold font-nunito">
         Create Course
       </h1>
@@ -266,7 +266,7 @@ function AddCourse() {
                 className="w-full border rounded-lg px-3 py-2"
               />
             </div>
-    
+
           </div>
         </div>
 
@@ -370,11 +370,11 @@ function AllCourse() {
       const res = await axios.get(`/courses/${id}/show`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       setSelectedCourse(res.data);
       setFormData(res.data);
       setModalType(type);
-      
+
       // Set editor state if editing
       if (type === "edit") {
         const contentBlock = htmlToDraft(res.data.course_description || "");
@@ -451,22 +451,22 @@ function AllCourse() {
 
   return (
     <div className="p-6">
-          <ToastContainer
-              position="top-right"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <h1 className="text-[30px] mb-6 font-semibold font-nunito">
         All Course Management
       </h1>
-      
+
       {/* Branch Filter */}
       <div className="mb-6 bg-white p-4 rounded-xl shadow-sm">
         <label className="mr-3 font-semibold">Filter by Branch:</label>
@@ -574,60 +574,85 @@ function AllCourse() {
       </div>
 
       {/* View Modal */}
+
       {modalType === "view" && selectedCourse && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+          <div className="bg-white rounded-3xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-indigo-600 p-4 text-white rounded-t-2xl flex justify-between items-center">
-              <h2 className="text-xl font-bold">Course Details</h2>
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-700 p-5 text-white rounded-t-3xl flex justify-between items-center shadow-md">
+              <h2 className="text-2xl font-extrabold drop-shadow-md">Course Details</h2>
               <button
                 onClick={() => setModalType("")}
-                className="text-white hover:text-gray-200 text-lg"
+                className="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-40 transition"
+                aria-label="Close modal"
               >
                 ✕
               </button>
             </div>
 
             {/* Content */}
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-700 mb-2">Basic Information</h3>
-                  <p><span className="font-medium">Name:</span> {selectedCourse.course_name}</p>
-                  <p><span className="font-medium">Code:</span> {selectedCourse.course_code}</p>
-                  <p><span className="font-medium">Category:</span> {selectedCourse.course_category}</p>
-                  <p><span className="font-medium">Level:</span> {selectedCourse.course_level}</p>
+            <div className="p-8 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Basic Info */}
+                <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-6 shadow-inner border border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-700 mb-4">Basic Information</h3>
+                  <p><span className="font-semibold">Name:</span> {selectedCourse.course_name}</p>
+                  <p><span className="font-semibold">Code:</span> {selectedCourse.course_code}</p>
+                  <p><span className="font-semibold">Category:</span> {selectedCourse.course_category}</p>
+                  <p><span className="font-semibold">Level:</span>
+                    <span className="ml-2 inline-block px-2 py-1 text-xs font-bold rounded bg-indigo-500 text-white">
+                      {selectedCourse.course_level}
+                    </span>
+                  </p>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-700 mb-2">Configuration</h3>
-                  <p><span className="font-medium">Mode:</span> {selectedCourse.mode}</p>
-                  <p><span className="font-medium">Duration:</span> {selectedCourse.duration} months</p>
-                  <p><span className="font-medium">Price:</span> ₹{selectedCourse.discounted_price}</p>
-                  
+                {/* Configuration */}
+                <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-6 shadow-inner border border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-700 mb-4">Configuration</h3>
+                  <p><span className="font-semibold">Mode:</span> <span className="capitalize">{selectedCourse.mode}</span></p>
+                  <p><span className="font-semibold">Duration:</span> {selectedCourse.duration} months</p>
+                  <p><span className="font-semibold text-lg text-indigo-600">Price: ₹{selectedCourse.discounted_price}</span> </p>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-700 mb-2">Assignments</h3>
-                  <p><span className="font-medium">Branch:</span> {selectedCourse.branch?.branch_name || "Not assigned"}</p>
-                  <p><span className="font-medium">Trainer:</span> {selectedCourse.trainer?.employee_name || "Not assigned"}</p>
+                {/* Assignments */}
+                <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-6 shadow-inner border border-gray-200 col-span-full md:col-span-2">
+                  <h3 className="text-xl font-semibold text-gray-700 mb-4">Assignments</h3>
+                  <p><span className="font-semibold">Branch:</span> {selectedCourse.branch?.branch_name || "Not assigned"}</p>
+                  <p className="text-sm text-gray-500 mb-2">{selectedCourse.branch?.address}, {selectedCourse.branch?.city}, {selectedCourse.branch?.state}</p>
+                  <p><span className="font-semibold">Trainer:</span> {selectedCourse.trainer?.employee_name || "Not assigned"}</p>
+                  <p className="text-sm text-gray-500">{selectedCourse.trainer?.designation}</p>
                 </div>
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-gray-700 mb-2">Description</h3>
-                <div 
-                  className="text-gray-600 prose max-w-none"
-                  dangerouslySetInnerHTML={{ __html: selectedCourse.course_description }}
-                />
+              {/* Description */}
+              <div className="bg-white rounded-xl p-6 shadow-inner border border-gray-200 prose max-w-none text-gray-700">
+                <h3 className="text-xl font-semibold mb-4">Description</h3>
+                <div dangerouslySetInnerHTML={{ __html: selectedCourse.course_description }} />
+              </div>
+
+              {/* Students (Optional Addition) */}
+              <div className="bg-white rounded-xl p-6 shadow-inner border border-gray-200">
+                <h3 className="text-xl font-semibold mb-4">Enrolled Students ({selectedCourse.students.length})</h3>
+                <div className="flex flex-wrap gap-4 max-h-40 overflow-y-auto">
+                  {selectedCourse.students.map((student) => (
+                    <div key={student.id} className="flex flex-col items-center w-20 text-center">
+                      <img
+                        src={student.photo_url || "https://rapidapi.com/hub/_next/image?url=https%3A%2F%2Frapidapi-prod-apis.s3.amazonaws.com%2F0499ccca-a115-4e70-b4f3-1c1587d6de2b.png&w=3840&q=75"}
+                        alt={student.full_name}
+                        className="w-16 h-16 rounded-full object-cover mb-2 border border-indigo-300"
+                      />
+                      <span className="text-xs font-medium truncate">{student.full_name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="sticky bottom-0 bg-white p-4 border-t rounded-b-2xl flex justify-end">
+            <div className="sticky bottom-0 bg-white p-4 border-t rounded-b-3xl flex justify-end shadow-md">
               <button
                 onClick={() => setModalType("")}
-                className="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300"
+                className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition"
               >
                 Close
               </button>
@@ -635,6 +660,7 @@ function AllCourse() {
           </div>
         </div>
       )}
+
 
       {/* Edit Modal */}
       {modalType === "edit" && selectedCourse && (
@@ -849,7 +875,7 @@ export default function Course() {
     setSidebarOpen(false);
   };
   return (
-   <SAAdminLayout>
+    <SAAdminLayout>
       <div className="flex h-full relative">
         {/* Mobile: Menu Button */}
         <button
@@ -872,10 +898,9 @@ export default function Course() {
           )}
           <aside
             className={`fixed z-40 top-0 left-0 h-full transition-transform 
-              ${
-                sidebarOpen
-                  ? "translate-x-0"
-                  : "-translate-x-full"
+              ${sidebarOpen
+                ? "translate-x-0"
+                : "-translate-x-full"
               } md:translate-x-0 md:static md:h-auto
             w-64 bg-white rounded-xl shadow-md p-4 space-y-3
             flex flex-col`}
@@ -883,7 +908,7 @@ export default function Course() {
           >
             {/* Close button for mobile */}
             <div className="flex justify-between items-center mb-2 md:hidden">
-          
+
               <button
                 className="text-gray-600 bg-gray-100 rounded-full p-2"
                 onClick={() => setSidebarOpen(false)}
@@ -895,21 +920,19 @@ export default function Course() {
             {/* Nav Buttons */}
             <button
               onClick={() => handleTabSelection("addCourse")}
-              className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${
-                activeTab === "addCourse"
-                  ? "bg-blue-100 text-black font-semibold"
-                  : "hover:bg-blue-100 text-black"
-              }`}
+              className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${activeTab === "addCourse"
+                ? "bg-blue-100 text-black font-semibold"
+                : "hover:bg-blue-100 text-black"
+                }`}
             >
               ➕ Add Course
             </button>
             <button
               onClick={() => handleTabSelection("courseList")}
-              className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${
-                activeTab === "courseList"
-                  ? "bg-blue-100 text-black font-semibold"
-                  : "hover:bg-blue-100 text-black"
-              }`}
+              className={`block w-full text-left px-4 py-5 rounded-lg transition-colors ${activeTab === "courseList"
+                ? "bg-blue-100 text-black font-semibold"
+                : "hover:bg-blue-100 text-black"
+                }`}
             >
               📋 All Courses
             </button>
