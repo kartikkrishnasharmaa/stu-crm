@@ -155,7 +155,7 @@ function StudentIDCardGenerator() {
                 <tr key={s.id}>
                   <td className="p-2 border">
                     <img
-                      src={s.photo_url}
+                      src={s.photo_url || "https://rapidapi.com/hub/_next/image?url=https%3A%2F%2Frapidapi-prod-apis.s3.amazonaws.com%2F0499ccca-a115-4e70-b4f3-1c1587d6de2b.png&w=3840&q=75"}
                       alt={""}
                       width={50}
                       height={50}
@@ -204,7 +204,7 @@ function StudentIDCardGenerator() {
                 <div className="card-body mb-2">
                   <div className="student-photo">
                     <img
-                      src={selectedStudent.photo_url}
+                      src={selectedStudent.photo_url || "https://rapidapi.com/hub/_next/image?url=https%3A%2F%2Frapidapi-prod-apis.s3.amazonaws.com%2F0499ccca-a115-4e70-b4f3-1c1587d6de2b.png&w=3840&q=75"}
                       alt={selectedStudent.full_name}
                       width={100}
                       height={120}
