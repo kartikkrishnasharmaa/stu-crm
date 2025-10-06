@@ -136,6 +136,7 @@ const Managerheader = ({ toggleSidebar }) => {
               >
                 <div className="p-5">
                   <h2 className="text-xl font-semibold mb-4">Notifications</h2>
+                  <span className="text-sm">Latest Notification</span>
                   {notifications.length === 0 ? (
                     <p className="text-gray-500 italic">No unread notifications.</p>
                   ) : (
@@ -153,12 +154,7 @@ const Managerheader = ({ toggleSidebar }) => {
                     </ul>
                   )}
                   <div className="flex justify-end mt-6 space-x-3">
-                    <button
-                      className="px-3 py-1.5 text-sm font-medium bg-gray-200 rounded text-gray-700 hover:bg-gray-300 transition"
-                      onClick={() => setModalOpen(false)}
-                    >
-                      Close
-                    </button>
+                
                     <button
                       className="px-3 py-1.5 text-sm font-medium bg-blue-600 rounded text-white hover:bg-blue-700 transition"
                       onClick={() => {
