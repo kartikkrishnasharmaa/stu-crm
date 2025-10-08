@@ -102,7 +102,7 @@ const ManagerSidebar = ({ isSidebarOpen, toggleSidebar }) => {
     },
     */
     {
-      name: "Coupans",
+      name: "Coupons",
       icon: <FaTicketAlt />,
       link: "/sinfodemanager/campaign",
     },
