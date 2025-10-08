@@ -226,6 +226,13 @@ export default function Lead() {
     });
   };
 
+  // Handle card clicks for filtering
+  const handleCardClick = (status) => {
+    setActiveTab("leads");
+    setStatusFilter(status);
+    setSearchTerm(""); // Clear search when filtering by status
+  };
+
   const getStatusBadge = (status) => {
     const badges = {
       New: (
@@ -348,7 +355,11 @@ export default function Lead() {
             <div className="border-b border-sf-border">
               <nav className="flex space-x-8 px-6">
                 <button
-                  onClick={() => setActiveTab("leads")}
+                  onClick={() => {
+                    setActiveTab("leads");
+                    setStatusFilter(""); // Clear filter when switching to leads tab
+                    setSearchTerm(""); // Clear search
+                  }}
                   className={`py-4 px-1 border-b-2 ${
                     activeTab === "leads"
                       ? "border-sf-blue text-sf-blue"
@@ -395,6 +406,17 @@ export default function Lead() {
                       {filteredLeads.length} item
                       {filteredLeads.length !== 1 ? "s" : ""}
                     </span>
+                    {statusFilter && (
+                      <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                        Showing: {statusFilter}
+                        <button
+                          onClick={() => setStatusFilter("")}
+                          className="ml-2 text-yellow-600 hover:text-yellow-800"
+                        >
+                          <i className="fas fa-times"></i>
+                        </button>
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="relative">
@@ -475,8 +497,19 @@ export default function Lead() {
                               <i className="fas fa-users text-4xl mb-4"></i>
                               <p className="text-lg">No leads found</p>
                               <p className="text-sm">
-                                Create your first lead to get started
+                                {statusFilter 
+                                  ? `No leads with status "${statusFilter}" found`
+                                  : "Create your first lead to get started"
+                                }
                               </p>
+                              {statusFilter && (
+                                <button
+                                  onClick={() => setStatusFilter("")}
+                                  className="mt-2 text-sf-blue hover:text-sf-blue-dark"
+                                >
+                                  Clear filter
+                                </button>
+                              )}
                             </td>
                           </tr>
                         ) : (
@@ -827,7 +860,11 @@ export default function Lead() {
                   Lead Reports
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-sf-blue-light p-6 rounded-lg">
+                  {/* Total Leads Card */}
+                  <div 
+                    className="bg-sf-blue-light p-6 rounded-lg cursor-pointer transition-all hover:shadow-lg hover:scale-105"
+                    onClick={() => handleCardClick("")}
+                  >
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
                         <i className="fas fa-users text-sf-blue text-2xl"></i>
@@ -841,8 +878,16 @@ export default function Lead() {
                         </p>
                       </div>
                     </div>
+                    <div className="mt-2 text-xs text-sf-text-light">
+                      Click to view all leads
+                    </div>
                   </div>
-                  <div className="bg-green-50 p-6 rounded-lg">
+
+                  {/* Converted Leads Card */}
+                  <div 
+                    className="bg-green-50 p-6 rounded-lg cursor-pointer transition-all hover:shadow-lg hover:scale-105"
+                    onClick={() => handleCardClick("Converted")}
+                  >
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
                         <i className="fas fa-check-circle text-green-600 text-2xl"></i>
@@ -856,8 +901,16 @@ export default function Lead() {
                         </p>
                       </div>
                     </div>
+                    <div className="mt-2 text-xs text-sf-text-light">
+                      Click to view converted leads
+                    </div>
                   </div>
-                  <div className="bg-yellow-50 p-6 rounded-lg">
+
+                  {/* In Progress Leads Card */}
+                  <div 
+                    className="bg-yellow-50 p-6 rounded-lg cursor-pointer transition-all hover:shadow-lg hover:scale-105"
+                    onClick={() => handleCardClick("in-progress")}
+                  >
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
                         <i className="fas fa-clock text-yellow-600 text-2xl"></i>
@@ -871,8 +924,16 @@ export default function Lead() {
                         </p>
                       </div>
                     </div>
+                    <div className="mt-2 text-xs text-sf-text-light">
+                      Click to view in-progress leads
+                    </div>
                   </div>
-                  <div className="bg-red-50 p-6 rounded-lg">
+
+                  {/* Lost Leads Card */}
+                  <div 
+                    className="bg-red-50 p-6 rounded-lg cursor-pointer transition-all hover:shadow-lg hover:scale-105"
+                    onClick={() => handleCardClick("Lost")}
+                  >
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
                         <i className="fas fa-times-circle text-red-600 text-2xl"></i>
@@ -885,6 +946,9 @@ export default function Lead() {
                           {lostLeads}
                         </p>
                       </div>
+                    </div>
+                    <div className="mt-2 text-xs text-sf-text-light">
+                      Click to view lost leads
                     </div>
                   </div>
                 </div>
