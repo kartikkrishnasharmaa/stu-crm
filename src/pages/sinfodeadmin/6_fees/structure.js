@@ -779,54 +779,57 @@ const StudentFees = () => {
       {/* Main Content */}
       <main className="sf-main">
         {/* Stats Cards */}
-        <div className="sf-stats-grid">
-          <div className="sf-stat-card">
-            <div className="sf-stat-content">
-              <div className="sf-stat-icon bg-blue">
-                <i className="fas fa-money-bill"></i>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {/* Total Fees Card */}
+          <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-sm border border-blue-100 p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-semibold text-blue-700 mb-1">Total Fees</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">₹{totalFees.toLocaleString()}</h3>
               </div>
-              <div className="sf-stat-text">
-                <p>Total Fees</p>
-                <h3>₹{totalFees.toLocaleString()}</h3>
-              </div>
-            </div>
-          </div>
-
-          <div className="sf-stat-card">
-            <div className="sf-stat-content">
-              <div className="sf-stat-icon bg-green">
-                <i className="fas fa-check-circle"></i>
-              </div>
-              <div className="sf-stat-text">
-                <p>Paid Amount</p>
-                <h3>₹{totalPaid.toLocaleString()}</h3>
+              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-sm">
+                <i className="fas fa-money-bill text-white text-lg"></i>
               </div>
             </div>
           </div>
 
-          <div className="sf-stat-card">
-            <div className="sf-stat-content">
-              <div className="sf-stat-icon bg-red">
-                <i className="fas fa-exclamation-circle"></i>
+          {/* Paid Amount Card */}
+          <div className="bg-gradient-to-br from-green-50 to-white rounded-2xl shadow-sm border border-green-100 p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-semibold text-green-700 mb-1">Paid Amount</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">₹{totalPaid.toLocaleString()}</h3>
+                <div className="w-full bg-green-200 rounded-full h-2">
+                  <div
+                    className="bg-green-500 h-2 rounded-full"
+                    style={{ width: `${(totalPaid / totalFees) * 100}%` }}
+                  ></div>
+                </div>
               </div>
-              <div className="sf-stat-text">
-                <p>Pending Amount</p>
-                <h3>₹{totalPending.toLocaleString()}</h3>
+              <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-sm">
+                <i className="fas fa-check-circle text-white text-lg"></i>
               </div>
             </div>
           </div>
 
-          {/* <div className="sf-stat-card">
-            <div className="sf-stat-content">
-              <div className="sf-stat-icon bg-purple">
-                <i className="fas fa-users"></i>
+          {/* Pending Amount Card */}
+          <div className="bg-gradient-to-br from-red-50 to-white rounded-2xl shadow-sm border border-red-100 p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-semibold text-red-700 mb-1">Pending Amount</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">₹{totalPending.toLocaleString()}</h3>
+                <div className="w-full bg-red-200 rounded-full h-2">
+                  <div
+                    className="bg-red-500 h-2 rounded-full"
+                    style={{ width: `${(totalPending / totalFees) * 100}%` }}
+                  ></div>
+                </div>
               </div>
-              <div className="sf-stat-text">
-                <p>Total Records</p>
-                <h3>{studentFees.length}</h3>
+              <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center shadow-sm">
+                <i className="fas fa-exclamation-circle text-white text-lg"></i>
               </div>
             </div>
-          </div> */}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 mb-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
           <select
