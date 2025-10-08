@@ -24,7 +24,7 @@ export default function Fees() {
         <div
           className={`${
             sidebarOpen ? "block" : "hidden"
-          } w-60 bg-white rounded-xl shadow-md p-4 space-y-3 fixed md:static h-full z-40`}
+          } w-60 bg-white rounded-xl shadow-md p-4 space-y-3 fixed md:static h-full z-0`}
         >
           <button
             onClick={() => setActiveTab("fees")}
