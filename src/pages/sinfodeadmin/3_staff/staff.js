@@ -34,10 +34,10 @@ export default function Staff() {
   const navigate = useNavigate();
   const [openMenuId, setOpenMenuId] = useState(null);
   const [sortField, setSortField] = useState("created_at");
-const [sortOrder, setSortOrder] = useState("desc"); // "asc" or "desc"
-const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
+  const [sortOrder, setSortOrder] = useState("desc"); // "asc" or "desc"
+  const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
 
-  
+
   // Accessibility: focus trap
   const modalRef = useRef(null);
 
@@ -54,7 +54,7 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openMenuId]);
-  
+
   // Modal accessibility: trap focus and close with Escape
   useEffect(() => {
     if (isModalOpen) {
@@ -69,29 +69,29 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
   }, [isModalOpen]);
 
   const filteredStaff = staffList
-  .filter(
-    staff =>
-      (selectedBranch ? staff.branch_id === parseInt(selectedBranch) : true) &&
-      (
-        (staff.employee_name || "").toLowerCase().includes(search.toLowerCase()) ||
-        (staff.designation || "").toLowerCase().includes(search.toLowerCase()) ||
-        (staff.employee_code || "").toLowerCase().includes(search.toLowerCase())
-      )
-  )
-  .filter(staff => {
-    // Date filter
-    if (dateFilter.from && new Date(staff.created_at) < new Date(dateFilter.from)) return false;
-    if (dateFilter.to && new Date(staff.created_at) > new Date(dateFilter.to)) return false;
-    return true;
-  })
-  .sort((a, b) => {
-    // Choose field
-    const valueA = sortField === "joining_date" ? a.joining_date : a.created_at;
-    const valueB = sortField === "joining_date" ? b.joining_date : b.created_at;
-    if (sortOrder === "asc") return valueA.localeCompare(valueB);
-    if (sortOrder === "desc") return valueB.localeCompare(valueA);
-    return 0;
-  });
+    .filter(
+      staff =>
+        (selectedBranch ? staff.branch_id === parseInt(selectedBranch) : true) &&
+        (
+          (staff.employee_name || "").toLowerCase().includes(search.toLowerCase()) ||
+          (staff.designation || "").toLowerCase().includes(search.toLowerCase()) ||
+          (staff.employee_code || "").toLowerCase().includes(search.toLowerCase())
+        )
+    )
+    .filter(staff => {
+      // Date filter
+      if (dateFilter.from && new Date(staff.created_at) < new Date(dateFilter.from)) return false;
+      if (dateFilter.to && new Date(staff.created_at) > new Date(dateFilter.to)) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      // Choose field
+      const valueA = sortField === "joining_date" ? a.joining_date : a.created_at;
+      const valueB = sortField === "joining_date" ? b.joining_date : b.created_at;
+      if (sortOrder === "asc") return valueA.localeCompare(valueB);
+      if (sortOrder === "desc") return valueB.localeCompare(valueA);
+      return 0;
+    });
 
   // Form state and errors
   const [formData, setFormData] = useState({
@@ -412,151 +412,150 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
         </div>
       </div>
       <div className="flex flex-wrap gap-2 mb-2">
-  <select
-    value={sortField}
-    onChange={e => setSortField(e.target.value)}
-    className="border p-2 rounded"
-  >
-    <option value="created_at">Sort by Created Date</option>
-    <option value="joining_date">Sort by Joining Date</option>
-  </select>
-  <select
-    value={sortOrder}
-    onChange={e => setSortOrder(e.target.value)}
-    className="border p-2 rounded"
-  >
-    <option value="desc">Newest First</option>
-    <option value="asc">Oldest First</option>
-  </select>
-  <input
-    type="date"
-    value={dateFilter.from}
-    onChange={e => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
-    placeholder="From"
-    className="border p-2 rounded"
-  />
-  <input
-    type="date"
-    value={dateFilter.to}
-    onChange={e => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
-    placeholder="To"
-    className="border p-2 rounded"
-  />
-  <button
-    onClick={() => setDateFilter({ from: "", to: "" })}
-    className="bg-gray-200 px-2 py-1 rounded"
-  >
-    Reset Dates
-  </button>
-</div>
+        <select
+          value={sortField}
+          onChange={e => setSortField(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="created_at">Sort by Created Date</option>
+          <option value="joining_date">Sort by Joining Date</option>
+        </select>
+        <select
+          value={sortOrder}
+          onChange={e => setSortOrder(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="desc">Newest First</option>
+          <option value="asc">Oldest First</option>
+        </select>
+        <input
+          type="date"
+          value={dateFilter.from}
+          onChange={e => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+          placeholder="From"
+          className="border p-2 rounded"
+        />
+        <input
+          type="date"
+          value={dateFilter.to}
+          onChange={e => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+          placeholder="To"
+          className="border p-2 rounded"
+        />
+        <button
+          onClick={() => setDateFilter({ from: "", to: "" })}
+          className="bg-gray-200 px-2 py-1 rounded"
+        >
+          Reset Dates
+        </button>
+      </div>
 
 
       {/* List and Card Views */}
       {viewMode === "list" ? (
-       <div>
-  <div className="bg-white rounded-xl">
-    <div className="grid grid-cols-12 gap-5 px-4 md:px-5 py-3 bg-gray-100 font-semibold text-gray-700 text-xs md:text-sm">
-      <div className="col-span-4 sm:col-span-3">Employee</div>
-      <div className="hidden sm:block sm:col-span-2 text-center">Position</div>
-      <div className="col-span-4 sm:col-span-2 text-center">Phone no.</div>
-      <div className="hidden sm:block sm:col-span-2 text-center">Status</div>
-      <div className="col-span-4 sm:col-span-3 text-right">Actions</div>
-    </div>
-    <div className="divide-y">
-      {filteredStaff.map((staff) => (
-        <div
-          key={staff.id}
-          className="grid grid-cols-12 gap-5 px-2 md:px-5 py-4 items-center hover:bg-gray-50 text-xs md:text-base"
-        >
-          {/* Employee Name - visible on all screens */}
-          <div className="col-span-4 sm:col-span-3 flex items-center gap-3 min-w-0">
-            <img
-              src={staff.profile_image || "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"}
-              alt={staff.employee_name}
-              className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border"
-            />
-            <div className="min-w-0">
-              <h3 className="font-semibold text-gray-800 ">{staff.employee_name}</h3>
-              {/* <p className="text-gray-500 text-xs truncate">{staff.email}</p> */}
+        <div>
+          <div className="bg-white rounded-xl">
+            <div className="grid grid-cols-12 gap-5 px-4 md:px-5 py-3 bg-gray-100 font-semibold text-gray-700 text-xs md:text-sm">
+              <div className="col-span-4 sm:col-span-3">Employee</div>
+              <div className="hidden sm:block sm:col-span-2 text-center">Position</div>
+              <div className="col-span-4 sm:col-span-2 text-center">Phone no.</div>
+              <div className="hidden sm:block sm:col-span-2 text-center">Status</div>
+              <div className="col-span-4 sm:col-span-3 text-right">Actions</div>
             </div>
-          </div>
-
-          {/* Position - hidden on mobile */}
-          <div className="hidden sm:block sm:col-span-2 text-center text-gray-600 truncate">
-            {staff.designation}
-          </div>
-
-          {/* Phone No. - visible on all screens */}
-          <div className="col-span-4 sm:col-span-2 text-center text-gray-600 truncate">
-            {staff.contact_number}
-          </div>
-
-          {/* Status - hidden on mobile */}
-          <div className="hidden sm:block sm:col-span-2 text-center">
-            <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                staff.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-              }`}
-            >
-              {staff.status}
-            </span>
-          </div>
-
-          {/* Actions - visible on all screens */}
-          <div className="col-span-4 sm:col-span-3 flex justify-end">
-            <div className="relative">
-              <button
-                onClick={() => setOpenMenuId(openMenuId === staff.id ? null : staff.id)}
-                className="menu-toggle p-2 hover:bg-gray-100 rounded-full"
-                aria-haspopup="true"
-                aria-expanded={openMenuId === staff.id}
-              >
-                <HiDotsVertical size={20} />
-              </button>
-
-              {openMenuId === staff.id && (
+            <div className="divide-y">
+              {filteredStaff.map((staff) => (
                 <div
-                  className="menu-container absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-40 py-2 z-50"
-                  onClick={(e) => e.stopPropagation()}
+                  key={staff.id}
+                  className="grid grid-cols-12 gap-5 px-2 md:px-5 py-4 items-center hover:bg-gray-50 text-xs md:text-base"
                 >
-                  <button
-                    onClick={() => toggleStatus(staff.id, staff.status)}
-                    className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
-                  >
-                    {staff.status === "Active" ? (
-                      <FaToggleOn size={18} className="text-green-600" />
-                    ) : (
-                      <FaToggleOff size={18} className="text-red-600" />
-                    )}
-                    {staff.status === "Active" ? "Deactivate" : "Activate"}
-                  </button>
-                  <button
-                    onClick={() => navigate(`/sinfodeadmin/staff/${staff.id}`)}
-                    className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-purple-600"
-                  >
-                    <FaEye size={16} /> View
-                  </button>
-                  <button
-                    onClick={() => handleEditClick(staff)}
-                    className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-blue-600"
-                  >
-                    <FaEdit size={16} /> Edit
-                  </button>
-                  <button
-                    onClick={() => deleteStaff(staff.id)}
-                    className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600"
-                  >
-                    <FaTrash size={16} /> Delete
-                  </button>
+                  {/* Employee Name - visible on all screens */}
+                  <div className="col-span-4 sm:col-span-3 flex items-center gap-3 min-w-0">
+                    <img
+                      src={staff.profile_image || "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"}
+                      alt={staff.employee_name}
+                      className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border"
+                    />
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-gray-800 ">{staff.employee_name}</h3>
+                      {/* <p className="text-gray-500 text-xs truncate">{staff.email}</p> */}
+                    </div>
+                  </div>
+
+                  {/* Position - hidden on mobile */}
+                  <div className="hidden sm:block sm:col-span-2 text-center text-gray-600 truncate">
+                    {staff.designation}
+                  </div>
+
+                  {/* Phone No. - visible on all screens */}
+                  <div className="col-span-4 sm:col-span-2 text-center text-gray-600 truncate">
+                    {staff.contact_number}
+                  </div>
+
+                  {/* Status - hidden on mobile */}
+                  <div className="hidden sm:block sm:col-span-2 text-center">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${staff.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        }`}
+                    >
+                      {staff.status}
+                    </span>
+                  </div>
+
+                  {/* Actions - visible on all screens */}
+                  <div className="col-span-4 sm:col-span-3 flex justify-end">
+                    <div className="relative">
+                      <button
+                        onClick={() => setOpenMenuId(openMenuId === staff.id ? null : staff.id)}
+                        className="menu-toggle p-2 hover:bg-gray-100 rounded-full"
+                        aria-haspopup="true"
+                        aria-expanded={openMenuId === staff.id}
+                      >
+                        <HiDotsVertical size={20} />
+                      </button>
+
+                      {openMenuId === staff.id && (
+                        <div
+                          className="menu-container absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-40 py-2 z-50"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => toggleStatus(staff.id, staff.status)}
+                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                          >
+                            {staff.status === "Active" ? (
+                              <FaToggleOn size={18} className="text-green-600" />
+                            ) : (
+                              <FaToggleOff size={18} className="text-red-600" />
+                            )}
+                            {staff.status === "Active" ? "Deactivate" : "Activate"}
+                          </button>
+                          <button
+                            onClick={() => navigate(`/sinfodeadmin/staff/${staff.id}`)}
+                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-purple-600"
+                          >
+                            <FaEye size={16} /> View
+                          </button>
+                          <button
+                            onClick={() => handleEditClick(staff)}
+                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-blue-600"
+                          >
+                            <FaEdit size={16} /> Edit
+                          </button>
+                          <button
+                            onClick={() => deleteStaff(staff.id)}
+                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600"
+                          >
+                            <FaTrash size={16} /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>
-      ))}
-    </div>
-  </div>
-</div>
 
       ) : (
         <div className="grid mt-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -616,15 +615,16 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
             >
               <div className="md:col-span-2 flex items-center">
                 <h3 className="text-md font-medium mb-2 border-b pb-1 flex-1">Employee Details</h3>
-                <p className="ml-2 text-xs text-gray-500">(* Use Designation "Trainer")</p>
               </div>
 
+              {/* Employee Name */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Employee Name *</label>
                 <input
                   name="employee_name"
                   value={formData.employee_name}
                   onChange={handleChange}
-                  placeholder="Employee Name"
+                  placeholder="Enter employee name"
                   className={`border p-2 rounded ${formErrors.employee_name ? 'border-red-500' : ''}`}
                   required
                 />
@@ -632,12 +632,15 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.employee_name}</span>
                 )}
               </div>
+
+              {/* Employee Code */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Employee Code *</label>
                 <input
                   name="employee_code"
                   value={formData.employee_code}
                   onChange={handleChange}
-                  placeholder="Employee Code"
+                  placeholder="Enter employee code"
                   className={`border p-2 rounded ${formErrors.employee_code ? 'border-red-500' : ''}`}
                   required
                 />
@@ -645,12 +648,15 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.employee_code}</span>
                 )}
               </div>
+
+              {/* Designation */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Designation - (use "Trainer" in case of Teacher)</label>
                 <input
                   name="designation"
                   value={formData.designation}
                   onChange={handleChange}
-                  placeholder="Designation"
+                  placeholder="Enter designation"
                   className={`border p-2 rounded ${formErrors.designation ? 'border-red-500' : ''}`}
                   required
                 />
@@ -658,7 +664,10 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.designation}</span>
                 )}
               </div>
+
+              {/* Joining Date */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Joining Date *</label>
                 <input
                   name="joining_date"
                   value={formData.joining_date}
@@ -671,12 +680,15 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.joining_date}</span>
                 )}
               </div>
+
+              {/* Contact Number */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Contact Number *</label>
                 <input
                   name="contact_number"
                   value={formData.contact_number}
                   onChange={handleChange}
-                  placeholder="Contact Number"
+                  placeholder="Enter 10-digit contact number"
                   className={`border p-2 rounded ${formErrors.contact_number ? 'border-red-500' : ''}`}
                   maxLength={10}
                   required
@@ -687,12 +699,15 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.contact_number}</span>
                 )}
               </div>
+
+              {/* Monthly Salary */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Monthly Salary</label>
                 <input
                   name="monthly_salary"
                   value={formData.monthly_salary}
                   onChange={handleChange}
-                  placeholder="Salary"
+                  placeholder="Enter monthly salary"
                   className={`border p-2 rounded ${formErrors.monthly_salary ? 'border-red-500' : ''}`}
                   inputMode="decimal"
                 />
@@ -700,12 +715,15 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.monthly_salary}</span>
                 )}
               </div>
+
+              {/* Email */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Email *</label>
                 <input
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Email"
+                  placeholder="Enter email address"
                   type="email"
                   className={`border p-2 rounded ${formErrors.email ? 'border-red-500' : ''}`}
                   required
@@ -715,12 +733,15 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.email}</span>
                 )}
               </div>
+
+              {/* Department */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Department *</label>
                 <input
                   name="department"
                   value={formData.department}
                   onChange={handleChange}
-                  placeholder="Department"
+                  placeholder="Enter department"
                   className={`border p-2 rounded ${formErrors.department ? 'border-red-500' : ''}`}
                   required
                 />
@@ -728,7 +749,10 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.department}</span>
                 )}
               </div>
+
+              {/* Branch */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Branch *</label>
                 <select
                   name="branch_id"
                   value={formData.branch_id}
@@ -747,7 +771,10 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.branch_id}</span>
                 )}
               </div>
+
+              {/* Status */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Status *</label>
                 <select
                   name="status"
                   value={formData.status}
@@ -760,17 +787,19 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                 </select>
               </div>
 
-              {/* User Details */}
+              {/* User Account Details Section */}
               <div className="md:col-span-2 mt-3">
                 <h3 className="text-md font-medium mb-2 border-b pb-1">User Account Details</h3>
               </div>
-              
+
+              {/* Username */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">Username *</label>
                 <input
                   name="staffcreate_name"
                   value={formData.staffcreate_name}
                   onChange={handleChange}
-                  placeholder="Username"
+                  placeholder="Enter username"
                   className={`border p-2 rounded ${formErrors.staffcreate_name ? 'border-red-500' : ''}`}
                   required
                 />
@@ -778,12 +807,15 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.staffcreate_name}</span>
                 )}
               </div>
+
+              {/* User Email */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">User Email *</label>
                 <input
                   name="staffcreate_email"
                   value={formData.staffcreate_email}
                   onChange={handleChange}
-                  placeholder="User Email"
+                  placeholder="Enter user email"
                   type="email"
                   className={`border p-2 rounded ${formErrors.staffcreate_email ? 'border-red-500' : ''}`}
                   required
@@ -792,12 +824,17 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.staffcreate_email}</span>
                 )}
               </div>
+
+              {/* Password */}
               <div className="flex flex-col">
+                <label className="text-sm font-medium mb-1 text-gray-700">
+                  Password {!editingStaffId && '*'}
+                </label>
                 <input
                   name="staffcreate_password"
                   value={formData.staffcreate_password}
                   onChange={handleChange}
-                  placeholder="Password"
+                  placeholder="Enter password"
                   type="text"
                   className={`border p-2 rounded ${formErrors.staffcreate_password ? 'border-red-500' : ''}`}
                   required={!editingStaffId}
@@ -806,6 +843,8 @@ const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
                   <span className="text-red-500 text-xs mt-1">{formErrors.staffcreate_password}</span>
                 )}
               </div>
+
+              {/* Submit Button */}
               <div className="md:col-span-2 flex justify-end mt-4">
                 <button
                   type="submit"
