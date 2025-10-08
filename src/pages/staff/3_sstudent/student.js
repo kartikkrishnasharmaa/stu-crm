@@ -311,7 +311,7 @@ export default function Allstudents() {
               >
                 <div className="flex items-center gap-4">
                   <img
-                    src={student.photo_url || "/default-avatar.png"}
+                    src={student.photo_url || "https://cdn-icons-png.flaticon.com/256/149/149071.png"}
                     alt={student.full_name}
                     className="w-12 h-12 rounded-full object-cover border"
                   />
@@ -369,7 +369,7 @@ export default function Allstudents() {
               >
                 <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white shadow-md -mt-10 mb-3">
                   <img
-                    src={student.photo_url || "/default-avatar.png"}
+                    src={student.photo_url || "https://cdn-icons-png.flaticon.com/256/149/149071.png"}
                     alt={student.full_name}
                     className="w-full h-full object-cover"
                   />
@@ -414,7 +414,7 @@ export default function Allstudents() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col items-center">
                   <img
-                    src={selectedStudent.photo_url || "/default-avatar.png"}
+                    src={selectedStudent.photo_url || "https://cdn-icons-png.flaticon.com/256/149/149071.png"}
                     alt={selectedStudent.full_name}
                     className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
                   />
