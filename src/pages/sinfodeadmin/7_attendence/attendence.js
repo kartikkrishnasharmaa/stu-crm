@@ -288,7 +288,7 @@ export default function Attendance() {
                 : "hover:bg-blue-100 text-black"
             }`}
           >
-            👥 Staff Attendance
+            ➕ Staff Attendance
           </button>
           <button
             onClick={() => setActiveTab("viewStaffAttendance")}
@@ -298,7 +298,7 @@ export default function Attendance() {
                 : "hover:bg-blue-100 text-black"
             }`}
           >
-            👓 View Staff Attendance
+            📋 View Staff Attendance
           </button>
         </div>
         {/* Content */}
