@@ -395,7 +395,7 @@ export default function Student() {
         </button>
 
         <div
-          className={`fixed top-0 left-0 h-full w-60 bg-white rounded-xl shadow-md p-4 space-y-3 z-50 transform transition-transform duration-300 ease-in-out
+          className={`fixed top-0 left-0 h-full w-60 bg-white rounded-xl shadow-md p-4 space-y-3 transform transition-transform duration-300 ease-in-out
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
             md:translate-x-0 md:static md:shadow-none`}
           style={{ boxShadow: sidebarOpen ? "0 0 20px rgba(0,0,0,0.3)" : "none" }}
