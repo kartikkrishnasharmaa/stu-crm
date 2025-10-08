@@ -272,8 +272,8 @@ function ViewAttendance() {
                     key={index} 
                     className={`min-h-12 rounded-lg flex flex-col items-center justify-center p-1
                       ${day.isWeekend ? 'bg-gray-100' : 'bg-white'} 
-                      ${day.status === 'Present' ? 'bg-green-100 text-green-800 border border-green-300' : ''}
-                      ${day.status === 'Absent' ? 'bg-red-100 text-red-800 border border-red-300' : ''}
+                      ${day.status === 'Present' ? 'bg-green-700 text-white border border-green-300' : ''}
+                      ${day.status === 'Absent' ? 'bg-red-700 text-white border border-red-300' : ''}
                       ${!day.date ? 'invisible' : 'border'}`}
                   >
                     {day.date && (
@@ -281,9 +281,7 @@ function ViewAttendance() {
                         <span className="text-xs font-medium">
                           {new Date(day.date).getDate()}
                         </span>
-                        <span className="text-xs mt-1">
-                          {day.status === 'Present' ? '✅' : day.status === 'Absent' ? '❌' : '-'}
-                        </span>
+                   
                       </>
                     )}
                   </div>
@@ -293,11 +291,11 @@ function ViewAttendance() {
               {/* Legend */}
               <div className="flex justify-center mt-6 gap-4">
                 <div className="flex items-center">
-                  <div className="w-4 h-4 bg-green-100 border border-green-300 mr-1"></div>
+                  <div className="w-4 h-4 bg-green-700 border border-green-300 mr-1"></div>
                   <span className="text-xs">Present</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-4 h-4 bg-red-100 border border-red-300 mr-1"></div>
+                  <div className="w-4 h-4 bg-red-700 border border-red-300 mr-1"></div>
                   <span className="text-xs">Absent</span>
                 </div>
                 <div className="flex items-center">
