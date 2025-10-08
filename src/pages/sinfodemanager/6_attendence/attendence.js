@@ -13,22 +13,6 @@ function AddAttendance() {
   const [attendanceData, setAttendanceData] = useState({});
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
-  // // Fetch all branches
-  // useEffect(() => {
-  //   const fetchBranches = async () => {
-  //     try {
-  //       const token = localStorage.getItem("token");
-  //       const res = await axios.get("/branches", {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       });
-  //       setBranches(res.data || []);
-  //     } catch (error) {
-  //       console.error("Error fetching branches:", error);
-  //     }
-  //   };
-  //   fetchBranches();
-  // }, []);
-
   // Fetch all courses
   useEffect(() => {
     const fetchCourses = async () => {
@@ -130,23 +114,7 @@ function AddAttendance() {
 
       {/* Dropdown Filters */}
       <div className="bg-white shadow-md rounded-xl p-6 mb-6 flex gap-6">
-        {/* Branch Dropdown */}
-        {/* <div className="flex-1">
-          <label className="block mb-1 font-medium">Select Branch</label>
-          <select
-            className="border rounded-lg p-2 w-full"
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-          >
-            <option value="">-- Select Branch --</option>
-            {branches.map((branch) => (
-              <option key={branch.id} value={branch.id}>
-                {branch.branch_name}
-              </option>
-            ))}
-          </select>
-        </div> */}
-
+      
         {/* Course Dropdown */}
         <div className="flex-1">
           <label className="block mb-1 font-medium">Select Course</label>
@@ -295,7 +263,7 @@ export default function Attendance() {
                 : "hover:bg-blue-100 text-black"
             }`}
           >
-            👥 Staff Attendance
+            ➕ Staff Attendance
           </button>
           <button
             onClick={() => setActiveTab("viewStaffAttendance")}
@@ -305,7 +273,7 @@ export default function Attendance() {
                 : "hover:bg-blue-100 text-black"
             }`}
           >
-            👓 View Staff Attendance
+            📋 View Staff Attendance
           </button>
         </div>
         {/* Content */}
