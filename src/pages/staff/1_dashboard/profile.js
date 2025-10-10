@@ -1,12 +1,14 @@
 import SAAdminLayout from "../../../layouts/StaffLayout";
 import { useState, useEffect } from "react";
 import axios from "../../../api/axiosConfig";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [branch, setBranch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false); // 👈 for password toggle
 
   // Fetch branch info from API
   const fetchBranchData = async (user) => {
@@ -23,10 +25,7 @@ const Profile = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       if (user.role?.toLowerCase() === "staff") {
-        console.log("🔹 Fetching all branches...");
-        res = await axios.get(`branches/${user.branch_id}`, { headers });
-      } else if (user.role?.toLowerCase() === "staff" && user.branch_id) {
-        console.log(`🔹 Fetching branch ${user.branch_id}...`);
+        console.log("🔹 Fetching branch...");
         res = await axios.get(`branches/${user.branch_id}`, { headers });
       } else {
         console.warn("⚠️ No matching API call condition found for this role.");
@@ -154,11 +153,36 @@ const Profile = () => {
                     Account Information
                   </h3>
 
-                  <InfoItem
-                    label="Password"
-                    value={`••••••••• (${user.plain_password || "hidden"})`}
-                    color="yellow"
-                  />
+                  {/* 👇 Password with show/hide toggle */}
+                  <div className="flex items-start">
+                    <div className="bg-yellow-100 text-yellow-600 p-2 rounded-lg mr-3">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4z" />
+                      </svg>
+                    </div>
+                    <div className="w-full">
+                      <p className="text-sm text-gray-500">Password</p>
+                      <div className="flex items-center justify-between bg-gray-50 rounded-md px-3 py-2">
+                        <p className="font-medium">
+                          {showPassword
+                            ? user.plain_password || "Not Available"
+                            : "•••••••••"}
+                        </p>
+                        <button
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="text-gray-600 hover:text-gray-800"
+                        >
+                          {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   <InfoItem label="Member Since" value={formatDate(user.created_at)} color="red" />
                   <InfoItem label="Last Updated" value={formatDate(user.updated_at)} color="indigo" />
 
