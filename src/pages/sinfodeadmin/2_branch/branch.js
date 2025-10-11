@@ -76,6 +76,7 @@ export default function Branch() {
         branch_type: fullBranch.branch_type || "Main",
         status: fullBranch.status || "Active",
         discount_range: fullBranch.discount_range || "0",
+        discount_amount: fullBranch.discount_amount || "0",
         manager_name: fullBranch.manager_name || fullBranch.managers?.[0]?.name || "",
         manager_email: fullBranch.manager_email || fullBranch.managers?.[0]?.email || "",
         manager_password: fullBranch.manager_password || fullBranch.managers?.[0]?.plain_password ||"" ,
@@ -118,7 +119,8 @@ export default function Branch() {
       "Opening Date": branch.opening_date,
       "Branch Type": branch.branch_type,
       "Status": branch.status,
-      "Discount Range": branch.discount_range
+      "Discount Range": branch.discount_range,
+      "Discount Amount": branch.discount_amount || ""
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -142,7 +144,8 @@ export default function Branch() {
     manager_name: "",
     manager_email: "",
     manager_password: "",
-    discount_range: "0"
+    discount_range: "0",
+    discount_amount: "0"
   });
 
   const fetchBranches = async () => {
@@ -167,6 +170,7 @@ export default function Branch() {
         status: branch.status,
         opening_date: branch.opening_date,
         discount_range: branch.discount_range || "",
+        discount_amount: branch.discount_amount || "",
         pin_code: branch.pin_code || "",
         address: branch.address || "",
         branch_type: branch.branch_type || "Main",
@@ -234,6 +238,10 @@ export default function Branch() {
     if (name === "contact_number") {
       if (!/^\d{0,10}$/.test(value)) return;
     }
+    if (name === "discount_amount") {
+  // Prevent negative numbers
+  if (Number(value) < 0) return;
+}
 
     // Validate pin code
     if (name === "pin_code") {
@@ -307,7 +315,8 @@ export default function Branch() {
       manager_name: "",
       manager_email: "",
       manager_password: "",
-      discount_range: "0"
+      discount_range: "0",
+      discount_amount: "0"
     });
     setPasswordError("");
   };
@@ -638,6 +647,18 @@ export default function Branch() {
                       required
                     />
                   </div>
+                    <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Discount (amount) *</label>
+                    <input
+                      name="discount_amount"
+                      value={formData.discount_amount}
+                      onChange={handleChange}
+                      placeholder="Enter max discount amount"
+                      className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      type="number"
+                      min="0"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                     <input
@@ -816,6 +837,10 @@ export default function Branch() {
                         <p className="flex items-center gap-1">
                           <FaPercent className="text-blue-600" />
                           <span className="font-medium">Max Discount:</span> {currentBranchDetails.discount_range}%
+                        </p>
+                         <p className="flex items-center gap-1">
+                          {/* <FaPercent className="text-blue-600" /> */}
+                          <span className="font-medium">Max Discount:</span> {currentBranchDetails.discount_amount || "0"} Rs.
                         </p>
                       </div>
                     </div>
