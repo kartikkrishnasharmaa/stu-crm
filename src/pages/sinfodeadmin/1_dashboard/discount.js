@@ -6,7 +6,8 @@ const Discount = () => {
   const [discountRequests, setDiscountRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [requestedRange, setRequestedRange] = useState('');
+  const [requestType, setRequestType] = useState('percentage');
+  const [requestedValue, setRequestedValue] = useState('');
   const [requesting, setRequesting] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
 
@@ -18,7 +19,6 @@ const Discount = () => {
       });
       setDiscountRequests(response.data);
     } catch (err) {
-      console.error('Error fetching discount requests:', err);
       setError('Failed to load discount requests');
     } finally {
       setLoading(false);
@@ -30,28 +30,26 @@ const Discount = () => {
   }, []);
 
   const submitDiscountRequest = async () => {
-    if (!requestedRange || isNaN(requestedRange)) {
-      setError('Please enter a valid discount range');
+    const value = Number(requestedValue);
+    if (!value || isNaN(value)) {
+      setError('Please enter a valid value');
       return;
     }
-
     try {
       setRequesting(true);
       const token = localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('user'));
-
-      await axios.post(`/branches/${user.branch_id}/discount-request`, {
-        requested_range: parseInt(requestedRange)
-      }, {
+      const payload = requestType === 'percentage'
+        ? { requested_range: value }
+        : { requested_amount: value };
+      await axios.post(`/branches/${user.branch_id}/discount-request`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
       alert('Discount request submitted successfully!');
       setShowRequestModal(false);
-      setRequestedRange('');
+      setRequestedValue('');
       fetchDiscountRequests();
     } catch (err) {
-      console.error('Error submitting discount request:', err);
       setError('Failed to submit discount request');
     } finally {
       setRequesting(false);
@@ -61,17 +59,12 @@ const Discount = () => {
   const updateRequestStatus = async (requestId, status) => {
     try {
       const token = localStorage.getItem('token');
-
-      await axios.put(`/discount-requests/${requestId}`, {
-        status
-      }, {
+      await axios.put(`/discount-requests/${requestId}`, { status }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
       alert(`Request ${status} successfully!`);
       fetchDiscountRequests();
     } catch (err) {
-      console.error('Error updating request status:', err);
       setError('Failed to update request status');
     }
   };
@@ -103,6 +96,11 @@ const Discount = () => {
           {/* Header */}
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800">Discount Request History</h1>
+            <button
+              className="mt-3 px-4 py-2 rounded bg-blue-600 text-white text-sm"
+              onClick={() => setShowRequestModal(true)}>
+              New Discount Request
+            </button>
           </div>
 
           {/* Request List */}
@@ -118,52 +116,56 @@ const Discount = () => {
                       <p className="text-sm text-gray-500">
                         Requested by: {request.requester?.name || 'Unknown'}
                       </p>
-                      
                     </div>
-                      <div className="grid sm:grid-cols-3 gap-4 text-sm text-gray-700">
                     <div>
-                      <p className="font-medium">Request Date</p>
-                      <p className="text-gray-600">
+                      {getStatusBadge(request.status)}
+                    </div>
+                  </div>
+
+                  {/* Clean grid: Four labeled boxes, clearly separated */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-5 mb-4">
+                    <div className="bg-gray-50 border rounded-md p-2 text-center">
+                      <h3 className="text-xs text-gray-500 mb-1">Previous Discount (%)</h3>
+                      <div className="text-lg font-bold text-blue-700">{request.current_range !== null ? `${request.current_range}%` : '-'}</div>
+                    </div>
+                    <div className="bg-gray-50 border rounded-md p-2 text-center">
+                      <h3 className="text-xs text-gray-500 mb-1">Previous Discount (₹)</h3>
+                      <div className="text-lg font-bold text-blue-700">{request.current_amount !== null ? `₹${request.current_amount}` : '-'}</div>
+                    </div>
+                    <div className="bg-gray-50 border rounded-md p-2 text-center">
+                      <h3 className="text-xs text-gray-500 mb-1">Requested Discount (%)</h3>
+                      <div className="text-lg font-bold text-green-700">{request.requested_range !== null ? `${request.requested_range}%` : '-'}</div>
+                    </div>
+                    <div className="bg-gray-50 border rounded-md p-2 text-center">
+                      <h3 className="text-xs text-gray-500 mb-1">Requested Discount (₹)</h3>
+                      <div className="text-lg font-bold text-green-700">{request.requested_amount !== null ? `₹${request.requested_amount}` : '-'}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-5 justify-between items-center">
+                    <div className="text-sm text-gray-600">
+                      <span>Request Date: </span>
+                      <span className="font-medium">
                         {request.created_at ? new Date(request.created_at).toLocaleDateString() : 'N/A'}
-                      </p>
+                      </span>
                     </div>
-                
+                    {request.status === 'pending' && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => updateRequestStatus(request.id, 'rejected')}
+                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          onClick={() => updateRequestStatus(request.id, 'approved')}
+                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm"
+                        >
+                          Approve
+                        </button>
+                      </div>
+                    )}
                   </div>
-
-                    {getStatusBadge(request.status)}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-[600px] mb-4">
-                    <div className="p-3 rounded-md">
-                      <h3 className="text-sm text-gray-600 mb-1">Previous Discount Range</h3>
-                      <p className="text-xl font-bold text-gray-800">
-                      {request.current_range || 0}%
-                      </p>
-                    </div>
-
-                    <div className="p-3 rounded-md">
-                      <h3 className="text-sm text-gray-600 mb-1">Requested Discount Range</h3>
-                      <p className="text-xl font-bold text-blue-700">
-                        {request.requested_range || 0}%
-                      </p>
-                    </div>
-                  </div>
-                  {request.status === 'pending' && (
-                    <div className="mt-4 flex flex-wrap gap-2 justify-end">
-                      <button
-                        onClick={() => updateRequestStatus(request.id, 'rejected')}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm"
-                      >
-                        Reject
-                      </button>
-                      <button
-                        onClick={() => updateRequestStatus(request.id, 'approved')}
-                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm"
-                      >
-                        Approve
-                      </button>
-                    </div>
-                  )}
                 </div>
               ))
             ) : (
@@ -178,16 +180,35 @@ const Discount = () => {
             <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
               <div className="bg-white rounded-xl p-6 w-full max-w-md">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">New Discount Request</h2>
+                <div className="mb-2 flex gap-6">
+                  <label className="flex items-center gap-1">
+                    <input
+                      type="radio"
+                      checked={requestType === 'percentage'}
+                      onChange={() => setRequestType('percentage')}
+                      className="accent-blue-600"
+                    /> <span className="text-sm">Percentage (%)</span>
+                  </label>
+                  <label className="flex items-center gap-1">
+                    <input
+                      type="radio"
+                      checked={requestType === 'amount'}
+                      onChange={() => setRequestType('amount')}
+                      className="accent-blue-600"
+                    /> <span className="text-sm">Amount (₹)</span>
+                  </label>
+                </div>
                 <div className="mb-4">
-                  <label className="block text-sm text-gray-700 mb-1">Requested Discount (%)</label>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    {requestType === 'percentage' ? 'Requested Discount (%)' : 'Requested Discount Amount (₹)'}
+                  </label>
                   <input
                     type="number"
                     min="1"
-                    max="100"
-                    value={requestedRange}
-                    onChange={(e) => setRequestedRange(e.target.value)}
+                    value={requestedValue}
+                    onChange={e => setRequestedValue(e.target.value)}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g. 15"
+                    placeholder={requestType === 'percentage' ? "e.g. 15" : "e.g. 5000"}
                   />
                 </div>
                 <div className="flex justify-end gap-2">
@@ -205,9 +226,11 @@ const Discount = () => {
                     {requesting ? 'Submitting...' : 'Submit'}
                   </button>
                 </div>
+                {error && <div className="text-red-500 mt-2">{error}</div>}
               </div>
             </div>
           )}
+
         </div>
       </div>
     </SAAdminLayout>
