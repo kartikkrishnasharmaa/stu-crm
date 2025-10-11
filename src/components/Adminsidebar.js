@@ -143,12 +143,12 @@ const Adminsidebar = ({ isSidebarOpen, toggleSidebar, isMobile }) => {
       >
         <div className="flex flex-col h-full">
           {/* Header - Fixed Height */}
-          <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white h-16">
+          <div className="flex-shrink-0 flex items-center justify-between mt-[24px] p-4 border-b border-gray-200 bg-white">
             <div className="flex items-center space-x-3">
               <img
                 src="https://www.sinfode.com/wp-content/uploads/2022/12/digital-marketing-institute-in-sikar.webp"
                 alt="Sinfode Logo"
-                className="h-8"
+                className="h-8 ml-7"
               />
             </div>
             
