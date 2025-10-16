@@ -270,7 +270,7 @@ const BranchCommunication = () => {
       description: item.description,
       branch: item.branch ? item.branch.branch_name : 'Unknown Branch',
       department: item.sender ? 'From: ' + item.sender.name : 'Unknown Sender',
-      amount: item.amount ? `$${parseFloat(item.amount).toLocaleString()}` : '$0',
+      amount: item.amount ? `Rs.${parseFloat(item.amount).toLocaleString()}` : 'Rs. 0',
       status: statusMap[item.status] || 'pending',
       priority: priorityMap[item.priority] || 'medium',
       author: item.sender ? item.sender.name : 'Unknown',
@@ -566,7 +566,7 @@ const BranchCommunication = () => {
                           {selectedItem.amount && (
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600">Amount:</span>
-                              <span className="text-sm text-gray-900">${parseFloat(selectedItem.amount).toLocaleString()}</span>
+                              <span className="text-sm text-gray-900">Rs. {parseFloat(selectedItem.amount).toLocaleString()}</span>
                             </div>
                           )}
                         </div>
