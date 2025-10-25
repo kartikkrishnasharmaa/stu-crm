@@ -1301,20 +1301,14 @@ const StudentFees = () => {
         <div className="sf-modal-backdrop">
           <div className="sf-modal sf-delete-modal">
             <div className="sf-modal-header">
-              <h3>Delete Fee Record</h3>
+              <h3>Want to Delete this Fee Record ?</h3>
               <button onClick={closeDeleteModal} className="sf-modal-close">
                 <i className="fas fa-times"></i>
               </button>
             </div>
 
             <div className="sf-delete-content">
-              <div className="sf-delete-icon">
-                <i className="fas fa-exclamation-triangle"></i>
-              </div>
-
               <div className="sf-delete-text">
-                <h4>Delete this fee record?</h4>
-
                 <div className="sf-delete-details">
                   <p><strong>Student:</strong> {getStudentName(feeToDelete.student_id)}</p>
                   <p><strong>Course:</strong> {getCourseName(feeToDelete.course_id)}</p>
